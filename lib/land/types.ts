@@ -50,6 +50,24 @@ export enum HeightClass {
   ULTRA = "ultra"       // 100+ floors   | 380+ world units
 }
 
+// Tier system for land scarcity/pricing
+export enum TierType {
+  CORE = "CORE",           // Center 16×16: 256 parcels (~16%) | 3x price multiplier
+  RING = "RING",           // Middle belt: 768 parcels (~48%)  | 2x price multiplier
+  FRONTIER = "FRONTIER"    // Outer edge: 576 parcels (~36%)   | 1x price multiplier
+}
+
+// District zones with themed buildings/aesthetics
+export enum DistrictType {
+  GAMING = "GAMING",             // NW quadrant | Red/orange neon, arcade aesthetic
+  BUSINESS = "BUSINESS",         // NE quadrant | Blue chrome, corporate towers
+  SOCIAL = "SOCIAL",             // SW quadrant | Pink/magenta venues, nightlife
+  DEFI = "DEFI",                 // SE quadrant | Green data centers, brutalist
+  RESIDENTIAL = "RESIDENTIAL",   // Middle ring | Violet hives, housing
+  DAO = "DAO",                   // Center 4×4  | Purple/gold plaza, governance
+  PUBLIC = "PUBLIC"              // Parks, streets, shared spaces
+}
+
 export enum BusinessSector {
   RETAIL = "retail",
   ENTERTAINMENT = "entertainment",
@@ -82,43 +100,62 @@ export enum DAOPurpose {
  * Matches LandRegistry.sol Parcel struct
  */
 export interface Parcel {
-  // On-Chain Data (from LandRegistry.sol)
-  parcelId: number;                    // 0-9999 (100x100 grid)
-  tokenId: number;                     // ERC-721 token ID (same as parcelId)
-  ownerAddress: Address | null;        // Current owner (wallet or contract)
+  // ========== IDS & IDENTIFICATION ==========
+  parcelId: string;                    // Format: "VOID-GENESIS-0" to "VOID-GENESIS-1599"
+  tokenId: number;                     // ERC-721 token ID
+  gridIndex: number;                   // 0-1599 for genesis (gridY * 40 + gridX)
   
-  // Grid Coordinates (on-chain)
-  worldId: string;                     // "VOID-1" (main world)
-  gridX: number;                       // 0-99
-  gridY: number;                       // 0-99
-  layerZ?: number;                     // 0 = ground (future: underground=-1, sky=1,2,3...)
+  // ========== MULTI-REGION SUPPORT ==========
+  worldId: string;                     // "VOID", "AGENCY", "PARTNER-NIKE"
+  regionId: string;                    // "VOID-GENESIS", "VOID-EXPANSION-1"
   
-  // Zone Data (on-chain)
-  zone: ZoneType;
-  zonePrice: bigint;                   // Base price in VOID (100-1000 VOID)
+  // ========== GRID COORDINATES ==========
+  gridX: number;                       // 0-39 (for 40×40 genesis)
+  gridY: number;                       // 0-39
+  layerZ?: number;                     // 0 = ground (future: underground/sky layers)
   
-  // Status (derived from contract events)
-  status: ParcelStatus;
-  listingPrice?: bigint;               // If FOR_SALE
+  // ========== TIER & DISTRICT SYSTEM ==========
+  tier: TierType;                      // CORE/RING/FRONTIER (affects pricing)
+  district: DistrictType;              // GAMING/BUSINESS/SOCIAL/DEFI/RESIDENTIAL/DAO/PUBLIC
+  zone: ZoneType;                      // Legacy compatibility (PUBLIC/RESIDENTIAL/COMMERCIAL/PREMIUM/GLIZZY_WORLD)
+  
+  // ========== OWNERSHIP ==========
+  owner: Address | null;               // Current owner (wallet or contract)
+  status: ParcelStatus;                // OWNED, FOR_SALE, DAO_OWNED, etc.
+  
+  // ========== SCARCITY BONUSES ==========
+  isFounderPlot: boolean;              // Founder-reserved plots (2x scarcity multiplier)
+  isCornerLot: boolean;                // Corner parcels (1.2x scarcity multiplier)
+  isMainStreet: boolean;               // Main street adjacency (1.15x scarcity multiplier)
+  
+  // ========== PRICING ==========
+  basePrice: bigint;                   // Calculated: Base × Tier × District × Scarcity
+  currentPrice: bigint;                // If for sale
+  lastSalePrice: bigint;               // Historical data
+  
+  // ========== MARKETPLACE ==========
+  listedForSale: boolean;
+  salePrice: bigint | null;
   listingCurrency?: Address;           // VOID token address
   listedAt?: Date;
   
-  // Building Link (on-chain via hasHouse boolean + buildingId extension)
-  buildingId: string | null;           // Links to Building entity
-  hasHouse: boolean;                   // True if house built (from contract)
+  // ========== BUILDING DATA ==========
+  building: Building | null;           // Linked building entity
+  maxBuildingHeight: number;           // Max floors allowed (tier-based)
+  hasHouse: boolean;                   // Legacy compatibility
   
-  // Business Data (on-chain)
+  // ========== BUSINESS LICENSE ==========
   businessLicense: LicenseType;
-  businessRevenue: bigint;             // Accumulated revenue (80% to owner)
+  businessRevenue: bigint;
   
-  // Metadata (IPFS or off-chain indexed)
-  metadata: ParcelMetadata;
+  // ========== METADATA ==========
+  metadata?: ParcelMetadata;
   
-  // Activity Tracking
-  lastSalePrice?: bigint;
-  lastSaleDate?: Date;
-  previousOwners?: Address[];
-  totalRevenue?: bigint;
+  // ========== ACTIVITY TRACKING ==========
+  ownershipHistory: Address[];
+  acquiredAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface ParcelMetadata {
@@ -313,8 +350,8 @@ export interface DistrictTheme {
 // ========== CONSTANTS ==========
 
 export const LAND_CONSTANTS = {
-  GRID_SIZE: 100,
-  TOTAL_PARCELS: 10000,
+  GRID_SIZE: 40,  // Genesis region: 40×40 grid
+  TOTAL_PARCELS: 1600,  // Genesis region: 1,600 parcels
   PARCEL_SIZE_WORLD_UNITS: 40,
   GLIZZY_WORLD_PSX_REQUIREMENT: 100_000n,
   
@@ -338,3 +375,149 @@ export const LAND_CONSTANTS = {
     TO_ECOSYSTEM: 20, // 20% to ecosystem via V4 hooks
   },
 } as const;
+
+// ========== MULTI-REGION EXPANSION SYSTEM ==========
+
+/**
+ * World - Top-level container for regions
+ * Examples: VOID (ecosystem), AGENCY (partner), PARTNER-NIKE (brand collab)
+ */
+export interface World {
+  worldId: string;                     // "VOID", "AGENCY", "PARTNER-NIKE"
+  name: string;                        // Display name
+  description: string;
+  
+  // Ownership
+  ownerAddress: Address;               // Ecosystem, partner, or creator
+  ownerType: 'ecosystem' | 'partner' | 'creator';
+  
+  // Regions
+  regionCount: number;
+  genesisRegionId: string;             // First region (e.g., "VOID-GENESIS")
+  
+  // Economics
+  treasuryAddress: Address;
+  creatorRoyalty: number;              // % of sales (0-100)
+  ecosystemRoyalty: number;            // % of sales (0-100)
+  founderBenefits: boolean;            // Apply founder perks?
+  
+  // Metadata
+  theme: string;                       // "cyberpunk-metropolis", "fantasy-realm"
+  logo: string;                        // IPFS or URL
+  website?: string;
+  
+  // Status
+  status: 'active' | 'paused' | 'deprecated';
+  launchDate: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+/**
+ * Region - 40×40 (or variable) grid within a World
+ * Genesis = 40×40 (1,600 parcels), expansions can be any size
+ */
+export interface Region {
+  regionId: string;                    // "VOID-GENESIS", "VOID-EXPANSION-1"
+  worldId: string;                     // Parent world
+  
+  // Grid Specs
+  gridWidth: number;                   // 40 for genesis, variable for expansions
+  gridHeight: number;                  // 40 for genesis
+  totalParcels: number;                // gridWidth × gridHeight
+  
+  // World Positioning
+  worldPosition: {
+    offsetX: number;                   // X offset in global world space
+    offsetZ: number;                   // Z offset in global world space
+  };
+  
+  // Status
+  status: 'active' | 'minting' | 'planned' | 'deprecated';
+  mintCampaignId?: string;             // If currently minting
+  
+  // Ownership
+  creatorAddress?: Address;            // If creator-owned region
+  
+  // Metadata
+  name: string;
+  description: string;
+  theme: string;
+  
+  // Timestamps
+  launchDate: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+/**
+ * ExpansionCampaign - Minting campaign for new regions
+ */
+export interface ExpansionCampaign {
+  campaignId: string;                  // "VOID-EXP-1-CAMPAIGN"
+  regionId: string;                    // Region being minted
+  worldId: string;
+  
+  // Campaign Info
+  name: string;                        // "Neon District Expansion"
+  description: string;
+  theme: string;                       // "cyberpunk-venice"
+  
+  // Supply
+  totalParcels: number;
+  parcelsAvailable: number;
+  parcelsMinted: number;
+  
+  // Timing
+  startDate: Date;
+  endDate: Date;
+  phases: MintPhase[];                 // Whitelist, founder early access, public
+  
+  // Pricing
+  pricingModel: 'flat' | 'linear' | 'bonding';
+  basePrice: bigint;                   // Starting price in VOID
+  currentPrice: bigint;                // Current price (if bonding curve)
+  
+  // Governance
+  approvedBy: Address;                 // DAO multisig or governance contract
+  daoProposalId?: string;
+  votesFor: bigint;
+  votesAgainst: bigint;
+  
+  // Restrictions
+  whitelist?: Address[];               // Whitelisted wallets
+  maxPerWallet: number;                // Max parcels per wallet
+  requiresFounderStatus: boolean;      // Must be founder?
+  
+  // Status
+  status: 'planned' | 'active' | 'paused' | 'completed' | 'cancelled';
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+/**
+ * MintPhase - Time-gated mint windows with different pricing/access
+ */
+export interface MintPhase {
+  phaseId: string;
+  name: string;                        // "Founder Early Access", "Public Sale"
+  
+  // Timing
+  startDate: Date;
+  endDate: Date;
+  
+  // Supply
+  maxMints: number;                    // Max parcels in this phase
+  mintedCount: number;                 // Current count
+  
+  // Pricing
+  priceMultiplier: number;             // 0.8 = 20% discount, 1.0 = base price
+  
+  // Access Control
+  eligibility: 'founders' | 'whitelist' | 'public';
+  eligibleAddresses?: Address[];
+  
+  // Status
+  status: 'upcoming' | 'active' | 'completed';
+}
+

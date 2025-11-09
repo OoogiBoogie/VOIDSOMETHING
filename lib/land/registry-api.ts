@@ -16,29 +16,50 @@ export class LandRegistryAPI {
 
   /**
    * Convert parcel ID to grid coordinates
+   * Supports both legacy number IDs and new string IDs
    */
-  parcelIdToCoords(parcelId: number): { x: number; y: number } {
-    const x = parcelId % 100;
-    const y = Math.floor(parcelId / 100);
+  parcelIdToCoords(parcelId: number | string): { x: number; y: number } {
+    let gridIndex: number;
+    
+    if (typeof parcelId === 'string') {
+      // New format: "VOID-GENESIS-0" to "VOID-GENESIS-1599"
+      const parts = parcelId.split('-');
+      gridIndex = parseInt(parts[parts.length - 1], 10);
+    } else {
+      // Legacy format: 0-9999
+      gridIndex = parcelId;
+    }
+    
+    const GRID_SIZE = 40;  // Genesis grid
+    const x = gridIndex % GRID_SIZE;
+    const y = Math.floor(gridIndex / GRID_SIZE);
     return { x, y };
   }
 
   /**
    * Convert grid coordinates to parcel ID
    */
-  coordsToParcelId(x: number, y: number): number {
-    return y * 100 + x;
+  coordsToParcelId(gridX: number, gridY: number, regionId: string = 'VOID-GENESIS'): string {
+    const GRID_SIZE = 40;
+    const gridIndex = gridY * GRID_SIZE + gridX;
+    return `${regionId}-${gridIndex}`;
   }
 
   /**
    * Get world position from parcel ID (for 3D rendering)
+   * Supports multi-region positioning
    */
-  getWorldPosition(parcelId: number): { x: number, y: number, z: number } {
+  getWorldPosition(
+    parcelId: number | string,
+    regionOffset: { x: number; z: number } = { x: 0, z: 0 }
+  ): { x: number, y: number, z: number } {
     const { x, y } = this.parcelIdToCoords(parcelId);
+    const PARCEL_SIZE = 40;  // world units
+    
     return {
-      x: x * 40, // PARCEL_SIZE = 40 world units
+      x: regionOffset.x + (x * PARCEL_SIZE),
       y: 0,
-      z: y * 40
+      z: regionOffset.z + (y * PARCEL_SIZE)
     };
   }
 
@@ -185,14 +206,14 @@ export class LandRegistryAPI {
    * Filter parcels by owner
    */
   filterByOwner(parcels: Parcel[], owner: Address): Parcel[] {
-    return parcels.filter(p => p.ownerAddress?.toLowerCase() === owner.toLowerCase());
+    return parcels.filter(p => p.owner?.toLowerCase() === owner.toLowerCase());
   }
 
   /**
    * Search parcels by ID
    */
   searchByParcelId(parcels: Parcel[], searchId: number): Parcel | undefined {
-    return parcels.find(p => p.parcelId === searchId);
+    return parcels.find(p => p.gridIndex === searchId);
   }
 
   /**
@@ -200,8 +221,8 @@ export class LandRegistryAPI {
    */
   sortByPrice(parcels: Parcel[], ascending: boolean = true): Parcel[] {
     return [...parcels].sort((a, b) => {
-      const aPrice = a.zonePrice;
-      const bPrice = b.zonePrice;
+      const aPrice = a.basePrice;
+      const bPrice = b.basePrice;
       return ascending ? Number(aPrice - bPrice) : Number(bPrice - aPrice);
     });
   }
@@ -231,7 +252,7 @@ export class LandRegistryAPI {
    * Calculate total value of parcels
    */
   calculateTotalValue(parcels: Parcel[]): bigint {
-    return parcels.reduce((sum, p) => sum + p.zonePrice, 0n);
+    return parcels.reduce((sum, p) => sum + p.basePrice, BigInt(0));
   }
 
   /**
@@ -260,14 +281,33 @@ export class LandRegistryAPI {
    * MOCK DATA GENERATOR
    * Generates realistic parcel data for development/testing without deployed contract
    */
-  generateMockParcels(count: number = 10000): Parcel[] {
+  generateMockParcels(count: number = 1600): Parcel[] {
     const parcels: Parcel[] = [];
+    const GRID_SIZE = 40;  // 40×40 genesis grid
+    const REGION_ID = 'VOID-GENESIS';
+    const WORLD_ID = 'VOID';
     
     for (let i = 0; i < count; i++) {
-      const x = i % 100;
-      const y = Math.floor(i / 100);
-      const zone = this.determineZoneFromCoords(x, y);
+      const gridX = i % GRID_SIZE;
+      const gridY = Math.floor(i / GRID_SIZE);
+      const zone = this.determineZoneFromCoords(gridX, gridY);
       const random = this.seededRandom(i);
+      
+      // Import tier calculator functions
+      const { calculateTier, calculateDistrict, isFounderPlot, isCornerLot, isMainStreet, calculateParcelPrice } = require('./tier-calculator');
+      
+      // Calculate tier/district
+      const tier = calculateTier(gridX, gridY, GRID_SIZE);
+      const district = calculateDistrict(gridX, gridY, GRID_SIZE);
+      const isFounder = isFounderPlot(gridX, gridY, GRID_SIZE);
+      const isCorner = isCornerLot(gridX, gridY, GRID_SIZE);
+      const isMain = isMainStreet(gridX, gridY, GRID_SIZE);
+      
+      // Calculate price with tier/district/scarcity
+      const baseZonePrice = this.getZonePrice(zone);
+      const calculatedPrice = calculateParcelPrice(
+        baseZonePrice, tier, district, isFounder, isCorner, isMain, gridX, gridY, GRID_SIZE
+      );
       
       // 30% for sale, 60% owned, 10% DAO/restricted
       const randStatus = random();
@@ -290,32 +330,82 @@ export class LandRegistryAPI {
         ? (Math.floor(random() * 4) + 1) as LicenseType
         : LicenseType.NONE;
 
+      const parcelId = `${REGION_ID}-${i}`;
+
       parcels.push({
-        parcelId: i,
+        // ========== IDS ==========
+        parcelId,
         tokenId: i,
-        ownerAddress: owner,
-        worldId: 'VOID-1',
-        gridX: x,
-        gridY: y,
+        gridIndex: i,
+        
+        // ========== REGION ==========
+        worldId: WORLD_ID,
+        regionId: REGION_ID,
+        
+        // ========== COORDINATES ==========
+        gridX,
+        gridY,
         layerZ: 0,
+        
+        // ========== TIER & DISTRICT ==========
+        tier,
+        district,
         zone,
-        zonePrice: this.getZonePrice(zone),
+        
+        // ========== OWNERSHIP ==========
+        owner,
         status,
-        listingPrice: status === ParcelStatus.FOR_SALE ? this.getZonePrice(zone) : undefined,
-        buildingId: `building-${i}`,
+        
+        // ========== SCARCITY ==========
+        isFounderPlot: isFounder,
+        isCornerLot: isCorner,
+        isMainStreet: isMain,
+        
+        // ========== PRICING ==========
+        basePrice: calculatedPrice,
+        currentPrice: status === ParcelStatus.FOR_SALE ? calculatedPrice : 0n,
+        lastSalePrice: 0n,
+        
+        // ========== MARKETPLACE ==========
+        listedForSale: status === ParcelStatus.FOR_SALE,
+        salePrice: status === ParcelStatus.FOR_SALE ? calculatedPrice : null,
+        listingCurrency: status === ParcelStatus.FOR_SALE ? CONTRACTS.VOID_TOKEN as Address : undefined,
+        
+        // ========== BUILDING ==========
+        building: null,
+        maxBuildingHeight: this.getMaxHeightForTier(tier),
         hasHouse,
+        
+        // ========== BUSINESS ==========
         businessLicense,
         businessRevenue: hasLicense ? BigInt(Math.floor(random() * 10000)) : 0n,
+        
+        // ========== METADATA ==========
         metadata: {
-          rarity: this.getMockRarity(zone, x, y),
-          traits: this.getMockTraits(zone, x, y),
-          description: `Parcel #${i} in ${this.getZoneName(zone)}`,
+          rarity: this.getMockRarity(zone, gridX, gridY),
+          traits: this.getMockTraits(zone, gridX, gridY),
+          description: `Parcel #${i} in ${district} District, ${tier} Tier`,
           image: undefined
-        }
+        },
+        
+        // ========== ACTIVITY ==========
+        ownershipHistory: owner ? [owner] : [],
+        acquiredAt: owner ? new Date() : null,
+        createdAt: new Date(),
+        updatedAt: new Date()
       });
     }
 
     return parcels;
+  }
+
+  /**
+   * Get max height for tier
+   */
+  private getMaxHeightForTier(tier: string): number {
+    if (tier === 'CORE') return 120;
+    if (tier === 'RING') return 60;
+    return 40;  // FRONTIER
   }
 
   private seededRandom(seed: number): () => number {
