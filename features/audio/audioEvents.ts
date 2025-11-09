@@ -42,6 +42,15 @@ export const AudioEvents = {
   // Ambient Loops
   AMBIENT_CITY: "ambient.city",
   AMBIENT_MENU: "ambient.menu",
+  
+  // Welcome Screen / Intro Sounds
+  INTRO_BOOT_BEEP: "intro.bootBeep",
+  INTRO_GLITCH: "intro.glitch",
+  INTRO_SUB_BASS: "intro.subBass",
+  INTRO_WHISPER: "intro.whisper",
+  INTRO_WARNING_VOICE: "intro.warningVoice",
+  INTRO_METALLIC_SLAM: "intro.metallicSlam",
+  INTRO_WHITE_NOISE_SWEEP: "intro.whiteNoiseSweep",
 } as const;
 
 export type AudioEventKey = (typeof AudioEvents)[keyof typeof AudioEvents];

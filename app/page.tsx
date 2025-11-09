@@ -21,6 +21,7 @@ import { UserProfileSetup } from "@/components/user-profile-setup"
 import { UserProfileEdit } from "@/components/user-profile-edit"
 import { CreatePleadSystem } from "@/components/create-plead-system"
 import { IntroSequence } from "@/components/intro/IntroSequence"
+import { WelcomeScreen } from "@/components/WelcomeScreen"
 import { CRTOverlay } from "@/components/ui/crt-overlay"
 import { XboxBladeNav } from "@/components/ui/xbox-blade-nav"
 import { MobileHUDController } from "@/components/mobile-hud-controller"
@@ -570,7 +571,7 @@ export default function VOIDMetaverse() {
     >
       <CRTOverlay enabled={crtEnabled} />
 
-      {introComplete === false && <IntroSequence onComplete={() => setIntroComplete(true)} />}
+      {introComplete === false && <WelcomeScreen onComplete={() => setIntroComplete(true)} />}
 
       {introComplete === true && !userProfile && <UserProfileSetup onComplete={handleProfileComplete} />}
 
