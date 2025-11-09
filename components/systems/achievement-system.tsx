@@ -1,6 +1,7 @@
 "use client"
 
 import { Trophy } from "lucide-react"
+import { MobileOptimizedWrapper } from "@/components/mobile/MobileOptimizedComponents"
 
 export function AchievementSystem() {
   const achievements = [
@@ -11,6 +12,11 @@ export function AchievementSystem() {
   ]
 
   return (
+    <MobileOptimizedWrapper
+      title="Achievements"
+      preventPullToRefresh={true}
+      adjustForKeyboard={false}
+    >
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {achievements.map((achievement) => (
@@ -46,5 +52,6 @@ export function AchievementSystem() {
         ))}
       </div>
     </div>
+    </MobileOptimizedWrapper>
   )
 }

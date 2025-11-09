@@ -1,6 +1,7 @@
 "use client"
 
 import { Trophy, TrendingUp, Award } from "lucide-react"
+import { MobileOptimizedWrapper } from "@/components/mobile/MobileOptimizedComponents"
 
 export function LeaderboardsSystem() {
   const leaderboard = [
@@ -12,6 +13,11 @@ export function LeaderboardsSystem() {
   ]
 
   return (
+    <MobileOptimizedWrapper
+      title="Leaderboards"
+      preventPullToRefresh={true}
+      adjustForKeyboard={false}
+    >
     <div className="space-y-4">
       <div className="grid grid-cols-3 gap-4 mb-6">
         <button className="p-4 rounded-xl bg-purple-500/20 border-2 border-purple-400 font-bold">
@@ -53,5 +59,6 @@ export function LeaderboardsSystem() {
         ))}
       </div>
     </div>
+    </MobileOptimizedWrapper>
   )
 }

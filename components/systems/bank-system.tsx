@@ -1,9 +1,15 @@
 "use client"
 
 import { Vault, TrendingUp } from "lucide-react"
+import { MobileOptimizedWrapper } from "@/components/mobile/MobileOptimizedComponents"
 
 export function BankSystem() {
   return (
+    <MobileOptimizedWrapper
+      title="Bank"
+      preventPullToRefresh={true}
+      adjustForKeyboard={true}
+    >
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="p-6 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border-2 border-blue-400">
@@ -32,5 +38,6 @@ export function BankSystem() {
         </div>
       </div>
     </div>
+    </MobileOptimizedWrapper>
   )
 }

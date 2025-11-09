@@ -1,6 +1,7 @@
 "use client"
 
 import { Calendar, Clock, MapPin, Users } from "lucide-react"
+import { MobileOptimizedWrapper } from "@/components/mobile/MobileOptimizedComponents"
 
 export function EventCalendar() {
   const events = [
@@ -28,6 +29,11 @@ export function EventCalendar() {
   ]
 
   return (
+    <MobileOptimizedWrapper
+      title="Events"
+      preventPullToRefresh={true}
+      adjustForKeyboard={false}
+    >
     <div className="space-y-4">
       {events.map((event, i) => (
         <div
@@ -66,5 +72,6 @@ export function EventCalendar() {
         <p className="text-gray-300">Join community events and earn exclusive rewards</p>
       </div>
     </div>
+    </MobileOptimizedWrapper>
   )
 }

@@ -1,6 +1,7 @@
 "use client"
 
 import { Hammer } from "lucide-react"
+import { MobileOptimizedWrapper } from "@/components/mobile/MobileOptimizedComponents"
 
 export function CraftingSystem() {
   const recipes = [
@@ -10,6 +11,11 @@ export function CraftingSystem() {
   ]
 
   return (
+    <MobileOptimizedWrapper
+      title="Crafting"
+      preventPullToRefresh={true}
+      adjustForKeyboard={false}
+    >
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {recipes.map((recipe, i) => (
@@ -41,5 +47,6 @@ export function CraftingSystem() {
         <p className="text-gray-300">Combine materials to create powerful items and equipment</p>
       </div>
     </div>
+    </MobileOptimizedWrapper>
   )
 }

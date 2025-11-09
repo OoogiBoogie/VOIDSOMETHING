@@ -1,6 +1,7 @@
 "use client"
 
 import { Smile } from "lucide-react"
+import { MobileOptimizedWrapper } from "@/components/mobile/MobileOptimizedComponents"
 
 export function EmoteSystem() {
   const emotes = [
@@ -13,6 +14,11 @@ export function EmoteSystem() {
   ]
 
   return (
+    <MobileOptimizedWrapper
+      title="Emotes"
+      preventPullToRefresh={true}
+      adjustForKeyboard={false}
+    >
     <div className="space-y-6">
       <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
         {emotes.map((emote, i) => (
@@ -38,5 +44,6 @@ export function EmoteSystem() {
         <p className="text-gray-300">Unlock new emotes by completing achievements and quests</p>
       </div>
     </div>
+    </MobileOptimizedWrapper>
   )
 }

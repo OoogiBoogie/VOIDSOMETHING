@@ -1,9 +1,15 @@
 "use client"
 
 import { Camera, Download, Share2, Sliders } from "lucide-react"
+import { MobileOptimizedWrapper } from "@/components/mobile/MobileOptimizedComponents"
 
 export function PhotoMode() {
   return (
+    <MobileOptimizedWrapper
+      title="Photo Mode"
+      preventPullToRefresh={true}
+      adjustForKeyboard={false}
+    >
     <div className="space-y-6">
       <div className="aspect-video bg-gradient-to-br from-purple-900 to-blue-900 rounded-xl border-2 border-purple-400 flex items-center justify-center">
         <div className="text-center">
@@ -34,5 +40,6 @@ export function PhotoMode() {
         <p className="text-gray-300">Take stunning screenshots with advanced camera controls</p>
       </div>
     </div>
+    </MobileOptimizedWrapper>
   )
 }

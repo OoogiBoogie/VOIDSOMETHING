@@ -1,6 +1,7 @@
 "use client"
 
 import { Gavel, Clock, Coins } from "lucide-react"
+import { MobileOptimizedWrapper } from "@/components/mobile/MobileOptimizedComponents"
 
 export function AuctionHouse() {
   const auctions = [
@@ -10,6 +11,11 @@ export function AuctionHouse() {
   ]
 
   return (
+    <MobileOptimizedWrapper
+      title="Auction House"
+      preventPullToRefresh={true}
+      adjustForKeyboard={true}
+    >
     <div className="space-y-4">
       {auctions.map((auction, i) => (
         <div key={i} className="p-4 rounded-xl bg-white/5 border-2 border-white/10">
@@ -41,5 +47,6 @@ export function AuctionHouse() {
         </div>
       ))}
     </div>
+    </MobileOptimizedWrapper>
   )
 }

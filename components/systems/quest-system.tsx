@@ -1,6 +1,7 @@
 "use client"
 
 import { Swords, Award } from "lucide-react"
+import { MobileOptimizedWrapper } from "@/components/mobile/MobileOptimizedComponents"
 
 export function QuestSystem() {
   const quests = [
@@ -11,6 +12,11 @@ export function QuestSystem() {
   ]
 
   return (
+    <MobileOptimizedWrapper
+      title="Quests"
+      preventPullToRefresh={true}
+      adjustForKeyboard={false}
+    >
     <div className="space-y-4">
       {quests.map((quest) => (
         <div
@@ -48,5 +54,6 @@ export function QuestSystem() {
         </div>
       ))}
     </div>
+    </MobileOptimizedWrapper>
   )
 }

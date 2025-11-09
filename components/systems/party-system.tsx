@@ -1,6 +1,7 @@
 "use client"
 
 import { Users, UserPlus, Crown, Shield } from "lucide-react"
+import { MobileOptimizedWrapper } from "@/components/mobile/MobileOptimizedComponents"
 
 export function PartySystem() {
   const partyMembers = [
@@ -10,6 +11,11 @@ export function PartySystem() {
   ]
 
   return (
+    <MobileOptimizedWrapper
+      title="Party"
+      preventPullToRefresh={true}
+      adjustForKeyboard={true}
+    >
     <div className="space-y-6">
       <div className="p-6 rounded-xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 border-2 border-purple-400">
         <div className="flex items-center justify-between mb-4">
@@ -55,5 +61,6 @@ export function PartySystem() {
         </div>
       </div>
     </div>
+    </MobileOptimizedWrapper>
   )
 }

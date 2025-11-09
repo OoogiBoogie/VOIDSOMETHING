@@ -1,9 +1,15 @@
 "use client"
 
 import { ArrowLeftRight, Package, Coins } from "lucide-react"
+import { MobileOptimizedWrapper } from "@/components/mobile/MobileOptimizedComponents"
 
 export function TradingSystem() {
   return (
+    <MobileOptimizedWrapper
+      title="Trading"
+      preventPullToRefresh={true}
+      adjustForKeyboard={true}
+    >
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="p-6 rounded-xl bg-white/5 border-2 border-white/10">
@@ -49,5 +55,6 @@ export function TradingSystem() {
         <button className="px-6 py-3 rounded-lg bg-purple-500 hover:bg-purple-600 font-bold">Create New Trade</button>
       </div>
     </div>
+    </MobileOptimizedWrapper>
   )
 }
