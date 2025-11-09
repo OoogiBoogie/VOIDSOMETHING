@@ -80,6 +80,34 @@ export function useParcelDetails(parcelId: number | undefined) {
  * Get all parcels owned by an address
  */
 export function useOwnerParcels(owner: Address | undefined) {
+  // Use mock data if enabled
+  if (USE_MOCK_DATA) {
+    const [parcelIds, setParcelIds] = useState<string[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    
+    useEffect(() => {
+      if (owner) {
+        const mockParcels = getMockParcels();
+        const owned = mockParcels
+          .filter(p => p.owner?.toLowerCase() === owner.toLowerCase())
+          .map(p => p.parcelId);
+        setParcelIds(owned);
+        setIsLoading(false);
+      } else {
+        setParcelIds([]);
+        setIsLoading(false);
+      }
+    }, [owner]);
+    
+    return {
+      parcelIds,
+      isLoading,
+      error: null,
+      refetch: () => {}
+    };
+  }
+  
+  // Contract call
   const { data, isLoading, error, refetch } = useReadContract({
     address: CONTRACTS.LAND_REGISTRY as Address,
     abi: LAND_REGISTRY_ABI,
@@ -92,7 +120,8 @@ export function useOwnerParcels(owner: Address | undefined) {
 
   const parcelIds = useMemo(() => {
     if (!data) return [];
-    return (data as bigint[]).map(id => Number(id));
+    // Convert to string IDs for consistency with new system
+    return (data as bigint[]).map(id => `VOID-GENESIS-${Number(id)}`);
   }, [data]);
 
   return {

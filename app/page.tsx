@@ -21,7 +21,8 @@ import { UserProfileSetup } from "@/components/user-profile-setup"
 import { UserProfileEdit } from "@/components/user-profile-edit"
 import { CreatePleadSystem } from "@/components/create-plead-system"
 import { IntroSequence } from "@/components/intro/IntroSequence"
-import { CRTOverlay } from "@/components/CRTOverlay"
+import { CRTOverlay } from "@/components/ui/crt-overlay"
+import { XboxBladeNav } from "@/components/ui/xbox-blade-nav"
 import { MobileHUDController } from "@/components/mobile-hud-controller"
 import { MobileHUDLite } from "@/components/mobile-hud-lite"
 import { MobileTouchControls } from "@/components/mobile-touch-controls"
@@ -78,6 +79,8 @@ export default function VOIDMetaverse() {
   const [mobileMovement, setMobileMovement] = useState({ x: 0, z: 0 })
   const [mobileSprinting, setMobileSprinting] = useState(false)
   const [voidHubOpen, setVoidHubOpen] = useState(false)
+  const [crtEnabled, setCrtEnabled] = useState(true)
+  const [bladeNavOpen, setBladeNavOpen] = useState(false)
 
   const [playerXp, setPlayerXp] = useState<PlayerXp>({
     totalXp: 2450,
@@ -242,7 +245,23 @@ export default function VOIDMetaverse() {
         setFriendSystemOpen(false)
       }
 
+      if (e.key === "c" || e.key === "C") {
+        e.preventDefault()
+        setCrtEnabled(!crtEnabled)
+      }
+
       if (e.key === "Escape") {
+        // If blade nav is open, close it first
+        if (bladeNavOpen) {
+          setBladeNavOpen(false)
+          return
+        }
+        // Otherwise toggle it
+        setBladeNavOpen(true)
+        return
+      }
+
+      if (e.key === "Escape" && !bladeNavOpen) {
         setPhoneOpen(false)
         setDashboardOpen(false)
         setInventoryOpen(false)
@@ -358,6 +377,8 @@ export default function VOIDMetaverse() {
     casinoOpen,
     systemsHubOpen,
     voidHubOpen,
+    crtEnabled,
+    bladeNavOpen,
   ])
 
   useEffect(() => {
@@ -527,7 +548,7 @@ export default function VOIDMetaverse() {
         padding: 0,
       }}
     >
-      <CRTOverlay />
+      <CRTOverlay enabled={crtEnabled} />
 
       {introComplete === false && <IntroSequence onComplete={() => setIntroComplete(true)} />}
 
@@ -986,6 +1007,84 @@ export default function VOIDMetaverse() {
       </AnimatePresence>
 
       {gameStarted && userProfile && <XpDrawer xp={playerXp} tasks={dailyTasks} />}
+
+      {/* Xbox Blade Navigation - ESC to toggle */}
+      <XboxBladeNav 
+        activeSection={bladeNavOpen ? 'inventory' : null}
+        onClose={() => setBladeNavOpen(false)}
+      >
+        <div className="p-6 space-y-4">
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-[#9ccc00] uppercase tracking-wider mb-2">VOID SYSTEMS</h2>
+            <p className="text-gray-400 text-sm font-mono">Press ESC to close</p>
+          </div>
+          
+          <button
+            onClick={() => { setMapOpen(true); setBladeNavOpen(false); }}
+            className="w-full text-left px-4 py-3 bg-black/50 border-2 border-[#9ccc00]/30 hover:border-[#9ccc00] rounded text-white font-mono transition-colors"
+          >
+            <span className="text-[#9ccc00]">N</span> - City Map
+          </button>
+          
+          <button
+            onClick={() => { setLandInventoryOpen(true); setBladeNavOpen(false); }}
+            className="w-full text-left px-4 py-3 bg-black/50 border-2 border-[#9ccc00]/30 hover:border-[#9ccc00] rounded text-white font-mono transition-colors"
+          >
+            <span className="text-[#9ccc00]">L</span> - Land Registry
+          </button>
+          
+          <button
+            onClick={() => { setMarketplaceOpen(true); setBladeNavOpen(false); }}
+            className="w-full text-left px-4 py-3 bg-black/50 border-2 border-[#9ccc00]/30 hover:border-[#9ccc00] rounded text-white font-mono transition-colors"
+          >
+            <span className="text-[#9ccc00]">R</span> - Property Marketplace
+          </button>
+          
+          <button
+            onClick={() => { setSKUMarketplaceOpen(true); setBladeNavOpen(false); }}
+            className="w-full text-left px-4 py-3 bg-black/50 border-2 border-[#9ccc00]/30 hover:border-[#9ccc00] rounded text-white font-mono transition-colors"
+          >
+            <span className="text-[#9ccc00]">M</span> - SKU Marketplace
+          </button>
+          
+          <button
+            onClick={() => { setPowerUpStoreOpen(true); setBladeNavOpen(false); }}
+            className="w-full text-left px-4 py-3 bg-black/50 border-2 border-[#9ccc00]/30 hover:border-[#9ccc00] rounded text-white font-mono transition-colors"
+          >
+            <span className="text-[#9ccc00]">B</span> - Power-Up Store
+          </button>
+          
+          <button
+            onClick={() => { setFriendSystemOpen(true); setBladeNavOpen(false); }}
+            className="w-full text-left px-4 py-3 bg-black/50 border-2 border-[#9ccc00]/30 hover:border-[#9ccc00] rounded text-white font-mono transition-colors"
+          >
+            <span className="text-[#9ccc00]">F</span> - Friends
+          </button>
+          
+          <button
+            onClick={() => { setVoiceChatOpen(true); setBladeNavOpen(false); }}
+            className="w-full text-left px-4 py-3 bg-black/50 border-2 border-[#9ccc00]/30 hover:border-[#9ccc00] rounded text-white font-mono transition-colors"
+          >
+            <span className="text-[#9ccc00]">V</span> - Voice Chat
+          </button>
+          
+          <button
+            onClick={() => { setSystemsHubOpen(true); setBladeNavOpen(false); }}
+            className="w-full text-left px-4 py-3 bg-black/50 border-2 border-[#9ccc00]/30 hover:border-[#9ccc00] rounded text-white font-mono transition-colors"
+          >
+            <span className="text-[#9ccc00]">S</span> - Systems Hub
+          </button>
+          
+          <div className="mt-8 pt-4 border-t border-[#9ccc00]/20">
+            <button
+              onClick={() => { setCrtEnabled(!crtEnabled); }}
+              className="w-full text-left px-4 py-3 bg-black/50 border-2 border-cyan-500/30 hover:border-cyan-500 rounded text-white font-mono transition-colors"
+            >
+              <span className="text-cyan-400">C</span> - CRT Effect: {crtEnabled ? 'ON' : 'OFF'}
+            </button>
+          </div>
+        </div>
+      </XboxBladeNav>
     </div>
   )
 }
