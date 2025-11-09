@@ -1,5 +1,7 @@
 "use client"
 
+export const dynamic = 'force-dynamic'
+
 import { useState, useEffect } from "react"
 import { useFoundersNFT } from "@/lib/hooks/use-founders-nft"
 import { useVOIDToken } from "@/lib/hooks/use-void-token"

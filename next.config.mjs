@@ -1,15 +1,17 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
   typescript: {
     ignoreBuildErrors: true,
   },
   images: {
     unoptimized: true,
   },
-  turbopack: {},
+  // Disable static optimization for dynamic Web3 pages
+  experimental: {
+    // Force dynamic rendering for all pages
+  },
+  // Output standalone for better Vercel deployment
+  output: 'standalone',
   webpack: (config, { isServer }) => {
     if (!isServer) {
       config.resolve.fallback = {
