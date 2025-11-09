@@ -8,8 +8,8 @@ import {
   useNetworkStatus,
   useVirtualKeyboard,
   usePreventPullToRefresh,
-} from './mobile-optimization-hooks';
-import { MOBILE_CLASSES } from './mobile-optimization';
+} from '@/lib/mobile-optimization-hooks';
+import { MOBILE_CLASSES } from '@/lib/mobile-optimization';
 
 interface MobileOptimizedWrapperProps {
   children: ReactNode;
@@ -137,7 +137,7 @@ export function MobileButton({
   hapticFeedback = true,
   className = '',
 }: MobileButtonProps) {
-  const { useOptimizedTouch, HapticPattern } = require('./mobile-optimization-hooks');
+  const { useOptimizedTouch, HapticPattern } = require('@/lib/mobile-optimization-hooks');
   
   const handleClick = useOptimizedTouch(onClick, {
     haptic: hapticFeedback ? HapticPattern.LIGHT : undefined,
@@ -198,7 +198,7 @@ export function MobileListItem({
   disabled = false,
   className = '',
 }: MobileListItemProps) {
-  const { useLongPress } = require('./mobile-optimization-hooks');
+  const { useLongPress } = require('@/lib/mobile-optimization-hooks');
   const longPressRef = onLongPress ? useLongPress(onLongPress) : null;
 
   return (
@@ -247,7 +247,7 @@ export function MobileModal({
   showCloseButton = true,
   className = '',
 }: MobileModalProps) {
-  const { useSwipeGesture } = require('./mobile-optimization-hooks');
+  const { useSwipeGesture } = require('@/lib/mobile-optimization-hooks');
   const swipeRef = useSwipeGesture((event) => {
     if (event.direction === 'down' && event.distance > 100) {
       onClose();

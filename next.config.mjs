@@ -6,12 +6,10 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  // Disable static optimization for dynamic Web3 pages
   experimental: {
-    // Force dynamic rendering for all pages
   },
-  // Output standalone for better Vercel deployment
   output: 'standalone',
+  turbopack: {},
   webpack: (config, { isServer }) => {
     if (!isServer) {
       config.resolve.fallback = {
@@ -27,7 +25,6 @@ const nextConfig = {
         path: false,
         os: false,
       }
-
       config.externals = config.externals || []
       config.externals.push({
         'ws': 'commonjs ws',
