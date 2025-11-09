@@ -10,6 +10,7 @@ import { InteriorSpace } from "@/components/interior-space"
 import { StartScreen } from "@/components/StartScreen"
 import { CyberpunkCityMap } from "@/components/cyberpunk-city-map"
 import { PropertyMarketplace } from "@/components/PropertyMarketplace"
+import { GlobalInventory } from "@/components/land/global-inventory"
 import { GlobalChat } from "@/components/GlobalChat"
 import { ActionBar } from "@/components/action-bar"
 import { FriendSystem } from "@/components/friend-system"
@@ -65,6 +66,7 @@ export default function VOIDMetaverse() {
   const [gameStarted, setGameStarted] = useState(false)
   const [mapOpen, setMapOpen] = useState(false)
   const [marketplaceOpen, setMarketplaceOpen] = useState(false)
+  const [landInventoryOpen, setLandInventoryOpen] = useState(false)
   const [friendSystemOpen, setFriendSystemOpen] = useState(false)
   const [activeDM, setActiveDM] = useState<any>(null)
   const [userProfile, setUserProfile] = useState<any>(null)
@@ -234,6 +236,12 @@ export default function VOIDMetaverse() {
         setFriendSystemOpen(false)
       }
 
+      if (e.key === "l" || e.key === "L") {
+        e.preventDefault()
+        setLandInventoryOpen(!landInventoryOpen)
+        setFriendSystemOpen(false)
+      }
+
       if (e.key === "Escape") {
         setPhoneOpen(false)
         setDashboardOpen(false)
@@ -243,6 +251,7 @@ export default function VOIDMetaverse() {
         setChatOpen(false)
         setMapOpen(false)
         setMarketplaceOpen(false)
+        setLandInventoryOpen(false)
         setFriendSystemOpen(false)
         setCreatePleadOpen(false)
       }
@@ -311,11 +320,6 @@ export default function VOIDMetaverse() {
         setFriendSystemOpen(false)
       }
 
-      if (e.key === "l" || e.key === "L") {
-        e.preventDefault()
-        setShowPerformance(!showPerformance)
-      }
-
       if (e.key === "s" || e.key === "S") {
         e.preventDefault()
         setSystemsHubOpen(!systemsHubOpen)
@@ -343,6 +347,7 @@ export default function VOIDMetaverse() {
     skuMarketplaceOpen,
     mapOpen,
     marketplaceOpen,
+    landInventoryOpen,
     friendSystemOpen,
     profileEditOpen,
     userProfile,
@@ -638,6 +643,7 @@ export default function VOIDMetaverse() {
                       onChatOpen={() => setChatOpen(!chatOpen)}
                       onMapOpen={() => setMapOpen(!mapOpen)}
                       onMarketplaceOpen={() => setMarketplaceOpen(!marketplaceOpen)}
+                      onLandInventoryOpen={() => setLandInventoryOpen(!landInventoryOpen)}
                       onPowerUpOpen={() => setPowerUpStoreOpen(!powerUpStoreOpen)}
                       onPledgeOpen={() => setPledgeSystemOpen(!pledgeSystemOpen)}
                       onSKUMarketOpen={() => setSKUMarketplaceOpen(!skuMarketplaceOpen)}
@@ -755,6 +761,13 @@ export default function VOIDMetaverse() {
                   walletAddress="0x1234...5678"
                   voidBalance={voidBalance}
                   onPurchase={handlePropertyPurchase}
+                />
+              )}
+
+              {landInventoryOpen && (
+                <GlobalInventory
+                  isOpen={landInventoryOpen}
+                  onClose={() => setLandInventoryOpen(false)}
                 />
               )}
 

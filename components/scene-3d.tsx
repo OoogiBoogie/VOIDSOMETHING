@@ -3,7 +3,7 @@
 import { useRef, useEffect, useState } from "react"
 import { useFrame, useThree } from "@react-three/fiber"
 import * as THREE from "three"
-import { WorldGrid3D } from "./world-grid-3d"
+import { CybercityWorld } from "./3d/CybercityWorld"
 import { PlayerCharacter3D } from "./player-character-3d"
 import { GridOverlay } from "./grid-overlay"
 import { DistrictBoundaries } from "./district-boundaries"
@@ -112,7 +112,7 @@ export function Scene3D({
 
       <DistrictBoundaries highlightedDistrictId={currentDistrictId} />
 
-      <WorldGrid3D zones={ZONES} />
+      <CybercityWorld selectedParcelId={null} />
 
       <PlayerCharacter3D
         position={playerPosition}

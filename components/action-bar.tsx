@@ -3,7 +3,7 @@
 import { motion } from "framer-motion"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { useOrientation } from "@/hooks/use-orientation"
-import { Package, Map, Store, Zap, Coins, ShoppingBag, Users, Mic, Music, Activity, Gamepad2 } from "lucide-react"
+import { Package, Map, Store, Zap, Coins, ShoppingBag, Users, Mic, Music, Activity, Gamepad2, Building2 } from "lucide-react"
 
 interface ActionBarProps {
   onPhoneOpen: () => void
@@ -12,6 +12,7 @@ interface ActionBarProps {
   onChatOpen: () => void
   onMapOpen: () => void
   onMarketplaceOpen: () => void
+  onLandInventoryOpen?: () => void
   onPowerUpOpen: () => void
   onPledgeOpen: () => void
   onSKUMarketOpen: () => void
@@ -29,6 +30,7 @@ export function ActionBar({
   onChatOpen,
   onMapOpen,
   onMarketplaceOpen,
+  onLandInventoryOpen,
   onPowerUpOpen,
   onPledgeOpen,
   onSKUMarketOpen,
@@ -66,6 +68,14 @@ export function ActionBar({
       onClick: onMarketplaceOpen,
       color: "from-yellow-500/30 to-yellow-600/30 border-yellow-400/40 hover:border-yellow-400/70",
       iconColor: "text-yellow-300",
+    },
+    {
+      icon: Building2,
+      label: "Land Registry",
+      key: "L",
+      onClick: onLandInventoryOpen || onMarketplaceOpen,
+      color: "from-cyan-500/30 to-cyan-600/30 border-cyan-400/40 hover:border-cyan-400/70",
+      iconColor: "text-cyan-300",
     },
     {
       icon: Zap,
@@ -135,7 +145,7 @@ export function ActionBar({
     actions.push({
       icon: Activity,
       label: "Performance",
-      key: "L",
+      key: "P",
       onClick: onPerformanceToggle,
       color: "from-amber-500/30 to-amber-600/30 border-amber-400/40 hover:border-amber-400/70",
       iconColor: "text-amber-300",
