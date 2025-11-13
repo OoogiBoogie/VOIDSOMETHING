@@ -1,18 +1,25 @@
 'use client';
 
 /**
- * MOBILE ROAM HUD - "Minimal Explorer HUD"
+ * MOBILE ROAM HUD V4.7 - "Minimal Explorer HUD"
  * 
- * Minimal overlay for when players are actually moving around.
+ * Minimal overlay for when players are actually moving around (landscape mode).
  * World camera takes most of the screen; HUD becomes thin overlays.
  * 
+ * V4.7 Updates:
+ * - Integrated with VoidRuntimeProvider (on-chain profile, wallet, tier)
+ * - Top row: Profile + stats (wallet, zone, level, coords)
+ * - Right edge: Friends/chat strip
+ * - Bottom: Icon dock
+ * 
  * Layout:
- * TOP: Very thin band (player status + ticker nub)
- * RIGHT EDGE: Tiny vertical chat spine pill (latest GLOBAL message)
- * BOTTOM: Mini context strip + tiny dock
+ * TOP: Horizontal bar (profile card + mini stats)
+ * RIGHT EDGE: Vertical chat/friends strip
+ * BOTTOM: Mini icon dock
  */
 
 import React, { useState } from 'react';
+import { useVoidRuntime } from '@/src/runtime/VoidRuntimeProvider';
 import type { EconomySnapshot, PlayerState } from '@/hud/types/economySnapshot';
 import { Zap, Navigation, Target, MessageCircle } from 'lucide-react';
 
@@ -52,6 +59,8 @@ export default function MobileRoamHUD({
   onOpenLiteView,
   onDockAction,
 }: MobileRoamHUDProps) {
+  // V4.7: Get runtime data
+  const runtime = useVoidRuntime();
   const [showFullChat, setShowFullChat] = useState(false);
 
   const world = snapshot?.world ?? {};
@@ -88,11 +97,12 @@ export default function MobileRoamHUD({
         />
       </div>
 
-      {/* HUD overlays - minimal */}
+      {/* HUD overlays - minimal landscape layout */}
       <div className="absolute inset-0 pointer-events-none">
-        {/* TOP: Mini-Bar */}
+        {/* TOP: Profile + Stats Row (landscape) */}
         <div className="pointer-events-auto px-3 pt-3">
-          <MiniTopBar
+          <RoamTopRow
+            runtime={runtime}
             playerState={playerState}
             defi={defi}
             nearbyCount={nearbyCount}
@@ -100,21 +110,19 @@ export default function MobileRoamHUD({
           />
         </div>
 
-        {/* RIGHT EDGE: Chat Pill */}
-        <div className="pointer-events-auto absolute right-3 bottom-32">
-          <ChatPillMobile
+        {/* RIGHT EDGE: Friends/Chat Strip */}
+        <div className="pointer-events-auto absolute right-3 top-20 bottom-20">
+          <FriendsChatStrip
             lastMessage={latestGlobal}
             hasNearby={nearbyCount > 0}
+            onlineFriends={world.onlineFriends ?? 0}
             fxState={fxState}
             onOpenChat={() => setShowFullChat(true)}
           />
         </div>
 
-        {/* BOTTOM: Mini Context + Dock */}
-        <div className="pointer-events-auto absolute inset-x-0 bottom-0 px-3 pb-4 flex flex-col gap-2">
-          <MiniContextBar
-            action={contextAction}
-          />
+        {/* BOTTOM: Icon Dock */}
+        <div className="pointer-events-auto absolute inset-x-0 bottom-0 px-3 pb-4">
           <MiniDockMobile
             onDockAction={onDockAction}
             onMoreTap={onOpenLiteView}
@@ -155,7 +163,173 @@ export default function MobileRoamHUD({
   );
 }
 
-/* ───────── Mini Top Bar ───────── */
+/* ───────── Roam Top Row (V4.7 - Landscape Profile + Stats) ───────── */
+
+interface RoamTopRowProps {
+  runtime: any; // VoidRuntimeState
+  playerState: PlayerState;
+  defi: any;
+  nearbyCount: number;
+  onTap: () => void;
+}
+
+function RoamTopRow({ 
+  runtime,
+  playerState, 
+  defi, 
+  nearbyCount, 
+  onTap 
+}: RoamTopRowProps) {
+  const walletShort = runtime.wallet 
+    ? `${runtime.wallet.slice(0,4)}…${runtime.wallet.slice(-3)}`
+    : '????';
+  const level = runtime.level ?? 1;
+  const xp = runtime.xp ?? 0;
+  const tier = runtime.tier ?? 'BRONZE';
+  
+  // Zone and coords from Net Protocol
+  const zone = runtime.netProfile 
+    ? `ZONE_${runtime.netProfile.zoneX}_${runtime.netProfile.zoneY}`
+    : 'VOID';
+  const posX = runtime.netProfile?.posX ?? 0;
+  const posZ = runtime.netProfile?.posZ ?? 0;
+
+  return (
+    <button
+      type="button"
+      onClick={onTap}
+      className="w-full rounded-2xl bg-black/80 backdrop-blur-xl border border-bio-silver/50 shadow-[0_0_20px_rgba(0,255,157,0.3)] px-4 py-2 flex items-center justify-between active:scale-98 transition-transform"
+    >
+      {/* Left: Profile */}
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-signal-green/70 via-void-purple/70 to-cyber-cyan/70 flex items-center justify-center shadow-[0_0_15px_rgba(0,255,157,0.5)]">
+          <span className="text-lg font-bold text-void-black">
+            {playerState.username?.[0]?.toUpperCase() || 'A'}
+          </span>
+        </div>
+        <div className="flex flex-col items-start">
+          <span className="text-[0.7rem] font-semibold tracking-wide uppercase text-bio-silver">
+            {playerState.username || walletShort}
+          </span>
+          <span className="text-[0.6rem] text-bio-silver/60">
+            {zone}
+          </span>
+        </div>
+      </div>
+
+      {/* Center: Stats */}
+      <div className="flex items-center gap-4">
+        <div className="text-center">
+          <div className="text-[0.55rem] uppercase tracking-wider text-bio-silver/50">
+            Level
+          </div>
+          <div className="text-sm font-mono text-signal-green">
+            {level}
+          </div>
+        </div>
+        <div className="text-center">
+          <div className="text-[0.55rem] uppercase tracking-wider text-bio-silver/50">
+            Tier
+          </div>
+          <div className="text-xs font-mono text-void-purple">
+            {tier}
+          </div>
+        </div>
+        <div className="text-center">
+          <div className="text-[0.55rem] uppercase tracking-wider text-bio-silver/50">
+            Position
+          </div>
+          <div className="text-[0.65rem] font-mono text-cyber-cyan">
+            ({Math.floor(posX)}, {Math.floor(posZ)})
+          </div>
+        </div>
+      </div>
+
+      {/* Right: Nearby indicator */}
+      <div className="flex items-center gap-2">
+        {nearbyCount > 0 ? (
+          <>
+            <div className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_8px_rgba(0,234,255,0.8)]" />
+            <span className="text-[0.65rem] text-cyan-400 font-mono">
+              {nearbyCount}
+            </span>
+          </>
+        ) : (
+          <Navigation className="w-4 h-4 text-bio-silver/40" />
+        )}
+      </div>
+    </button>
+  );
+}
+
+/* ───────── Friends/Chat Strip (V4.7 - Right Edge) ───────── */
+
+interface FriendsChatStripProps {
+  lastMessage?: {
+    id: string;
+    hub?: string;
+    type?: 'system' | 'user';
+    username?: string;
+    text: string;
+    timestamp: number;
+  };
+  hasNearby: boolean;
+  onlineFriends: number;
+  fxState: any;
+  onOpenChat: () => void;
+}
+
+function FriendsChatStrip({ 
+  lastMessage, 
+  hasNearby,
+  onlineFriends,
+  fxState, 
+  onOpenChat 
+}: FriendsChatStripProps) {
+  return (
+    <div className="flex flex-col gap-2 h-full justify-center">
+      {/* Online friends pill */}
+      <button
+        type="button"
+        onClick={onOpenChat}
+        className="rounded-xl bg-black/75 backdrop-blur-xl border border-signal-green/40 shadow-[0_0_15px_rgba(0,255,157,0.3)] p-2 active:scale-95 transition-transform"
+      >
+        <div className="flex flex-col items-center gap-1">
+          <div className="text-[0.55rem] uppercase tracking-wide text-bio-silver/60">
+            Online
+          </div>
+          <div className="text-lg font-mono text-signal-green">
+            {onlineFriends}
+          </div>
+        </div>
+      </button>
+
+      {/* Chat pill */}
+      {lastMessage && (
+        <button
+          type="button"
+          onClick={onOpenChat}
+          className={`rounded-xl bg-black/75 backdrop-blur-xl border p-2 active:scale-95 transition-all ${
+            fxState?.chatIncoming 
+              ? 'border-cyber-cyan shadow-[0_0_20px_rgba(0,234,255,0.5)] animate-pulse' 
+              : 'border-bio-silver/40 shadow-[0_0_10px_rgba(0,255,157,0.2)]'
+          }`}
+        >
+          <MessageCircle className="w-5 h-5 text-cyber-cyan" />
+        </button>
+      )}
+
+      {/* Nearby indicator */}
+      {hasNearby && (
+        <div className="rounded-xl bg-black/75 backdrop-blur-xl border border-cyan-400/40 p-2 shadow-[0_0_15px_rgba(0,234,255,0.4)]">
+          <div className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ───────── Mini Top Bar (OLD - kept for compatibility) ───────── */
 
 interface MiniTopBarProps {
   playerState: PlayerState;

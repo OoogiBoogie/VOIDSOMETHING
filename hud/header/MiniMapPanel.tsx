@@ -11,6 +11,9 @@ import type { WindowType } from '@/hud/windowTypes';
 import type { HubTheme } from '@/hud/theme';
 import type { EconomySnapshot } from '@/hud/types/economySnapshot';
 import { getHubSpineColor } from '@/hud/theme';
+import { worldPosToPercent, WORLD_EXTENT } from '@/world/WorldCoords';
+import { CORE_WORLD_FEATURES } from '@/world/features';
+import { BOUND_BUILDINGS } from '@/world/buildings';
 
 interface MiniMapPanelProps {
   snapshot: EconomySnapshot;
@@ -25,9 +28,9 @@ function MiniMapPanelComponent({ snapshot, onOpenWindow, theme }: MiniMapPanelPr
   const player = world.coordinates;
   const aiHotspots = snapshot.aiOps.hotspots || [];
 
-  // Calculate player position on map (0-100%)
-  const playerMapX = 50; // TODO: Calculate from actual coordinates
-  const playerMapZ = 50;
+  // Calculate player position on map (0-100%) using world coordinate system
+  const playerWorldPos = { x: player.x, z: player.z };
+  const { xPct: playerMapX, zPct: playerMapZ } = worldPosToPercent(playerWorldPos);
 
   const handleOpenWorldMap = useCallback(() => {
     onOpenWindow("WORLD_MAP", { world });
@@ -99,8 +102,9 @@ function MiniMapPanelComponent({ snapshot, onOpenWindow, theme }: MiniMapPanelPr
           ))}
         </div>
 
-        {/* POIs */}
+        {/* POIs from snapshot */}
         {pois.map((poi) => {
+          const poiPos = worldPosToPercent(poi.position);
           const poiColor = poi.hub === 'CREATOR' ? 'bg-cyber-cyan' :
                           poi.hub === 'DEFI' ? 'bg-void-purple' :
                           poi.hub === 'DAO' ? 'bg-psx-blue' :
@@ -113,8 +117,8 @@ function MiniMapPanelComponent({ snapshot, onOpenWindow, theme }: MiniMapPanelPr
               type="button"
               className={`absolute w-2.5 h-2.5 rounded-full ${poiColor} shadow-[0_0_12px_currentColor] z-10 hover:scale-125 transition-transform`}
               style={{
-                left: `${(poi.position.x / 1000) * 100}%`,
-                top: `${(poi.position.z / 1000) * 100}%`,
+                left: `${poiPos.xPct}%`,
+                top: `${poiPos.zPct}%`,
               }}
               title={poi.label}
               onClick={() => handlePOIClick(poi)}
@@ -122,18 +126,45 @@ function MiniMapPanelComponent({ snapshot, onOpenWindow, theme }: MiniMapPanelPr
           );
         })}
 
+        {/* World features (landmarks) */}
+        {CORE_WORLD_FEATURES.map((feature) => {
+          const featurePos = worldPosToPercent(feature.worldPos);
+          const featureColor = feature.hub === 'CREATOR' ? 'bg-cyber-cyan' :
+                              feature.hub === 'DEFI' ? 'bg-void-purple' :
+                              feature.hub === 'DAO' ? 'bg-psx-blue' :
+                              feature.hub === 'AGENCY' ? 'bg-red-400' :
+                              feature.hub === 'AI_OPS' ? 'bg-blue-400' :
+                              'bg-signal-green';
+
+          return (
+            <div
+              key={feature.id}
+              className={`absolute w-2 h-2 ${featureColor} shadow-[0_0_8px_currentColor] z-8`}
+              style={{
+                left: `${featurePos.xPct}%`,
+                top: `${featurePos.zPct}%`,
+                clipPath: 'polygon(50% 0%, 100% 100%, 0% 100%)', // Triangle for features
+              }}
+              title={feature.label}
+            />
+          );
+        })}
+
         {/* AI hotspots */}
-        {aiHotspots.map((hotspot, idx) => (
-          <div
-            key={`hotspot-${idx}`}
-            className="absolute w-4 h-4 rounded-full bg-lime-300/20 border border-lime-300/60 animate-pulse z-5"
-            style={{
-              left: `${(hotspot.x / 1000) * 100}%`,
-              top: `${(hotspot.z / 1000) * 100}%`,
-            }}
-            title={hotspot.reason}
-          />
-        ))}
+        {aiHotspots.map((hotspot, idx) => {
+          const hotspotPos = worldPosToPercent({ x: hotspot.x, z: hotspot.z });
+          return (
+            <div
+              key={`hotspot-${idx}`}
+              className="absolute w-4 h-4 rounded-full bg-lime-300/20 border border-lime-300/60 animate-pulse z-5"
+              style={{
+                left: `${hotspotPos.xPct}%`,
+                top: `${hotspotPos.zPct}%`,
+              }}
+              title={hotspot.reason}
+            />
+          );
+        })}
 
         {/* player marker */}
         <div

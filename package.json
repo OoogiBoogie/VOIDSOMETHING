@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@abstract-foundation/agw-client": "latest",
+    "@coinbase/onchainkit": "^1.1.2",
     "@emotion/is-prop-valid": "latest",
     "@hookform/resolvers": "^3.10.0",
     "@privy-io/react-auth": "latest",

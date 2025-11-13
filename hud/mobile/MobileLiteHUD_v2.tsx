@@ -1,20 +1,31 @@
 'use client';
 
 /**
- * MOBILE LITE HUD - "Pocket Control Room"
+ * MOBILE LITE HUD V4.7 - "Pocket Control Room"
  * 
  * Info-dense dashboard for when players are "managing" the VOID.
  * Portrait-first layout with GLOBAL chat as default visible feed.
  * 
+ * V4.7 Updates:
+ * - Integrated with VoidRuntimeProvider (on-chain profile, XP, tier)
+ * - Real-time wallet, zone, position from Net Protocol
+ * - Stats grid 2x2: Online Friends, PSX balance, VOID balance, mini map
+ * - Top profile card: avatar, wallet, zone, coords from runtime.netProfile
+ * - Proximity chat list from chatState
+ * - Bottom icon dock for MiniApps
+ * 
  * Layout:
- * TOP: Player Summary (WORLD + DEFI + DAO + CREATOR + AGENCY)
- * MIDDLE: Economy Cards Row (Friends, Tokens, Mini Radar)
- * CHAT: Spiny Chrome ChatPanel (GLOBAL-focused, NEARBY/PARTY as tabs)
- * BOTTOM: App Dock (icon row for hub portals)
+ * TOP: Player Summary (from VoidRuntime - wallet, zone, level, XP)
+ * MIDDLE: Stats Grid 2x2 (Friends, PSX, VOID, Mini Map)
+ * CHAT: Proximity Chat List (GLOBAL/NEARBY/PARTY tabs)
+ * BOTTOM: Icon Dock (MiniApp launcher)
  */
 
 import React from 'react';
+import { useVoidRuntime } from '@/src/runtime/VoidRuntimeProvider';
 import type { EconomySnapshot, PlayerState } from '@/hud/types/economySnapshot';
+import { worldPosToPercent, getDistrict, worldToParcel, coordsToParcelId, DISTRICT_NAMES } from '@/world/WorldCoords';
+import { useParcelProperties } from '@/services/world/useRealEstate';
 
 interface MobileLiteHUDProps {
   snapshot: EconomySnapshot;
@@ -52,6 +63,9 @@ export default function MobileLiteHUD({
   onSendMessage,
   onDockAction,
 }: MobileLiteHUDProps) {
+  // V4.7: Get runtime data from VoidRuntimeProvider
+  const runtime = useVoidRuntime();
+  
   const world = snapshot?.world ?? {};
   const defi = snapshot?.defi ?? {};
   const dao = snapshot?.dao ?? {};
@@ -81,9 +95,10 @@ export default function MobileLiteHUD({
 
       {/* HUD overlay */}
       <div className="absolute inset-0 pointer-events-none flex flex-col">
-        {/* TOP: Player summary */}
+        {/* TOP: Player summary with VoidRuntime data */}
         <div className="pointer-events-auto px-3 pt-4">
           <PlayerSummaryCardMobile
+            runtime={runtime}
             world={world}
             defi={defi}
             dao={dao}
@@ -93,14 +108,12 @@ export default function MobileLiteHUD({
           />
         </div>
 
-        {/* MIDDLE: economy cards + chat */}
+        {/* MIDDLE: stats grid 2x2 + chat */}
         <div className="pointer-events-auto flex-1 flex flex-col gap-3 px-3 pt-3 pb-2">
-          <EconomyCardsRowMobile
+          <StatsGrid2x2Mobile
+            runtime={runtime}
             world={world}
             defi={defi}
-            dao={dao}
-            creator={creator}
-            aiOps={aiOps}
             onCardTap={onDockAction}
           />
 
@@ -124,9 +137,10 @@ export default function MobileLiteHUD({
   );
 }
 
-/* ───────── Player Summary Card (top) ───────── */
+/* ───────── Player Summary Card (top) - V4.7 with VoidRuntime ───────── */
 
 interface PlayerSummaryCardMobileProps {
+  runtime: any; // VoidRuntimeState
   world: any;
   defi: any;
   dao: any;
@@ -136,6 +150,7 @@ interface PlayerSummaryCardMobileProps {
 }
 
 function PlayerSummaryCardMobile({ 
+  runtime,
   world, 
   defi, 
   dao, 
@@ -143,15 +158,24 @@ function PlayerSummaryCardMobile({
   agency,
   playerState 
 }: PlayerSummaryCardMobileProps) {
+  // V4.7: Use VoidRuntime for on-chain data
   const username = playerState.username || 'agent';
-  const walletShort = playerState.walletAddress 
-    ? `${playerState.walletAddress.slice(0, 6)}…${playerState.walletAddress.slice(-4)}`
-    : '0x1234…5678';
-  const zone = world.zone ?? 'VOID_CORE';
-  const coords = world.coordinates ?? { x: -1, z: 9 };
-  const level = playerState.level ?? 7;
-  const xp = playerState.xp ?? 14820;
-  const xpNext = 20000; // TODO: calculate from level
+  const walletShort = runtime.wallet 
+    ? `${runtime.wallet.slice(0, 6)}…${runtime.wallet.slice(-4)}`
+    : '0x????…????';
+  
+  // Zone and coords from Net Protocol profile
+  const zone = runtime.netProfile 
+    ? `ZONE_${runtime.netProfile.zoneX}_${runtime.netProfile.zoneY}`
+    : (world.zone ?? 'VOID_CORE');
+  const coords = runtime.netProfile
+    ? { x: Math.floor(runtime.netProfile.posX), z: Math.floor(runtime.netProfile.posZ) }
+    : (world.coordinates ?? { x: -1, z: 9 });
+  
+  // Level and XP from VoidRuntime (on-chain)
+  const level = runtime.level ?? playerState.level ?? 1;
+  const xp = runtime.xp ?? playerState.xp ?? 0;
+  const xpNext = level * 5000; // Simple formula for demo
   const xpPct = Math.min(100, Math.round((xp / xpNext) * 100));
 
   const voidBal = playerState.voidBalance ?? 10500;
@@ -284,7 +308,137 @@ function TokenChip({ label, value, accent }: TokenChipProps) {
   );
 }
 
-/* ───────── Middle row cards ───────── */
+/* ───────── Stats Grid 2x2 (V4.7 Reference Design) ───────── */
+
+interface StatsGrid2x2MobileProps {
+  runtime: any; // VoidRuntimeState
+  world: any;
+  defi: any;
+  onCardTap?: (actionId: string) => void;
+}
+
+function StatsGrid2x2Mobile({
+  runtime,
+  world,
+  defi,
+  onCardTap,
+}: StatsGrid2x2MobileProps) {
+  const onlineFriends = world.onlineFriends ?? 0;
+  const psxBal = defi.psxBalance ?? 0;
+  const voidBal = defi.voidBalance ?? 0;
+  
+  // Coords from Net Protocol
+  const posX = runtime.netProfile?.posX ?? 2000;
+  const posZ = runtime.netProfile?.posZ ?? 2000;
+  
+  // World coordinate system
+  const playerWorldPos = { x: posX, z: posZ };
+  const { xPct, zPct } = worldPosToPercent(playerWorldPos);
+  const parcelCoords = worldToParcel(playerWorldPos);
+  const district = getDistrict(parcelCoords);
+  const parcelId = coordsToParcelId(parcelCoords);
+  
+  // Get properties on current parcel
+  const parcelProperties = useParcelProperties(parcelId);
+  const propertyCount = parcelProperties.length;
+
+  return (
+    <div className="grid grid-cols-2 gap-2">
+      {/* Online Friends */}
+      <button
+        type="button"
+        onClick={() => onCardTap?.('friends')}
+        className="rounded-2xl bg-black/75 backdrop-blur-xl border border-signal-green/40 shadow-[0_0_18px_rgba(0,255,157,0.3)] px-3 py-3 flex flex-col items-start active:scale-95 transition-transform"
+      >
+        <div className="text-[0.6rem] uppercase tracking-[0.22em] text-bio-silver/60">
+          Online Friends
+        </div>
+        <div className="mt-2 text-2xl font-mono text-signal-green">
+          {onlineFriends}
+        </div>
+        <div className="text-[0.55rem] text-bio-silver/50 mt-1">
+          Active Now
+        </div>
+      </button>
+
+      {/* PSX Balance */}
+      <button
+        type="button"
+        onClick={() => onCardTap?.('wallet')}
+        className="rounded-2xl bg-black/75 backdrop-blur-xl border border-psx-blue/40 shadow-[0_0_18px_rgba(0,212,255,0.3)] px-3 py-3 flex flex-col items-start active:scale-95 transition-transform"
+      >
+        <div className="text-[0.6rem] uppercase tracking-[0.22em] text-bio-silver/60">
+          PSX Balance
+        </div>
+        <div className="mt-2 text-xl font-mono text-psx-blue">
+          {psxBal.toLocaleString()}
+        </div>
+        <div className="text-[0.55rem] text-bio-silver/50 mt-1">
+          Tokens
+        </div>
+      </button>
+
+      {/* VOID Balance */}
+      <button
+        type="button"
+        onClick={() => onCardTap?.('wallet')}
+        className="rounded-2xl bg-black/75 backdrop-blur-xl border border-void-purple/40 shadow-[0_0_18px_rgba(124,0,255,0.3)] px-3 py-3 flex flex-col items-start active:scale-95 transition-transform"
+      >
+        <div className="text-[0.6rem] uppercase tracking-[0.22em] text-bio-silver/60">
+          VOID Balance
+        </div>
+        <div className="mt-2 text-xl font-mono text-void-purple">
+          {voidBal.toLocaleString()}
+        </div>
+        <div className="text-[0.55rem] text-bio-silver/50 mt-1">
+          Tokens
+        </div>
+      </button>
+
+      {/* Mini Map */}
+      <button
+        type="button"
+        onClick={() => onCardTap?.('map')}
+        className="rounded-2xl bg-black/75 backdrop-blur-xl border border-cyber-cyan/40 shadow-[0_0_18px_rgba(0,234,255,0.3)] px-3 py-3 flex flex-col items-start active:scale-95 transition-transform relative overflow-hidden"
+      >
+        {/* Mini radar grid */}
+        <div className="absolute inset-0 opacity-20">
+          <div className="w-full h-full" style={{
+            backgroundImage: `
+              linear-gradient(to right, rgba(0,234,255,0.3) 1px, transparent 1px),
+              linear-gradient(to bottom, rgba(0,234,255,0.3) 1px, transparent 1px)
+            `,
+            backgroundSize: '12px 12px',
+          }} />
+        </div>
+        
+        <div className="relative z-10 w-full">
+          <div className="text-[0.6rem] uppercase tracking-[0.22em] text-bio-silver/60">
+            {DISTRICT_NAMES[district]} Zone
+          </div>
+          <div className="mt-1 text-sm font-mono text-cyber-cyan">
+            ({Math.floor(posX)}, {Math.floor(posZ)})
+          </div>
+          <div className="text-[0.55rem] text-bio-silver/50 mt-1">
+            {propertyCount} {propertyCount === 1 ? 'Property' : 'Properties'}
+          </div>
+        </div>
+        
+        {/* Player blip positioned using worldPosToPercent */}
+        <div 
+          className="absolute w-2 h-2 rounded-full bg-signal-green shadow-[0_0_8px_rgba(0,255,157,0.9)] animate-pulse" 
+          style={{
+            left: `${xPct}%`,
+            top: `${zPct}%`,
+            transform: 'translate(-50%, -50%)'
+          }}
+        />
+      </button>
+    </div>
+  );
+}
+
+/* ───────── Middle row cards (OLD - kept for compatibility) ───────── */
 
 interface EconomyCardsRowMobileProps {
   world: any;

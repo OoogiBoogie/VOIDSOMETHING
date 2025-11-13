@@ -2,7 +2,6 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Audiowide, Rajdhani } from "next/font/google"
 import "./globals.css"
-import { VoidBootIntro } from "@/components/intro/VoidBootIntro"
 import RootProviders from "@/components/providers/root-providers"
 
 const audiowide = Audiowide({
@@ -68,7 +67,6 @@ export default function RootLayout({
         }}
       >
         <RootProviders>
-          <VoidBootIntro />
           {children}
         </RootProviders>
       </body>

@@ -9,7 +9,7 @@
  * 🔴 Hidden (not for demo): Friends, Voice, Music, Minigames, Hub Selector (replaced with functional icons)
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useAccount } from 'wagmi';
 import { isDemoMode } from '@/config/voidConfig';
 import type { HubMode, HubTheme } from '@/hud/theme';
@@ -17,8 +17,9 @@ import type { WindowType } from '@/hud/windowTypes';
 import { 
   MessageSquare, Users, Shield, Mic, Music, Gamepad2, 
   Map, Layers, Vault, Wallet, Vote, Briefcase, Cpu, LayoutGrid,
-  Home, Building2, User, MessageCircle
+  Home, Building2, User, MessageCircle, Grid3x3
 } from 'lucide-react';
+import { MiniAppDock } from '@/src/miniapps/MiniAppDock';
 
 interface AppIcon {
   id: string;
@@ -89,16 +90,20 @@ export default function BottomDock({
   });
 
   return (
-    <div className={`
-      rounded-2xl bg-black/75 backdrop-blur-2xl border border-bio-silver/30
-      px-4 py-3 relative overflow-hidden
-      transition-all duration-500
-    `}>
-      {/* chrome rainbow spine at top */}
-      <div className="pointer-events-none absolute top-0 left-4 right-4 h-0.5 bg-gradient-to-r from-signal-green via-cyber-cyan via-void-purple via-psx-blue to-signal-green opacity-60" />
+    <>
+      <div className={`
+        rounded-2xl bg-black/75 backdrop-blur-2xl border border-bio-silver/30
+        px-4 py-3 relative overflow-hidden
+        transition-all duration-500
+      `}>
+        {/* chrome rainbow spine at top */}
+        <div className="pointer-events-none absolute top-0 left-4 right-4 h-0.5 bg-gradient-to-r from-signal-green via-cyber-cyan via-void-purple via-psx-blue to-signal-green opacity-60" />
 
-      <div className="relative flex items-center justify-center gap-2">
-        {visibleApps.map(app => {
+        <div className="relative flex items-center justify-center gap-2">
+          {/* MINIAPP LAUNCHER - handled by MiniAppDock component */}
+          <MiniAppDock />
+
+          {visibleApps.map(app => {
           const Icon: React.ElementType = app.icon;
           const isHighlighted = app.hubHighlight === hubMode;
 
@@ -168,5 +173,6 @@ export default function BottomDock({
         })}
       </div>
     </div>
+  </>
   );
 }

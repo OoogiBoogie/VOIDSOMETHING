@@ -27,30 +27,40 @@ export interface ParcelWithOwnership extends ParcelInfo {
 
 // ============ District Mapping ============
 
-const DISTRICT_MAP: Record<number, { id: string; name: string; color: string }> = {
-  0: { id: "defi", name: "DeFi District", color: "#8f3bff" },
-  1: { id: "creator", name: "Creator Quarter", color: "#09f0c8" },
-  2: { id: "dao", name: "DAO Plaza", color: "#ff3bd4" },
-  3: { id: "ai", name: "AI Nexus", color: "#3b8fff" },
-  4: { id: "neutral", name: "Neutral Zone", color: "#5d6384" },
+import { GRID_SIZE, type District } from "@/world/WorldCoords";
+
+const DISTRICT_MAP: Record<number, { id: District; name: string; color: string }> = {
+  0: { id: "defi", name: "DeFi District", color: "#09f0c8" },
+  1: { id: "creator", name: "Creator District", color: "#ff3bd4" },
+  2: { id: "dao", name: "DAO District", color: "#8f3bff" },
+  3: { id: "ai", name: "AI District", color: "#3b8fff" },
+  4: { id: "neutral", name: "Neutral Zone", color: "#888888" },
 };
 
 /**
- * Simple district assignment based on grid position
- * You can replace this with actual district data from your database
+ * District assignment matching WorldCoords.getDistrict()
+ * NOTE: z>=mid = "bottom", z<mid = "top"
+ * 
+ * Layout:
+ * - Bottom-left (x < 20, z >= 20): DeFi District
+ * - Bottom-right (x >= 20, z >= 20): Creator District
+ * - Top-left (x < 20, z < 20): DAO District
+ * - Top-right (x >= 20, z < 20): AI District
  */
 function getDistrictForParcel(x: number, z: number) {
+  const mid = GRID_SIZE / 2; // 20
+
   // Bottom-left quadrant = DeFi
-  if (x < 20 && z < 20) return DISTRICT_MAP[0];
+  if (x < mid && z >= mid) return DISTRICT_MAP[0];
   
   // Bottom-right quadrant = Creator
-  if (x >= 20 && z < 20) return DISTRICT_MAP[1];
+  if (x >= mid && z >= mid) return DISTRICT_MAP[1];
   
   // Top-left quadrant = DAO
-  if (x < 20 && z >= 20) return DISTRICT_MAP[2];
+  if (x < mid && z < mid) return DISTRICT_MAP[2];
   
   // Top-right quadrant = AI
-  if (x >= 20 && z >= 20) return DISTRICT_MAP[3];
+  if (x >= mid && z < mid) return DISTRICT_MAP[3];
   
   // Fallback
   return DISTRICT_MAP[4];

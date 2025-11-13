@@ -187,3 +187,34 @@ export const DISTRICT_NAMES: Record<District, string> = {
   ai: 'AI District',
   neutral: 'Neutral Zone',
 };
+
+/**
+ * World extent (total world size in 3D units)
+ */
+export const WORLD_EXTENT = GRID_SIZE * PARCEL_SIZE; // 40 * 100 = 4000
+
+/**
+ * Normalize a world position (x,z) into map percentages (0-100)
+ * for UI minimaps.
+ */
+export function worldPosToPercent(worldPos: WorldPosition) {
+  const maxWorld = WORLD_EXTENT;
+
+  const clampedX = Math.max(0, Math.min(maxWorld - 1, worldPos.x));
+  const clampedZ = Math.max(0, Math.min(maxWorld - 1, worldPos.z));
+
+  return {
+    xPct: (clampedX / maxWorld) * 100,
+    zPct: (clampedZ / maxWorld) * 100,
+  };
+}
+
+/**
+ * Normalize parcel coords (0-39) into map percentages (0-100)
+ */
+export function parcelToPercent(coords: ParcelCoords) {
+  return {
+    xPct: ((coords.x + 0.5) / GRID_SIZE) * 100,
+    zPct: ((coords.z + 0.5) / GRID_SIZE) * 100,
+  };
+}

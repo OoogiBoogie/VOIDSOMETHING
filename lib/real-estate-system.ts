@@ -1,4 +1,6 @@
 import { type Building, BUILDINGS } from "./city-assets"
+import { bindBuildingToParcel } from "../world/buildings"
+import type { District } from "../world/WorldCoords"
 
 export interface PropertyOwnership {
   propertyId: string
@@ -15,6 +17,8 @@ export interface PropertyListing {
   listingPrice: number
   appreciation: number // percentage change
   monthlyIncome?: number // rental income for commercial properties
+  parcelId: number      // NEW: parcel location
+  district: District    // NEW: district location
 }
 
 // In-memory property registry (will be replaced with on-chain data later)
@@ -50,6 +54,7 @@ class PropertyRegistry {
   // Get all properties with their listing information
   getAllListings(): PropertyListing[] {
     return BUILDINGS.map((building) => {
+      const binding = bindBuildingToParcel(building)
       const ownership = this.ownedProperties.get(building.id)
       const marketData = this.marketData.get(building.id)!
       const currentValue = Math.floor(marketData.basePrice * marketData.valueMultiplier)
@@ -61,6 +66,8 @@ class PropertyRegistry {
         listingPrice: currentValue,
         appreciation: (marketData.valueMultiplier - 1) * 100,
         monthlyIncome: building.type === "commercial" ? Math.floor(currentValue * 0.05) : undefined,
+        parcelId: binding.parcelId,
+        district: binding.district,
       }
     })
   }
@@ -108,6 +115,7 @@ class PropertyRegistry {
     const building = BUILDINGS.find((b) => b.id === propertyId)
     if (!building) return null
 
+    const binding = bindBuildingToParcel(building)
     const ownership = this.ownedProperties.get(propertyId)
     const marketData = this.marketData.get(propertyId)!
     const currentValue = Math.floor(marketData.basePrice * marketData.valueMultiplier)
@@ -119,7 +127,19 @@ class PropertyRegistry {
       listingPrice: currentValue,
       appreciation: (marketData.valueMultiplier - 1) * 100,
       monthlyIncome: building.type === "commercial" ? Math.floor(currentValue * 0.05) : undefined,
+      parcelId: binding.parcelId,
+      district: binding.district,
     }
+  }
+
+  // NEW: Get properties on a specific parcel
+  getPropertiesOnParcel(parcelId: number): PropertyListing[] {
+    return this.getAllListings().filter((listing) => listing.parcelId === parcelId)
+  }
+
+  // NEW: Get properties in a specific district
+  getPropertiesInDistrict(district: District): PropertyListing[] {
+    return this.getAllListings().filter((listing) => listing.district === district)
   }
 
   // Simulate market value changes

@@ -18,6 +18,8 @@ import { useParcels, useMyParcels, useLandStats } from '@/services/world/useParc
 import { useWorldEvent, PARCEL_ENTERED } from '@/services/events/worldEvents'
 import { GRID_SIZE, parcelIdToCoords, DISTRICT_COLORS, DISTRICT_NAMES } from '@/world/WorldCoords'
 import { voidTheme } from '@/ui/theme/voidTheme'
+import { useParcelProperties } from '@/services/world/useRealEstate'
+import { propertyRegistry } from '@/lib/real-estate-system'
 
 export function LandGridWindow() {
   const { address, isConnected } = useAccount()
@@ -36,6 +38,11 @@ export function LandGridWindow() {
   
   const selectedParcel = selectedParcelId !== null ? parcels[selectedParcelId] : null
   const isOwnedByMe = selectedParcelId !== null && ownedParcels.some(p => p.id === selectedParcelId)
+  
+  // Get properties on selected parcel
+  const selectedParcelProperties = selectedParcelId !== null 
+    ? useParcelProperties(selectedParcelId)
+    : []
   
   const handleBuyParcel = async () => {
     if (!isConnected) {
@@ -148,6 +155,10 @@ export function LandGridWindow() {
               const isOwned = ownedParcels.some(p => p.id === id)
               const isAvailable = parcel?.isAvailable ?? true
               
+              // Get property count on this parcel
+              const propertyCount = propertyRegistry.getPropertiesOnParcel(id).length
+              const hasBuildings = propertyCount > 0
+              
               const districtColor = DISTRICT_COLORS[parcel?.districtId as keyof typeof DISTRICT_COLORS || 'neutral']
               
               return (
@@ -160,6 +171,7 @@ export function LandGridWindow() {
                     border: 'none',
                     padding: 0,
                     cursor: 'pointer',
+                    position: 'relative',
                     backgroundColor: isOwned 
                       ? voidTheme.colors.success
                       : isAvailable
@@ -184,8 +196,23 @@ export function LandGridWindow() {
                     e.currentTarget.style.transform = 'scale(1)'
                     e.currentTarget.style.zIndex = '1'
                   }}
-                  title={`Parcel #${id} (${coords.x},${coords.z})\n${parcel?.districtId || 'neutral'}\n${isOwned ? 'OWNED BY YOU' : isAvailable ? 'AVAILABLE' : 'SOLD'}`}
-                />
+                  title={`Parcel #${id} (${coords.x},${coords.z})\n${parcel?.districtId || 'neutral'}\n${isOwned ? 'OWNED BY YOU' : isAvailable ? 'AVAILABLE' : 'SOLD'}${hasBuildings ? `\n${propertyCount} ${propertyCount === 1 ? 'building' : 'buildings'}` : ''}`}
+                >
+                  {/* Building indicator dot */}
+                  {hasBuildings && (
+                    <div style={{
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      transform: 'translate(-50%, -50%)',
+                      width: '4px',
+                      height: '4px',
+                      borderRadius: '50%',
+                      backgroundColor: voidTheme.colors.accent,
+                      boxShadow: `0 0 4px ${voidTheme.colors.accent}`,
+                    }} />
+                  )}
+                </button>
               )
             })}
           </div>
@@ -240,6 +267,55 @@ export function LandGridWindow() {
               {isOwnedByMe ? 'OWNED' : selectedParcel.isAvailable ? 'AVAILABLE' : 'SOLD'}
             </div>
           </div>
+          
+          {/* Properties on this parcel */}
+          {selectedParcelProperties.length > 0 && (
+            <div style={{
+              padding: '8px 0',
+              borderTop: `1px solid ${voidTheme.colors.primary}20`,
+            }}>
+              <div style={{
+                fontSize: '11px',
+                fontWeight: 700,
+                color: voidTheme.colors.textSecondary,
+                marginBottom: '6px',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+              }}>
+                Buildings ({selectedParcelProperties.length})
+              </div>
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '4px',
+              }}>
+                {selectedParcelProperties.map(prop => (
+                  <div
+                    key={prop.building.id}
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      padding: '4px 8px',
+                      background: `${voidTheme.colors.primary}08`,
+                      borderRadius: '4px',
+                      fontSize: '11px',
+                    }}
+                  >
+                    <span style={{ color: voidTheme.colors.text }}>
+                      {prop.building.id}
+                    </span>
+                    <span style={{ 
+                      color: prop.isOwned ? voidTheme.colors.success : voidTheme.colors.primary,
+                      fontWeight: 600,
+                    }}>
+                      {prop.isOwned ? 'OWNED' : `${prop.listingPrice} VOID`}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
           
           {selectedParcel.isAvailable && !isOwnedByMe && isConnected && (
             <button
