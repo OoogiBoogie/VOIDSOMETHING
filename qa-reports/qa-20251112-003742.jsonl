@@ -1,0 +1,6 @@
+{"ts":"2025-11-12T00:37:42.5769530-08:00","type":"cast","available":true}
+{"walletconnect":true,"privy":true,"type":"auth-env","ts":"2025-11-12T00:37:42.5892267-08:00"}
+{"rpc":"https://sepolia.base.org","ok":true,"cid":"0x14a34","type":"chain","ts":"2025-11-12T00:37:42.7179609-08:00"}
+{"fallback":"","type":"sanity","ts":"2025-11-12T00:37:42.7289623-08:00","node":"v22.20.0","cast":["cast Version: 1.4.4-nightly","Commit SHA: bedc119649f5bcf96cb3253b2aaefa462429dd90","Build Timestamp: 2025-11-10T06:05:19.054806500Z (1762754719)","Build Profile: maxperf"],"rpc":"https://sepolia.base.org"}
+{"ok":true,"type":"ui-up","ts":"2025-11-12T00:37:47.8154848-08:00"}
+{"err":"exception","result":"fail","name":"validate:coords","type":"validator","ts":"2025-11-12T00:37:49.6637255-08:00"}

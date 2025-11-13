@@ -75,7 +75,7 @@ export function CoinbaseWalletProvider({ children }: { children: ReactNode }) {
   }
 
   useEffect(() => {
-    if (typeof window.ethereum !== "undefined") {
+    if (typeof window.ethereum !== "undefined" && window.ethereum.on) {
       const handleAccountsChanged = (accounts: string[]) => {
         if (accounts.length === 0) {
           disconnect()
@@ -87,7 +87,9 @@ export function CoinbaseWalletProvider({ children }: { children: ReactNode }) {
       window.ethereum.on("accountsChanged", handleAccountsChanged)
 
       return () => {
-        window.ethereum.removeListener("accountsChanged", handleAccountsChanged)
+        if (window.ethereum.removeListener) {
+          window.ethereum.removeListener("accountsChanged", handleAccountsChanged)
+        }
       }
     }
   }, [])

@@ -1,0 +1,13 @@
+{
+  "timestamp": "2025-11-11T02:54:04.030Z",
+  "feeIntake": 10000,
+  "treasuryBalance": 75000,
+  "emissionRate": 0.8,
+  "emissionAmount": 8000,
+  "weeklyInflow": 10000,
+  "weeklyOutflow": 5000,
+  "netChange": 5000,
+  "runway": 15,
+  "status": "HEALTHY",
+  "reasoning": "Treasury balance ($75,000) and runway (15.0 weeks) healthy. Maintain conservative 80% emission rate."
+}

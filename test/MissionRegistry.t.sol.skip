@@ -1,0 +1,204 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.24;
+
+import "forge-std/Test.sol";
+import "../contracts/MissionRegistry.sol";
+import "../contracts/mocks/ERC20Mock.sol";
+
+/**
+ * @title MissionRegistry Tests
+ * @notice Tests for mission lifecycle and duplicate claim prevention
+ */
+contract MissionRegistryTest is Test {
+    MissionRegistry public registry;
+    ERC20Mock public rewardToken;
+    
+    address public admin = address(this);
+    address public creator = address(0x1);
+    address public user1 = address(0x2);
+    address public user2 = address(0x3);
+    
+    function setUp() public {
+        rewardToken = new ERC20Mock("VOID", "VOID", 1_000_000 * 1e18);
+        registry = new MissionRegistry(admin);
+        
+        // Fund registry
+        rewardToken.transfer(address(registry), 100_000 * 1e18);
+    }
+
+    /// @notice Test mission creation
+    function testCreateMission() public {
+        bytes32 missionId = keccak256("test-mission-1");
+        uint256 reward = 100 * 1e18;
+        
+        registry.createMission(
+            missionId,
+            "Complete Tutorial",
+            address(rewardToken),
+            reward,
+            7 days
+        );
+        
+        (
+            string memory description,
+            address token,
+            uint256 rewardAmount,
+            ,
+            bool active
+        ) = registry.missions(missionId);
+        
+        assertEq(description, "Complete Tutorial", "Description mismatch");
+        assertEq(token, address(rewardToken), "Token mismatch");
+        assertEq(rewardAmount, reward, "Reward mismatch");
+        assertTrue(active, "Mission should be active");
+    }
+
+    /// @notice Test successful mission completion
+    function testCompleteMission() public {
+        bytes32 missionId = keccak256("test-mission-2");
+        uint256 reward = 50 * 1e18;
+        
+        // Create mission
+        registry.createMission(
+            missionId,
+            "First Trade",
+            address(rewardToken),
+            reward,
+            30 days
+        );
+        
+        // Complete mission
+        vm.prank(user1);
+        registry.completeMission(missionId);
+        
+        // Verify claim
+        assertTrue(registry.hasClaimed(missionId, user1), "Should be marked as claimed");
+        assertEq(rewardToken.balanceOf(user1), reward, "Should receive reward");
+    }
+
+    /// @notice Test duplicate claim prevention (CRITICAL)
+    function testNoDuplicateClaim() public {
+        bytes32 missionId = keccak256("test-mission-3");
+        uint256 reward = 75 * 1e18;
+        
+        // Create mission
+        registry.createMission(
+            missionId,
+            "Double Claim Test",
+            address(rewardToken),
+            reward,
+            7 days
+        );
+        
+        // First claim (should succeed)
+        vm.prank(user1);
+        registry.completeMission(missionId);
+        
+        uint256 balanceAfterFirst = rewardToken.balanceOf(user1);
+        assertEq(balanceAfterFirst, reward, "First claim should succeed");
+        
+        // Second claim (should revert)
+        vm.prank(user1);
+        vm.expectRevert(MissionRegistry.AlreadyClaimed.selector);
+        registry.completeMission(missionId);
+        
+        // Balance unchanged
+        assertEq(rewardToken.balanceOf(user1), balanceAfterFirst, "Balance should not change");
+    }
+
+    /// @notice Test mission expiration
+    function testMissionExpiration() public {
+        bytes32 missionId = keccak256("test-mission-4");
+        uint256 duration = 7 days;
+        
+        registry.createMission(
+            missionId,
+            "Time-Limited Mission",
+            address(rewardToken),
+            100 * 1e18,
+            duration
+        );
+        
+        // Fast forward past expiration
+        vm.warp(block.timestamp + duration + 1);
+        
+        // Attempt to complete expired mission
+        vm.prank(user1);
+        vm.expectRevert(MissionRegistry.MissionExpired.selector);
+        registry.completeMission(missionId);
+    }
+
+    /// @notice Test inactive mission cannot be completed
+    function testInactiveMissionReverts() public {
+        bytes32 missionId = keccak256("test-mission-5");
+        
+        registry.createMission(
+            missionId,
+            "To Be Deactivated",
+            address(rewardToken),
+            50 * 1e18,
+            30 days
+        );
+        
+        // Deactivate mission
+        registry.deactivateMission(missionId);
+        
+        // Attempt to complete
+        vm.prank(user1);
+        vm.expectRevert(MissionRegistry.MissionNotActive.selector);
+        registry.completeMission(missionId);
+    }
+
+    /// @notice Test multiple users can claim same mission
+    function testMultipleUsersCanClaim() public {
+        bytes32 missionId = keccak256("test-mission-6");
+        uint256 reward = 100 * 1e18;
+        
+        registry.createMission(
+            missionId,
+            "Multi-User Mission",
+            address(rewardToken),
+            reward,
+            30 days
+        );
+        
+        // User 1 claims
+        vm.prank(user1);
+        registry.completeMission(missionId);
+        
+        // User 2 claims (should succeed)
+        vm.prank(user2);
+        registry.completeMission(missionId);
+        
+        assertEq(rewardToken.balanceOf(user1), reward, "User1 should have reward");
+        assertEq(rewardToken.balanceOf(user2), reward, "User2 should have reward");
+    }
+
+    /// @notice Fuzz test: No user can claim twice
+    function testFuzzNoDuplicateClaim(address user, uint96 reward) public {
+        vm.assume(user != address(0) && user != address(registry));
+        vm.assume(reward > 0 && reward < 10_000 * 1e18);
+        
+        bytes32 missionId = keccak256(abi.encodePacked("fuzz-mission", user));
+        
+        // Ensure registry has enough tokens
+        rewardToken.mint(address(registry), reward);
+        
+        registry.createMission(
+            missionId,
+            "Fuzz Test",
+            address(rewardToken),
+            reward,
+            365 days
+        );
+        
+        // First claim
+        vm.prank(user);
+        registry.completeMission(missionId);
+        
+        // Second claim must fail
+        vm.prank(user);
+        vm.expectRevert(MissionRegistry.AlreadyClaimed.selector);
+        registry.completeMission(missionId);
+    }
+}

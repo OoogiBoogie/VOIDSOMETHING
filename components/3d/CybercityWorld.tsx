@@ -1,17 +1,21 @@
 "use client"
 
-import { useRef, useMemo } from "react"
+import { useRef, useMemo, useState } from "react"
 import { useFrame } from "@react-three/fiber"
 import * as THREE from "three"
 import { useParcelsPage } from "@/lib/land/hooks"
 import { Parcel, ParcelStatus, LicenseType } from "@/lib/land/types"
 import { landRegistryAPI } from "@/lib/land/registry-api"
+import { isFounderPlot } from "@/lib/land/tier-calculator"
 import { Text } from "@react-three/drei"
+import { BuildingDetailPanel } from "@/components/land/building-detail-panel"
 
 const PARCEL_SIZE = 40; // 40 world units per parcel
 const PARCEL_SPACING = 16; // 16 unit spacing between parcels
 
 export function CybercityWorld({ selectedParcelId }: { selectedParcelId?: string }) {
+  const [clickedParcel, setClickedParcel] = useState<Parcel | null>(null)
+  
   // Load parcels from new land system (500 at a time)
   const { parcels, isLoading } = useParcelsPage(1, 500);
 
@@ -26,27 +30,124 @@ export function CybercityWorld({ selectedParcelId }: { selectedParcelId?: string
   }
 
   return (
-    <group>
-      {/* Dusk HDRI Sky */}
-      <DuskSky />
+    <>
+      <group>
+        {/* Dusk HDRI Sky */}
+        <DuskSky />
 
-      {/* Global Ambient Lighting */}
-      <ambientLight intensity={0.3} color="#4a5568" />
-      <hemisphereLight intensity={0.5} color="#6366f1" groundColor="#1e293b" />
+        {/* Render all parcels */}
+        {parcels.map((parcel) => {
+          const isSelected = selectedParcelId === `parcel-${parcel.parcelId}`;
+          return (
+            <ParcelBuilding 
+              key={parcel.parcelId} 
+              parcel={parcel} 
+              isSelected={isSelected} 
+              onClick={() => setClickedParcel(parcel)}
+            />
+          )
+        })}
 
-      {/* Render all parcels */}
-      {parcels.map((parcel) => {
-        const isSelected = selectedParcelId === `parcel-${parcel.parcelId}`;
-        return <ParcelBuilding key={parcel.parcelId} parcel={parcel} isSelected={isSelected} />
-      })}
+        {/* Ground plane */}
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.1, 0]} receiveShadow>
+          <planeGeometry args={[5000, 5000]} />
+          <meshStandardMaterial color="#1a1a1a" roughness={0.95} />
+        </mesh>
 
-      {/* Ground plane */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.1, 0]} receiveShadow>
-        <planeGeometry args={[5000, 5000]} />
-        <meshStandardMaterial color="#1a1a1a" roughness={0.95} />
-      </mesh>
-    </group>
+        {/* Street Grid - Simple grid aligned with 40x40 parcels */}
+        <StreetGrid />
+      </group>
+      
+      {/* Building Detail Panel (2D UI Overlay) */}
+      <BuildingDetailPanel 
+        parcel={clickedParcel} 
+        onClose={() => setClickedParcel(null)} 
+      />
+    </>
   )
+}
+
+// Simple Street Grid Component
+function StreetGrid() {
+  const GRID_SIZE = 40; // 40x40 parcels
+  const STREET_WIDTH = 8; // 8 unit wide streets
+  const STREET_SPACING = 5; // Street every 5 parcels (creates 5x5 blocks)
+  
+  const streets = [];
+  
+  // Create horizontal streets (running along X axis)
+  for (let z = -GRID_SIZE / 2; z <= GRID_SIZE / 2; z += STREET_SPACING) {
+    const worldZ = z * PARCEL_SIZE;
+    streets.push(
+      <mesh 
+        key={`street-h-${z}`} 
+        rotation={[-Math.PI / 2, 0, 0]} 
+        position={[0, 0, worldZ]}
+        receiveShadow
+      >
+        <planeGeometry args={[GRID_SIZE * PARCEL_SIZE, STREET_WIDTH]} />
+        <meshStandardMaterial 
+          color="#0a0a0a" 
+          roughness={0.4} 
+          metalness={0.3} 
+        />
+      </mesh>
+    );
+    
+    // Add subtle center line
+    streets.push(
+      <mesh 
+        key={`line-h-${z}`} 
+        rotation={[-Math.PI / 2, 0, 0]} 
+        position={[0, 0.01, worldZ]}
+      >
+        <planeGeometry args={[GRID_SIZE * PARCEL_SIZE, 0.3]} />
+        <meshStandardMaterial 
+          color="#ffeb3b" 
+          emissive="#ffeb3b" 
+          emissiveIntensity={0.5} 
+        />
+      </mesh>
+    );
+  }
+  
+  // Create vertical streets (running along Z axis)
+  for (let x = -GRID_SIZE / 2; x <= GRID_SIZE / 2; x += STREET_SPACING) {
+    const worldX = x * PARCEL_SIZE;
+    streets.push(
+      <mesh 
+        key={`street-v-${x}`} 
+        rotation={[-Math.PI / 2, 0, 0]} 
+        position={[worldX, 0, 0]}
+        receiveShadow
+      >
+        <planeGeometry args={[STREET_WIDTH, GRID_SIZE * PARCEL_SIZE]} />
+        <meshStandardMaterial 
+          color="#0a0a0a" 
+          roughness={0.4} 
+          metalness={0.3} 
+        />
+      </mesh>
+    );
+    
+    // Add subtle center line
+    streets.push(
+      <mesh 
+        key={`line-v-${x}`} 
+        rotation={[-Math.PI / 2, 0, 0]} 
+        position={[worldX, 0.01, 0]}
+      >
+        <planeGeometry args={[0.3, GRID_SIZE * PARCEL_SIZE]} />
+        <meshStandardMaterial 
+          color="#ffeb3b" 
+          emissive="#ffeb3b" 
+          emissiveIntensity={0.5} 
+        />
+      </mesh>
+    );
+  }
+  
+  return <>{streets}</>;
 }
 
 // Windows component for new land system buildings
@@ -77,7 +178,15 @@ function WindowsNew({ buildingHeight }: { buildingHeight: number }) {
   return <>{windows}</>;
 }
 
-function ParcelBuilding({ parcel, isSelected }: { parcel: Parcel; isSelected: boolean }) {
+function ParcelBuilding({ 
+  parcel, 
+  isSelected, 
+  onClick 
+}: { 
+  parcel: Parcel; 
+  isSelected: boolean;
+  onClick?: () => void;
+}) {
   const meshRef = useRef<THREE.Mesh>(null);
   const markerRef = useRef<THREE.Mesh>(null);
 
@@ -141,14 +250,60 @@ function ParcelBuilding({ parcel, isSelected }: { parcel: Parcel; isSelected: bo
   const isChromeBuilding = parcel.tier === 'CORE' && (parcel.district === 'BUSINESS' || parcel.district === 'DEFI');
   const metalness = isChromeBuilding ? 0.9 : 0.3;
   const roughness = isChromeBuilding ? 0.1 : 0.7;
-  
   // Tall buildings get rooftop features
   const hasTallBuilding = buildingHeight > 60;
+  
+  // Add architectural variety based on district and tier
+  const hasSetback = parcel.tier === 'CORE' && Math.random() > 0.5; // 50% of CORE buildings
+  const hasAntenna = buildingHeight > 40 && Math.random() > 0.6; // 40% of tall buildings
+
+  // Check if this is a founder plot
+  const gridCoords = landRegistryAPI.parcelIdToCoords(parcel.parcelId);
+  const isFounder = isFounderPlot(gridCoords.x, gridCoords.y);
+
+  // District-specific neon lights configuration
+  const getDistrictLighting = () => {
+    switch (parcel.district) {
+      case 'GAMING':
+        return { color: "#ef4444", intensity: 1.5, distance: 25 }; // Red arcade glow
+      case 'DEFI':
+        return { color: "#10b981", intensity: 1.2, distance: 30 }; // Green hologram
+      case 'SOCIAL':
+        return { color: "#ec4899", intensity: 1.3, distance: 28 }; // Pink nightlife
+      case 'BUSINESS':
+        return { color: "#3b82f6", intensity: 1.0, distance: 22 }; // Blue corporate
+      case 'RESIDENTIAL':
+        return { color: "#8b5cf6", intensity: 0.8, distance: 18 }; // Violet warm
+      case 'DAO':
+        return { color: "#9333ea", intensity: 1.8, distance: 35 }; // Purple mystical
+      default:
+        return null;
+    }
+  };
+
+  const districtLight = getDistrictLighting();
 
   return (
     <group position={[worldPos.x, 0, worldPos.z]}>
-      {/* Main Building */}
-      <mesh ref={meshRef} position={[0, buildingHeight / 2, 0]} castShadow receiveShadow>
+      {/* Main Building Body */}
+      <mesh 
+        ref={meshRef} 
+        position={[0, buildingHeight / 2, 0]} 
+        castShadow 
+        receiveShadow
+        onClick={(e) => {
+          e.stopPropagation()
+          onClick?.()
+        }}
+        onPointerOver={(e) => {
+          e.stopPropagation()
+          document.body.style.cursor = 'pointer'
+        }}
+        onPointerOut={(e) => {
+          e.stopPropagation()
+          document.body.style.cursor = 'default'
+        }}
+      >
         <boxGeometry args={[PARCEL_SIZE * 0.9, buildingHeight, PARCEL_SIZE * 0.9]} />
         <meshStandardMaterial
           color={buildingColor}
@@ -159,8 +314,265 @@ function ParcelBuilding({ parcel, isSelected }: { parcel: Parcel; isSelected: bo
         />
       </mesh>
       
+      {/* District-Specific Neon Lighting */}
+      {districtLight && (
+        <>
+          {/* Corner accent lights */}
+          <pointLight 
+            position={[PARCEL_SIZE * 0.45, buildingHeight * 0.7, PARCEL_SIZE * 0.45]} 
+            color={districtLight.color} 
+            intensity={districtLight.intensity} 
+            distance={districtLight.distance} 
+          />
+          <pointLight 
+            position={[-PARCEL_SIZE * 0.45, buildingHeight * 0.7, -PARCEL_SIZE * 0.45]} 
+            color={districtLight.color} 
+            intensity={districtLight.intensity} 
+            distance={districtLight.distance} 
+          />
+          
+          {/* Top edge glow for tall buildings */}
+          {buildingHeight > 40 && (
+            <pointLight 
+              position={[0, buildingHeight + 2, 0]} 
+              color={districtLight.color} 
+              intensity={districtLight.intensity * 1.5} 
+              distance={districtLight.distance * 1.2} 
+            />
+          )}
+        </>
+      )}
+      
+      {/* GAMING District: Arcade-style vertical neon strips */}
+      {parcel.district === 'GAMING' && (
+        <>
+          <mesh position={[PARCEL_SIZE * 0.46, buildingHeight / 2, 0]}>
+            <planeGeometry args={[1, buildingHeight * 0.8]} />
+            <meshStandardMaterial 
+              color="#ef4444" 
+              emissive="#ef4444" 
+              emissiveIntensity={0.9} 
+              transparent 
+              opacity={0.7} 
+            />
+          </mesh>
+          <mesh position={[-PARCEL_SIZE * 0.46, buildingHeight / 2, 0]}>
+            <planeGeometry args={[1, buildingHeight * 0.8]} />
+            <meshStandardMaterial 
+              color="#ef4444" 
+              emissive="#ef4444" 
+              emissiveIntensity={0.9} 
+              transparent 
+              opacity={0.7} 
+            />
+          </mesh>
+        </>
+      )}
+      
+      {/* DEFI District: Holographic data rings */}
+      {parcel.district === 'DEFI' && buildingHeight > 30 && (
+        <group>
+          <mesh position={[0, buildingHeight * 0.3, 0]} rotation={[Math.PI / 2, 0, 0]}>
+            <torusGeometry args={[PARCEL_SIZE * 0.5, 0.3, 16, 32]} />
+            <meshStandardMaterial 
+              color="#10b981" 
+              emissive="#10b981" 
+              emissiveIntensity={0.8} 
+              transparent 
+              opacity={0.5} 
+              wireframe 
+            />
+          </mesh>
+          <mesh position={[0, buildingHeight * 0.7, 0]} rotation={[Math.PI / 2, 0, 0]}>
+            <torusGeometry args={[PARCEL_SIZE * 0.4, 0.2, 16, 32]} />
+            <meshStandardMaterial 
+              color="#10b981" 
+              emissive="#10b981" 
+              emissiveIntensity={0.8} 
+              transparent 
+              opacity={0.5} 
+              wireframe 
+            />
+          </mesh>
+        </group>
+      )}
+      
+      {/* SOCIAL District: Pink neon signage */}
+      {parcel.district === 'SOCIAL' && (
+        <mesh position={[0, buildingHeight + 3, PARCEL_SIZE * 0.46]}>
+          <planeGeometry args={[PARCEL_SIZE * 0.7, 4]} />
+          <meshStandardMaterial 
+            color="#ec4899" 
+            emissive="#ec4899" 
+            emissiveIntensity={1.2} 
+            transparent 
+            opacity={0.8} 
+          />
+        </mesh>
+      )}
+      
+      {/* DAO District: Purple mystical aura */}
+      {parcel.district === 'DAO' && (
+        <>
+          <mesh position={[0, buildingHeight / 2, 0]}>
+            <cylinderGeometry args={[PARCEL_SIZE * 0.6, PARCEL_SIZE * 0.6, buildingHeight, 6, 1, true]} />
+            <meshStandardMaterial 
+              color="#9333ea" 
+              emissive="#9333ea" 
+              emissiveIntensity={0.5} 
+              transparent 
+              opacity={0.2} 
+              side={THREE.DoubleSide} 
+            />
+          </mesh>
+          {/* Floating purple particles effect at top */}
+          <pointLight 
+            position={[0, buildingHeight + 5, 0]} 
+            color="#9333ea" 
+            intensity={2.5} 
+            distance={40} 
+          />
+        </>
+      )}
+      
+      {/* FOUNDER PLOT: Premium gold chrome treatment */}
+      {isFounder && (
+        <>
+          {/* Gold chrome outer shell */}
+          <mesh position={[0, buildingHeight / 2, 0]}>
+            <boxGeometry args={[PARCEL_SIZE * 0.95, buildingHeight + 2, PARCEL_SIZE * 0.95]} />
+            <meshStandardMaterial 
+              color="#ffd700" 
+              emissive="#ffd700" 
+              emissiveIntensity={0.4} 
+              metalness={1.0} 
+              roughness={0.05} 
+              transparent 
+              opacity={0.3} 
+            />
+          </mesh>
+          
+          {/* Rotating gold ring at base */}
+          <group rotation={[0, Date.now() * 0.0001, 0]}>
+            <mesh position={[0, 2, 0]} rotation={[Math.PI / 2, 0, 0]}>
+              <torusGeometry args={[PARCEL_SIZE * 0.55, 0.5, 16, 48]} />
+              <meshStandardMaterial 
+                color="#ffd700" 
+                emissive="#ffd700" 
+                emissiveIntensity={0.9} 
+                metalness={1.0} 
+                roughness={0.1} 
+              />
+            </mesh>
+          </group>
+          
+          {/* Corner gold pillars */}
+          <mesh position={[PARCEL_SIZE * 0.42, buildingHeight / 2, PARCEL_SIZE * 0.42]}>
+            <cylinderGeometry args={[0.8, 0.8, buildingHeight + 4, 8]} />
+            <meshStandardMaterial 
+              color="#ffd700" 
+              emissive="#ffd700" 
+              emissiveIntensity={0.5} 
+              metalness={1.0} 
+              roughness={0.1} 
+            />
+          </mesh>
+          <mesh position={[-PARCEL_SIZE * 0.42, buildingHeight / 2, -PARCEL_SIZE * 0.42]}>
+            <cylinderGeometry args={[0.8, 0.8, buildingHeight + 4, 8]} />
+            <meshStandardMaterial 
+              color="#ffd700" 
+              emissive="#ffd700" 
+              emissiveIntensity={0.5} 
+              metalness={1.0} 
+              roughness={0.1} 
+            />
+          </mesh>
+          <mesh position={[PARCEL_SIZE * 0.42, buildingHeight / 2, -PARCEL_SIZE * 0.42]}>
+            <cylinderGeometry args={[0.8, 0.8, buildingHeight + 4, 8]} />
+            <meshStandardMaterial 
+              color="#ffd700" 
+              emissive="#ffd700" 
+              emissiveIntensity={0.5} 
+              metalness={1.0} 
+              roughness={0.1} 
+            />
+          </mesh>
+          <mesh position={[-PARCEL_SIZE * 0.42, buildingHeight / 2, PARCEL_SIZE * 0.42]}>
+            <cylinderGeometry args={[0.8, 0.8, buildingHeight + 4, 8]} />
+            <meshStandardMaterial 
+              color="#ffd700" 
+              emissive="#ffd700" 
+              emissiveIntensity={0.5} 
+              metalness={1.0} 
+              roughness={0.1} 
+            />
+          </mesh>
+          
+          {/* Top crown spire */}
+          <mesh position={[0, buildingHeight + 8, 0]}>
+            <coneGeometry args={[4, 12, 6]} />
+            <meshStandardMaterial 
+              color="#ffd700" 
+              emissive="#ffd700" 
+              emissiveIntensity={0.8} 
+              metalness={1.0} 
+              roughness={0.05} 
+            />
+          </mesh>
+          
+          {/* Intense golden point lights */}
+          <pointLight position={[0, buildingHeight + 10, 0]} color="#ffd700" intensity={3.0} distance={50} />
+          <pointLight position={[0, buildingHeight / 2, 0]} color="#ffd700" intensity={2.0} distance={40} />
+          
+          {/* FOUNDER badge hologram */}
+          <group>
+            <mesh position={[0, buildingHeight + 15, 0]} rotation={[0, Math.PI / 4, 0]}>
+              <planeGeometry args={[8, 4]} />
+              <meshBasicMaterial color="#ffd700" transparent opacity={0.9} side={THREE.DoubleSide} />
+            </mesh>
+            <Text
+              position={[0, buildingHeight + 15, 0.01]}
+              rotation={[0, Math.PI / 4, 0]}
+              fontSize={1.2}
+              color="#000000"
+              anchorX="center"
+              anchorY="middle"
+              font="/fonts/Orbitron-Bold.ttf"
+            >
+              ⭐ FOUNDER ⭐
+            </Text>
+          </group>
+        </>
+      )}
+      
+      {/* Top Setback Section (for variety) */}
+      {hasSetback && (
+        <mesh position={[0, buildingHeight + 8, 0]} castShadow>
+          <boxGeometry args={[PARCEL_SIZE * 0.6, 16, PARCEL_SIZE * 0.6]} />
+          <meshStandardMaterial
+            color={buildingColor}
+            roughness={roughness}
+            metalness={metalness * 1.2}
+            emissive={hasNeon ? buildingColor : "#000000"}
+            emissiveIntensity={hasNeon ? 0.4 : 0}
+          />
+        </mesh>
+      )}
+      
+      {/* Communication Antenna (for tall buildings) */}
+      {hasAntenna && (
+        <group position={[0, buildingHeight + (hasSetback ? 16 : 0), 0]}>
+          <mesh position={[0, 5, 0]}>
+            <cylinderGeometry args={[0.3, 0.3, 10, 8]} />
+            <meshStandardMaterial color="#ff0032" emissive="#ff0032" emissiveIntensity={0.8} metalness={0.9} />
+          </mesh>
+          {/* Blinking antenna light */}
+          <pointLight position={[0, 10, 0]} intensity={2} distance={20} color="#ff0032" />
+        </group>
+      )}
+      
       {/* Rooftop Helipad (for tall CORE buildings) */}
-      {hasTallBuilding && parcel.tier === 'CORE' && (
+      {hasTallBuilding && parcel.tier === 'CORE' && !hasSetback && (
         <mesh position={[0, buildingHeight + 1, 0]}>
           <cylinderGeometry args={[4, 4, 0.5, 16]} />
           <meshStandardMaterial color="#1a1a1a" metalness={0.8} roughness={0.2} />

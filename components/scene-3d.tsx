@@ -3,7 +3,7 @@
 import { useRef, useEffect, useState } from "react"
 import { useFrame, useThree } from "@react-three/fiber"
 import * as THREE from "three"
-import { CybercityWorld } from "./3d/CybercityWorld"
+import { WorldGrid3D } from "./world-grid-3d"
 import { PlayerCharacter3D } from "./player-character-3d"
 import { GridOverlay } from "./grid-overlay"
 import { DistrictBoundaries } from "./district-boundaries"
@@ -107,6 +107,7 @@ export function Scene3D({
 
   return (
     <>
+      {/* Minimal lighting with subtle atmosphere */}
       <ambientLight intensity={0.3} />
       <directionalLight position={[24, 26, 14]} intensity={1.8} color="#7FA7FF" castShadow={false} />
 
@@ -114,7 +115,7 @@ export function Scene3D({
 
       <DistrictBoundaries highlightedDistrictId={currentDistrictId} />
 
-      <CybercityWorld selectedParcelId={undefined} />
+      <WorldGrid3D zones={ZONES} />
 
       <PlayerCharacter3D
         position={playerPosition}
@@ -129,6 +130,7 @@ export function Scene3D({
         isMobile={isMobile} // Pass device type to character
       />
 
+      {/* Very light fog for depth */}
       <fog attach="fog" args={["#030712", 16, 90]} />
     </>
   )

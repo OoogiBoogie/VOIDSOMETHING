@@ -1,0 +1,48 @@
+{
+  "network": "Base Sepolia",
+  "chainId": 84532,
+  "rpcUrl": "${BASE_SEPOLIA_RPC_URL}",
+  "blockExplorer": "https://sepolia.basescan.org",
+  
+  "externalTokens": {
+    "USDC": "DEPLOY_MOCK",
+    "WETH": "DEPLOY_MOCK"
+  },
+  
+  "governanceRoles": {
+    "routerAdmin": "${DEPLOYER_ADDRESS}",
+    "psxTreasury": "${DEPLOYER_ADDRESS}",
+    "createTreasury": "${DEPLOYER_ADDRESS}",
+    "agencyWallet": "${DEPLOYER_ADDRESS}",
+    "creatorGrantsVault": "${DEPLOYER_ADDRESS}",
+    "securityReserve": "${DEPLOYER_ADDRESS}",
+    "pauseGuardian": "${DEPLOYER_ADDRESS}",
+    "xVoidStakingPool": "${DEPLOYER_ADDRESS}"
+  },
+  
+  "feeModel": {
+    "creatorShareBPS": 4000,
+    "stakerShareBPS": 2000,
+    "psxTreasuryShareBPS": 1000,
+    "createTreasuryShareBPS": 1000,
+    "agencyShareBPS": 1000,
+    "grantsShareBPS": 500,
+    "securityShareBPS": 500,
+    "totalMustEqual": 10000
+  },
+  
+  "economicBounds": {
+    "maxAPRBoostBPS": 2000,
+    "baseAPRBPS": 500,
+    "xpStalenessThreshold": 7200,
+    "maxWeeklyEmissionMultiplier": "1.0"
+  },
+  
+  "deploymentOptions": {
+    "deployMockTokens": true,
+    "deployCosmetics": false,
+    "deployUniswapHook": false,
+    "useProxies": false,
+    "verifyContracts": true
+  }
+}

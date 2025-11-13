@@ -13,9 +13,10 @@ import { Parcel, ZoneType, ParcelStatus, LicenseType, TierType, DistrictType } f
 import { formatEther } from 'viem';
 import { ChromePanel, ChromeHeader, ChromeStat, ChromeButton } from '../ui/chrome-panel';
 import { CRTOverlay } from '../ui/crt-overlay';
+import { PS1MemoryCardView } from './ps1-memory-card-view';
 import { X } from 'lucide-react';
 
-type ViewMode = 'table' | 'grid' | 'map';
+type ViewMode = 'table' | 'grid' | 'map' | 'memory-card';
 
 interface GlobalLandInventoryProps {
   isOpen?: boolean;
@@ -267,9 +268,23 @@ export function GlobalLandInventory({ isOpen = true, onClose }: GlobalLandInvent
           >
             MAP
           </ChromeButton>
+          <ChromeButton
+            variant={viewMode === 'memory-card' ? 'secondary' : 'ghost'}
+            onClick={() => setViewMode('memory-card')}
+            className="!px-4 !py-2"
+          >
+            PS1 MEMORY
+          </ChromeButton>
         </div>
 
         {/* Content */}
+        {viewMode === 'memory-card' && (
+          <PS1MemoryCardView
+            parcels={filteredParcels}
+            onSelectParcel={setSelectedParcel}
+          />
+        )}
+        
         {viewMode === 'table' && (
           <ParcelTableView 
             parcels={filteredParcels} 

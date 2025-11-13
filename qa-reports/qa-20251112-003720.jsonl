@@ -1,0 +1,3 @@
+{"ts":"2025-11-12T00:37:23.7463321-08:00","type":"cast","available":true}
+{"walletconnect":true,"privy":true,"type":"auth-env","ts":"2025-11-12T00:37:23.8190375-08:00"}
+{"rpc":"https://sepolia.base.org","ok":false,"cid":"{\"jsonrpc\":\"2.0\",\"result\":\"0x14a34\",\"id\":1}\n","type":"chain","ts":"2025-11-12T00:37:24.0257796-08:00"}

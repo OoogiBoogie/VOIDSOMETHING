@@ -161,4 +161,42 @@ export const audioConfig: Record<AudioEventKey, AudioConfigEntry> = {
     loop: true,
     category: "ambient",
   },
+
+  // Intro Sounds
+  [AudioEvents.INTRO_BOOT_BEEP]: {
+    src: "/audio/intro/boot-beep.mp3",
+    volume: 0.5,
+    category: "ui",
+  },
+  [AudioEvents.INTRO_GLITCH]: {
+    src: "/audio/intro/glitch-pop.mp3",
+    volume: 0.4,
+    category: "ui",
+  },
+  [AudioEvents.INTRO_SUB_BASS]: {
+    src: "/audio/intro/sub-bass.mp3",
+    volume: 0.3,
+    category: "ambient",
+  },
+  [AudioEvents.INTRO_WHISPER]: {
+    src: "/audio/intro/whisper-loop.mp3",
+    volume: 0.2,
+    loop: true,
+    category: "ambient",
+  },
+  [AudioEvents.INTRO_WARNING_VOICE]: {
+    src: "/audio/intro/warning-voice.mp3",
+    volume: 0.6,
+    category: "ui",
+  },
+  [AudioEvents.INTRO_METALLIC_SLAM]: {
+    src: "/audio/intro/metallic-slam.mp3",
+    volume: 0.7,
+    category: "ui",
+  },
+  [AudioEvents.INTRO_WHITE_NOISE_SWEEP]: {
+    src: "/audio/intro/white-noise-sweep.mp3",
+    volume: 0.3,
+    category: "ambient",
+  },
 };

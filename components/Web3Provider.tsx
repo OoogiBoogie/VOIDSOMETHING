@@ -2,6 +2,7 @@
 
 import type React from "react"
 import { Suspense, lazy, useState } from "react"
+import { CoinbaseWalletProvider } from "@/components/wallet/coinbase-wallet-provider"
 
 const WagmiProvider = lazy(() =>
   import("wagmi")
@@ -47,14 +48,22 @@ export function Web3Provider({ children }: { children: React.ReactNode }) {
 
   if (!queryClient || !wagmiConfig) {
     console.log("[v0] Web3 providers not available, running in fallback mode")
-    return <>{children}</>
+    return (
+      <CoinbaseWalletProvider>
+        {children}
+      </CoinbaseWalletProvider>
+    )
   }
 
   return (
-    <Suspense fallback={<>{children}</>}>
-      <WagmiProvider config={wagmiConfig}>
-        <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-      </WagmiProvider>
-    </Suspense>
+    <CoinbaseWalletProvider>
+      <Suspense fallback={<>{children}</>}>
+        <WagmiProvider config={wagmiConfig}>
+          <QueryClientProvider client={queryClient}>
+            {children}
+          </QueryClientProvider>
+        </WagmiProvider>
+      </Suspense>
+    </CoinbaseWalletProvider>
   )
 }

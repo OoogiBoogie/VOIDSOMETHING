@@ -3,7 +3,7 @@
 import { motion } from "framer-motion"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { useOrientation } from "@/hooks/use-orientation"
-import { Package, Map, Store, Zap, Coins, ShoppingBag, Users, Mic, Music, Activity, Gamepad2, Building2 } from "lucide-react"
+import { Package, Map, Store, Zap, Coins, ShoppingBag, Users, Mic, Music, Activity, Gamepad2, Building2, Smartphone } from "lucide-react"
 
 interface ActionBarProps {
   onPhoneOpen: () => void
@@ -45,6 +45,14 @@ export function ActionBar({
   const isLandscape = orientation === "landscape"
 
   const actions = [
+    {
+      icon: Smartphone,
+      label: "Phone",
+      key: "P",
+      onClick: onPhoneOpen,
+      color: "from-cyan-500/30 to-cyan-600/30 border-cyan-400/40 hover:border-cyan-400/70",
+      iconColor: "text-cyan-300",
+    },
     {
       icon: Map,
       label: "Map",
@@ -145,7 +153,7 @@ export function ActionBar({
     actions.push({
       icon: Activity,
       label: "Performance",
-      key: "P",
+      key: "K", // Changed from P to K (P is for Phone)
       onClick: onPerformanceToggle,
       color: "from-amber-500/30 to-amber-600/30 border-amber-400/40 hover:border-amber-400/70",
       iconColor: "text-amber-300",

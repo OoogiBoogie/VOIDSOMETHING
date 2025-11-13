@@ -1,0 +1,478 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>PSX VOID – Ops Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --void-bg: #050510;
+      --void-panel: rgba(10, 10, 25, 0.9);
+      --void-border: rgba(180, 120, 255, 0.6);
+      --void-neon-purple: #a855ff;
+      --void-neon-teal: #22e3d5;
+      --void-text: #f9f9ff;
+      --void-muted: #9ca3af;
+      --void-danger: #f97373;
+      --void-warning: #facc15;
+      --void-ok: #4ade80;
+      --void-radius-lg: 18px;
+      --void-radius-xl: 24px;
+      --void-shadow-strong: 0 0 40px rgba(59, 130, 246, 0.4);
+      --void-gradient-main: linear-gradient(135deg, #a855ff 0%, #22e3d5 100%);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+      background: radial-gradient(circle at top, #111827 0%, var(--void-bg) 45%, #020617 100%);
+      color: var(--void-text);
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .shell {
+      max-width: 1200px;
+      width: 100%;
+      background: radial-gradient(circle at top left, rgba(168, 85, 255, 0.18), transparent 55%),
+                  radial-gradient(circle at bottom right, rgba(34, 227, 213, 0.16), transparent 60%),
+                  linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(3, 7, 18, 0.98));
+      border-radius: 28px;
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      box-shadow: 0 25px 80px rgba(15, 23, 42, 0.8);
+      padding: 24px 24px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .title-block {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .title-main {
+      font-size: 1.6rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .title-main span.accent {
+      background: var(--void-gradient-main);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .title-sub {
+      font-size: 0.85rem;
+      color: var(--void-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+    }
+
+    .network-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      font-size: 0.8rem;
+      color: var(--void-muted);
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--void-neon-teal);
+      box-shadow: 0 0 14px rgba(34, 227, 213, 0.8);
+    }
+
+    .badge {
+      font-size: 0.75rem;
+      padding: 4px 9px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      color: var(--void-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    @media (max-width: 900px) {
+      .grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 640px) {
+      body {
+        padding: 12px;
+      }
+      .shell {
+        padding: 18px;
+      }
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      position: relative;
+      border-radius: var(--void-radius-lg);
+      background: linear-gradient(145deg, rgba(15, 23, 42, 0.96), rgba(15, 23, 42, 0.88));
+      border: 1px solid rgba(148, 163, 184, 0.45);
+      padding: 14px 14px 16px;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at top left, rgba(168, 85, 255, 0.2), transparent 55%);
+      opacity: 0.45;
+      pointer-events: none;
+    }
+
+    .card-header {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+
+    .card-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .pill {
+      font-size: 0.75rem;
+      padding: 3px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      background: rgba(15, 23, 42, 0.9);
+    }
+
+    .pill.ok {
+      border-color: rgba(34, 197, 94, 0.7);
+      color: var(--void-ok);
+    }
+
+    .pill.check {
+      border-color: rgba(234, 179, 8, 0.8);
+      color: var(--void-warning);
+    }
+
+    .pill.todo {
+      border-color: rgba(248, 113, 113, 0.8);
+      color: var(--void-danger);
+    }
+
+    .card-body {
+      position: relative;
+      font-size: 0.8rem;
+      color: var(--void-muted);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-bottom: 4px;
+    }
+
+    .tag {
+      font-size: 0.7rem;
+      padding: 2px 7px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      background: rgba(15, 23, 42, 0.85);
+    }
+
+    .tag.neon {
+      border-color: rgba(168, 85, 255, 0.9);
+      color: var(--void-neon-purple);
+    }
+
+    .tag.teal {
+      border-color: rgba(45, 212, 191, 0.8);
+      color: var(--void-neon-teal);
+    }
+
+    .list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+      line-height: 1.4;
+    }
+
+    .list li span.bullet {
+      width: 4px;
+      height: 4px;
+      border-radius: 999px;
+      background: rgba(148, 163, 184, 0.9);
+      margin-top: 6px;
+      flex-shrink: 0;
+    }
+
+    .footer {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      margin-top: 6px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(30, 64, 175, 0.7);
+    }
+
+    .footer-left {
+      font-size: 0.75rem;
+      color: var(--void-muted);
+    }
+
+    .footer-right {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .btn {
+      font-size: 0.78rem;
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.7);
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.9));
+      color: var(--void-text);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+    }
+
+    .btn.primary {
+      border: none;
+      background: var(--void-gradient-main);
+      color: #020617;
+      box-shadow: 0 0 24px rgba(168, 85, 255, 0.7);
+      font-weight: 500;
+    }
+
+    .btn span.dot {
+      width: 6px;
+      height: 6px;
+      box-shadow: none;
+    }
+
+    .hint {
+      font-size: 0.7rem;
+      color: var(--void-muted);
+      margin-top: 2px;
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div class="header">
+      <div class="title-block">
+        <div class="title-main">
+          <span>PSX</span>
+          <span class="accent">VOID</span>
+          <span class="badge">Phase 3 Ops</span>
+        </div>
+        <div class="title-sub">World · DeFi · Land · Rewards · Creators · Governance</div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:6px; align-items:flex-end;">
+        <div class="network-pill">
+          <span class="dot"></span>
+          <span>Base Sepolia</span>
+          <span style="font-size:0.7rem; opacity:0.9;">Chain ID 84532</span>
+        </div>
+        <div class="hint">Open this file locally as a read-only status board.</div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <!-- World / HUD -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">World &amp; HUD</div>
+          <div class="pill ok">OK</div>
+        </div>
+        <div class="card-body">
+          <div class="tag-row">
+            <div class="tag neon">WorldCoords.ts</div>
+            <div class="tag teal">worldEvents.ts</div>
+            <div class="tag">LandGridWindow</div>
+          </div>
+          <ul class="list">
+            <li><span class="bullet"></span><span>3D position synced to 40×40 parcel grid.</span></li>
+            <li><span class="bullet"></span><span>World map overlay and zone highlight implemented.</span></li>
+            <li><span class="bullet"></span><span>Theme uses VOID neon palette and CSS variables.</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- DeFi / Staking -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">DeFi &amp; Staking</div>
+          <div class="pill check">CHECK</div>
+        </div>
+        <div class="card-body">
+          <div class="tag-row">
+            <div class="tag neon">VOID / USDC Swap</div>
+            <div class="tag">xVOIDVault</div>
+          </div>
+          <ul class="list">
+            <li><span class="bullet"></span><span>SwapWindow uses VoidSwapTestnet for VOID⇄USDC.</span></li>
+            <li><span class="bullet"></span><span>Fee routing 0.3% to VoidHookRouterV4 confirmed.</span></li>
+            <li><span class="bullet"></span><span>Next: implement rewards + claim flow for staking.</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Land Economy -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Land Economy</div>
+          <div class="pill check">CHECK</div>
+        </div>
+        <div class="card-body">
+          <div class="tag-row">
+            <div class="tag teal">WorldLandTestnet</div>
+            <div class="tag">40×40 Grid</div>
+          </div>
+          <ul class="list">
+            <li><span class="bullet"></span><span>Land parcels visualized and buy flow wired to testnet.</span></li>
+            <li><span class="bullet"></span><span>Next: add listing / market window for buy &amp; sell.</span></li>
+            <li><span class="bullet"></span><span>Coordinate validator script keeps mapping stable.</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Rewards -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Rewards &amp; Emissions</div>
+          <div class="pill todo">TODO</div>
+        </div>
+        <div class="card-body">
+          <div class="tag-row">
+            <div class="tag">TokenExpansionOracle</div>
+            <div class="tag">APR ≤ 20%</div>
+          </div>
+          <ul class="list">
+            <li><span class="bullet"></span><span>Economic invariants defined: fee split + APR cap.</span></li>
+            <li><span class="bullet"></span><span>Next: wire xVOIDVault rewards to emission policy.</span></li>
+            <li><span class="bullet"></span><span>Add claimRewards UI + 30-day simulation tests.</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Creators -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Creator Tools</div>
+          <div class="pill todo">TODO</div>
+        </div>
+        <div class="card-body">
+          <div class="tag-row">
+            <div class="tag neon">CREATE</div>
+            <div class="tag">Token Launchpad</div>
+          </div>
+          <ul class="list">
+            <li><span class="bullet"></span><span>CREATE + PSX tokens live on Base Sepolia.</span></li>
+            <li><span class="bullet"></span><span>Next: ERC-20 launchpad + HUD window for creator coins.</span></li>
+            <li><span class="bullet"></span><span>Launch fees should route via VoidHookRouterV4.</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Governance -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Governance</div>
+          <div class="pill todo">TODO</div>
+        </div>
+        <div class="card-body">
+          <div class="tag-row">
+            <div class="tag">PSX</div>
+            <div class="tag">VoidDAO Shell</div>
+          </div>
+          <ul class="list">
+            <li><span class="bullet"></span><span>PSX governance token deployed, no DAO wired yet.</span></li>
+            <li><span class="bullet"></span><span>Next: proposal + voting contract on testnet.</span></li>
+            <li><span class="bullet"></span><span>HUD Governance window to surface proposals.</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <div class="footer-left">
+        Status legend:
+        <span style="color:var(--void-ok);">OK</span> = implemented ·
+        <span style="color:var(--void-warning);">CHECK</span> = partial ·
+        <span style="color:var(--void-danger);">TODO</span> = planned
+      </div>
+      <div class="footer-right">
+        <button class="btn primary" type="button" onclick="alert('Use Phase3-Kickoff.ps1 in your repo to run validators and start dev.')">
+          <span class="dot"></span>
+          Launch Phase 3
+        </button>
+        <button class="btn" type="button" onclick="alert('Refer to BUILDER-PACK-MASTER-INSTRUCTIONS.md for full build instructions.')">
+          Builder Pack
+        </button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

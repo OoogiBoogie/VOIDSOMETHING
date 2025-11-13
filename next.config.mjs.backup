@@ -1,0 +1,61 @@
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  images: {
+    unoptimized: true,
+  },
+  experimental: {
+    optimizePackageImports: ["wagmi", "@tanstack/react-query"],
+    // Exclude blockchain/test folders from the build
+    turbo: {
+      resolveExtensions: [".tsx", ".ts", ".jsx", ".js"],
+    },
+  },
+  // Exclude blockchain/test files from being processed
+  pageExtensions: ["tsx", "ts", "jsx", "js"],
+  // output: 'standalone', // Disabled for dev mode
+  turbopack: {},
+  webpack: (config, { isServer }) => {
+    // Prevent accidental SSR import/initialization of MetaMask SDK
+    config.resolve.alias = config.resolve.alias || {}
+    config.resolve.alias['@metamask/sdk'] = false
+    config.resolve.alias['@metamask/detect-provider'] = false
+    
+    // Block Hardhat and blockchain tooling from client bundle
+    if (!isServer) {
+      config.resolve.alias['hardhat'] = false
+      config.resolve.alias['@nomicfoundation/hardhat-toolbox'] = false
+      config.resolve.alias['@nomicfoundation/hardhat-verify'] = false
+      config.resolve.alias['@nomicfoundation/hardhat-ethers'] = false
+      config.resolve.alias['@nomicfoundation/edr'] = false
+      config.resolve.alias['ethers'] = false
+    }
+    
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        net: false,
+        tls: false,
+        crypto: false,
+        stream: false,
+        http: false,
+        https: false,
+        zlib: false,
+        path: false,
+        os: false,
+      }
+      config.externals = config.externals || []
+      config.externals.push({
+        'ws': 'commonjs ws',
+        'bufferutil': 'commonjs bufferutil',
+        'utf-8-validate': 'commonjs utf-8-validate',
+      })
+    }
+    return config
+  },
+}
+
+export default nextConfig

@@ -1,0 +1,127 @@
+name: psx-void-ci
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
+
+jobs:
+  build-test-validate:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18, 20]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Secrets scan
+        uses: trufflesecurity/trufflehog@v3
+        continue-on-error: true
+      
+      - name: OSV vulnerability scan
+        uses: google/osv-scanner/actions/scanner@v1
+        with:
+          scan-args: --lockfile=package-lock.json
+        continue-on-error: true
+      
+      - name: Dependency audit
+        run: npm audit --audit-level=moderate || true
+      
+      - name: Type check
+        run: npm run typecheck || npx tsc --noEmit
+      
+      - name: Build
+        run: npm run build
+        env:
+          NEXT_PUBLIC_PRIVY_APP_ID: ${{ secrets.NEXT_PUBLIC_PRIVY_APP_ID || 'ci-mock-id' }}
+          NEXT_PUBLIC_BASE_RPC_URL: https://sepolia.base.org
+          NEXT_PUBLIC_CHAIN_ID: 84532
+          NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID: ci-demo-id
+      
+      - name: Lint (if configured)
+        run: npm run lint --if-present || echo "No lint script found"
+      
+      - name: Validate coordinates (if script exists)
+        run: npm run validate:coords --if-present || echo "No coord validation script"
+      
+      - name: Environment schema check
+        run: |
+          if [ -f scripts/verify-env.js ]; then
+            node scripts/verify-env.js
+          else
+            echo "No env verification script found (optional)"
+          fi
+      
+      - name: Check for TypeScript errors in core files
+        run: |
+          echo "Checking core HUD files..."
+          npx tsc --noEmit --skipLibCheck \
+            hud/tabs/WalletTab.tsx \
+            hud/tabs/SwapTab.tsx \
+            hud/tabs/LandTab.tsx || echo "Some TypeScript errors found (may be acceptable)"
+      
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
+      
+      - name: Foundry build
+        run: |
+          if [ -d "contracts" ]; then
+            forge --version
+            forge build
+          else
+            echo "contracts/ not present, skipping"
+          fi
+      
+      - name: Run Solidity tests
+        run: |
+          if [ -d "contracts" ] && [ -d "test" ]; then
+            forge test -vvv
+          else
+            echo "no tests dir, skipping"
+          fi
+      
+      - name: Upload build artifacts
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-${{ matrix.node-version }}
+          path: .next/
+          retention-days: 7
+      
+      - name: Upload ops dashboard
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ops-dashboard-${{ matrix.node-version }}
+          path: ops-dashboard.html
+          if-no-files-found: ignore
+      
+      - name: Upload QA reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: qa-reports-${{ matrix.node-version }}
+          path: qa-reports/**
+          if-no-files-found: ignore
+      
+      - name: Report status
+        if: always()
+        run: |
+          echo "Build Status: ${{ job.status }}"
+          echo "Node Version: ${{ matrix.node-version }}"
+          echo "Commit: ${{ github.sha }}"

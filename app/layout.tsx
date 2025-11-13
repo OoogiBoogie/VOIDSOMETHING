@@ -2,8 +2,8 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Audiowide, Rajdhani } from "next/font/google"
 import "./globals.css"
-import { PrivyProviderWrapper } from "@/components/providers/privy-provider"
-import { Web3Provider } from "@/components/Web3Provider"
+import { VoidBootIntro } from "@/components/intro/VoidBootIntro"
+import RootProviders from "@/components/providers/root-providers"
 
 const audiowide = Audiowide({
   weight: "400",
@@ -67,9 +67,10 @@ export default function RootLayout({
           left: 0,
         }}
       >
-        <Web3Provider>
-          <PrivyProviderWrapper>{children}</PrivyProviderWrapper>
-        </Web3Provider>
+        <RootProviders>
+          <VoidBootIntro />
+          {children}
+        </RootProviders>
       </body>
     </html>
   )

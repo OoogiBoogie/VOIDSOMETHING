@@ -1,0 +1,29 @@
+{
+  "timestamp": "2025-11-11T02:54:04.030Z",
+  "totalVaults": 4,
+  "healthyVaults": 2,
+  "warningVaults": 0,
+  "criticalVaults": 2,
+  "averageCollateralization": 142.5,
+  "totalDeposited": 4600,
+  "totalBorrowed": 3000,
+  "systemHealth": "CRITICAL",
+  "alerts": [
+    {
+      "vaultId": "vault-2",
+      "severity": "WARN",
+      "collateralizationRatio": 114.99999999999999,
+      "message": "Vault vault-2 below warning threshold at 115.0%",
+      "recommendedAction": "URGENT: Add 175.00 USDC or risk liquidation",
+      "timestamp": 1762829644030
+    },
+    {
+      "vaultId": "vault-3",
+      "severity": "CRITICAL",
+      "collateralizationRatio": 105,
+      "message": "Vault vault-3 critically undercollateralized at 105.0%",
+      "recommendedAction": "URGENT: Add 225.00 WETH or risk liquidation",
+      "timestamp": 1762829644030
+    }
+  ]
+}

@@ -5,6 +5,8 @@ import { useFrame, useThree } from "@react-three/fiber"
 import * as THREE from "three"
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js"
 import { CITY_BOUNDS, buildingColliders } from "@/lib/city-assets"
+import { worldEvents, PLAYER_MOVED, PARCEL_ENTERED, PARCEL_EXITED, DISTRICT_ENTERED } from "@/services/events/worldEvents"
+import { getParcelInfo, isSameParcel } from "@/world/WorldCoords"
 
 interface PlayerCharacter3DProps {
   position: { x: number; y: number; z: number }
@@ -100,7 +102,7 @@ function CharacterModel({ animState }: { animState: AnimState }) {
       const headMat = new THREE.MeshStandardMaterial({
         color: "#06FFA5",
         emissive: "#06FFA5",
-        emissiveIntensity: 0.3,
+        emissiveIntensity: 0.5,
       })
       const head = new THREE.Mesh(headGeo, headMat)
       head.position.set(0, 3.0, 0)
@@ -110,7 +112,7 @@ function CharacterModel({ animState }: { animState: AnimState }) {
       const bodyMat = new THREE.MeshStandardMaterial({
         color: "#38BDF8",
         emissive: "#38BDF8",
-        emissiveIntensity: 0.2,
+        emissiveIntensity: 0.4,
       })
       const body = new THREE.Mesh(bodyGeo, bodyMat)
       body.position.set(0, 1.875, 0)
@@ -224,6 +226,10 @@ export function PlayerCharacter3D({
   const { camera } = useThree()
 
   const characterRotationRef = useRef(0)
+  
+  // Track current parcel for event emission
+  const currentParcelIdRef = useRef<number | null>(null)
+  const currentDistrictRef = useRef<string | null>(null)
 
   useEffect(() => {
     if (!controlsEnabled) {
@@ -361,6 +367,46 @@ export function PlayerCharacter3D({
 
       const nextState: AnimState = baseSpeed > WALK_SPEED + 0.01 ? "running" : "walking"
       if (nextState !== animState) setAnimState(nextState)
+      
+      // Emit world events for HUD synchronization
+      const parcelInfo = getParcelInfo({ x: candidate.x, z: candidate.z })
+      
+      // Always emit PLAYER_MOVED
+      worldEvents.emit(PLAYER_MOVED, {
+        position: { x: candidate.x, z: candidate.z },
+        parcelId: parcelInfo.id,
+        timestamp: Date.now(),
+      })
+      
+      // Emit PARCEL_ENTERED/EXITED when crossing parcel boundaries
+      if (currentParcelIdRef.current !== parcelInfo.id) {
+        if (currentParcelIdRef.current !== null) {
+          worldEvents.emit(PARCEL_EXITED, {
+            parcelId: currentParcelIdRef.current,
+            newParcelId: parcelInfo.id,
+            timestamp: Date.now(),
+          })
+        }
+        
+        worldEvents.emit(PARCEL_ENTERED, {
+          parcelInfo,
+          previousParcelId: currentParcelIdRef.current,
+          timestamp: Date.now(),
+        })
+        
+        currentParcelIdRef.current = parcelInfo.id
+      }
+      
+      // Emit DISTRICT_ENTERED when entering new district
+      if (currentDistrictRef.current !== parcelInfo.district) {
+        worldEvents.emit(DISTRICT_ENTERED, {
+          district: parcelInfo.district,
+          parcelId: parcelInfo.id,
+          timestamp: Date.now(),
+        })
+        
+        currentDistrictRef.current = parcelInfo.district
+      }
     }
 
     const config = CAMERA_CONFIGS[cameraAngle]

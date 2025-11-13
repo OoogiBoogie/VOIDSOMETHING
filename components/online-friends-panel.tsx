@@ -366,16 +366,16 @@ export function OnlineFriendsPanel({ onOpenDM, onTeleportToFriend, expanded = fa
                   <MessageCircle className="w-4 h-4 text-cyan-300" style={{ filter: "drop-shadow(0 0 6px #22D3EE)" }} />
                   <span className="text-sm font-black text-cyan-200 font-mono tracking-wider">PROX CHAT</span>
                 </div>
-                <button
+                <div
                   onClick={(e) => {
                     e.stopPropagation()
                     setShowProxOptions(!showProxOptions)
                     setShowGlobalOptions(false)
                   }}
-                  className="p-1 hover:bg-cyan-500/20 rounded transition-all"
+                  className="p-1 hover:bg-cyan-500/20 rounded transition-all cursor-pointer"
                 >
                   <ChevronDown className="w-4 h-4 text-cyan-300" />
-                </button>
+                </div>
               </div>
             </button>
 
@@ -465,16 +465,16 @@ export function OnlineFriendsPanel({ onOpenDM, onTeleportToFriend, expanded = fa
                   />
                   <span className="text-sm font-black text-purple-200 font-mono tracking-wider">GLOBAL</span>
                 </div>
-                <button
+                <div
                   onClick={(e) => {
                     e.stopPropagation()
                     setShowGlobalOptions(!showGlobalOptions)
                     setShowProxOptions(false)
                   }}
-                  className="p-1 hover:bg-purple-500/20 rounded transition-all"
+                  className="p-1 hover:bg-purple-500/20 rounded transition-all cursor-pointer"
                 >
                   <ChevronDown className="w-4 h-4 text-purple-300" />
-                </button>
+                </div>
               </div>
             </button>
 

@@ -284,6 +284,64 @@ export interface RevenueDistribution {
 }
 
 /**
+ * SKU - Stock Keeping Unit (Product/Service)
+ */
+export interface SKU {
+  skuId: string;                       // UUID or tokenId
+  tokenId?: number;                    // ERC-1155 token ID
+  
+  // Ownership
+  businessId: string;                  // Linked business
+  creatorAddress: Address;
+  
+  // Product Info
+  name: string;
+  description: string;
+  category: SKUCategory;
+  
+  // Pricing & Supply
+  price: bigint;                       // In VOID or ETH
+  currency: 'VOID' | 'ETH';
+  maxSupply: number;                   // Total cap
+  currentSupply: number;               // Minted so far
+  availableStock: number;              // Not yet sold
+  
+  // Media
+  imageUrl?: string;
+  animationUrl?: string;
+  externalUrl?: string;
+  
+  // Metadata
+  attributes?: SKUAttribute[];
+  
+  // Sales Data
+  totalSales: number;
+  totalRevenue: bigint;
+  
+  // Status
+  isActive: boolean;
+  isLimitedEdition: boolean;
+  
+  // Timestamps
+  createdAt: Date;
+  lastSaleAt?: Date;
+}
+
+export enum SKUCategory {
+  VIRTUAL_ITEM = "virtual_item",       // In-game items, cosmetics
+  DIGITAL_CONTENT = "digital_content", // Music, art, media
+  SERVICE = "service",                 // Access passes, subscriptions
+  PHYSICAL = "physical",               // Real-world goods (future)
+  COLLECTIBLE = "collectible"          // Limited edition NFTs
+}
+
+export interface SKUAttribute {
+  trait_type: string;
+  value: string | number;
+  display_type?: 'number' | 'boost_percentage' | 'boost_number' | 'date';
+}
+
+/**
  * DAO Parcel - Community-owned land
  */
 export interface DAOParcel {

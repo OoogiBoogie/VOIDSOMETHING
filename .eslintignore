@@ -1,0 +1,12 @@
+contracts/
+script/
+scripts/
+test/
+**/*.spec.*
+**/*.test.*
+**/*.t.sol
+**/*.sol
+lib/forge-std/
+lib/openzeppelin-contracts/
+foundry.toml
+hardhat.config.*

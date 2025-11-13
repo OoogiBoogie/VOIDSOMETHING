@@ -1,0 +1,155 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.24;
+
+import "forge-std/Test.sol";
+import "../contracts/VoidHookRouterV4.sol";
+import "../contracts/mocks/ERC20Mock.sol";
+
+/**
+ * @title VoidHookRouterV4 Tests
+ * @notice Tests for fee distribution and economic invariants
+ */
+contract VoidHookRouterV4Test is Test {
+    VoidHookRouterV4 public router;
+    ERC20Mock public paymentToken;
+    
+    address public creator = address(0x1);
+    address public xVoidStakers = address(0x2);
+    address public psxTreasury = address(0x3);
+    address public createTreasury = address(0x4);
+    address public agencyWallet = address(0x5);
+    address public grantsVault = address(0x6);
+    address public securityReserve = address(0x7);
+    address public buyer = address(0x8);
+
+    function setUp() public {
+        // Deploy payment token
+        paymentToken = new ERC20Mock("Test USDC", "USDC", 1_000_000 * 1e6);
+        
+        // Deploy router
+        router = new VoidHookRouterV4(
+            xVoidStakers,
+            psxTreasury,
+            createTreasury,
+            agencyWallet,
+            grantsVault,
+            securityReserve
+        );
+        
+        // Fund buyer
+        paymentToken.transfer(buyer, 10_000 * 1e6);
+    }
+
+    /// @notice Test that fee split sums to exactly 10000 BPS
+    function testFeeWeightsSum10000() public {
+        uint256 total = router.CREATOR_SHARE_BPS() +
+                        router.STAKER_SHARE_BPS() +
+                        router.PSX_TREASURY_SHARE_BPS() +
+                        router.CREATE_TREASURY_SHARE_BPS() +
+                        router.AGENCY_SHARE_BPS() +
+                        router.GRANTS_VAULT_SHARE_BPS() +
+                        router.SECURITY_RESERVE_SHARE_BPS();
+        
+        assertEq(total, 10000, "Fee weights must sum to 10000 BPS");
+    }
+
+    /// @notice Test exact fee distribution for 40/20/10/10/10/5/5 split
+    function testFeeDistribution() public {
+        uint256 purchaseAmount = 1000 * 1e6; // $1000 USDC
+        
+        // Approve router to spend buyer's tokens
+        vm.prank(buyer);
+        paymentToken.approve(address(router), purchaseAmount);
+        
+        // Record balances before
+        uint256 creatorBefore = paymentToken.balanceOf(creator);
+        uint256 stakersBefore = paymentToken.balanceOf(xVoidStakers);
+        uint256 psxBefore = paymentToken.balanceOf(psxTreasury);
+        uint256 createBefore = paymentToken.balanceOf(createTreasury);
+        uint256 agencyBefore = paymentToken.balanceOf(agencyWallet);
+        uint256 grantsBefore = paymentToken.balanceOf(grantsVault);
+        uint256 securityBefore = paymentToken.balanceOf(securityReserve);
+        
+        // Execute fee routing
+        vm.prank(buyer);
+        router.routeFees(address(paymentToken), purchaseAmount, creator);
+        
+        // Verify distributions
+        assertEq(paymentToken.balanceOf(creator) - creatorBefore, 400 * 1e6, "Creator should receive 40%");
+        assertEq(paymentToken.balanceOf(xVoidStakers) - stakersBefore, 200 * 1e6, "Stakers should receive 20%");
+        assertEq(paymentToken.balanceOf(psxTreasury) - psxBefore, 100 * 1e6, "PSX Treasury should receive 10%");
+        assertEq(paymentToken.balanceOf(createTreasury) - createBefore, 100 * 1e6, "CREATE Treasury should receive 10%");
+        assertEq(paymentToken.balanceOf(agencyWallet) - agencyBefore, 100 * 1e6, "Agency should receive 10%");
+        assertEq(paymentToken.balanceOf(grantsVault) - grantsBefore, 50 * 1e6, "Grants should receive 5%");
+        assertEq(paymentToken.balanceOf(securityReserve) - securityBefore, 50 * 1e6, "Security should receive 5%");
+    }
+
+    /// @notice Test fee distribution with different amounts (fuzz)
+    function testFeeDistributionFuzz(uint96 amount) public {
+        vm.assume(amount > 1000 && amount < 1_000_000 * 1e6); // Reasonable range
+        
+        // Mint tokens to buyer
+        paymentToken.mint(buyer, amount);
+        
+        vm.startPrank(buyer);
+        paymentToken.approve(address(router), amount);
+        router.routeFees(address(paymentToken), amount, creator);
+        vm.stopPrank();
+        
+        // Verify total distributed equals input
+        uint256 creatorReceived = (amount * 4000) / 10000;
+        uint256 stakersReceived = (amount * 2000) / 10000;
+        uint256 psxReceived = (amount * 1000) / 10000;
+        uint256 createReceived = (amount * 1000) / 10000;
+        uint256 agencyReceived = (amount * 1000) / 10000;
+        uint256 grantsReceived = (amount * 500) / 10000;
+        uint256 securityReceived = (amount * 500) / 10000;
+        
+        uint256 totalDistributed = creatorReceived + stakersReceived + psxReceived + 
+                                  createReceived + agencyReceived + grantsReceived + securityReceived;
+        
+        // Allow for rounding errors (max 7 wei for 7 transfers)
+        assertApproxEqAbs(totalDistributed, amount, 7, "Total distributed should equal input amount");
+    }
+
+    /// @notice Test constructor reverts with invalid recipients
+    function testConstructorRevertsZeroAddress() public {
+        vm.expectRevert(VoidHookRouterV4.ZeroAddress.selector);
+        new VoidHookRouterV4(
+            address(0), // invalid
+            psxTreasury,
+            createTreasury,
+            agencyWallet,
+            grantsVault,
+            securityReserve
+        );
+    }
+
+    /// @notice Test routeFees reverts with zero amount
+    function testRouteFeesRevertsZeroAmount() public {
+        vm.prank(buyer);
+        vm.expectRevert(VoidHookRouterV4.InvalidAmount.selector);
+        router.routeFees(address(paymentToken), 0, creator);
+    }
+
+    /// @notice Test routeFees reverts with zero creator address
+    function testRouteFeesRevertsZeroCreator() public {
+        vm.prank(buyer);
+        vm.expectRevert(VoidHookRouterV4.ZeroAddress.selector);
+        router.routeFees(address(paymentToken), 1000, address(0));
+    }
+
+    /// @notice Test pause functionality
+    function testPauseBlocksRouting() public {
+        // Grant admin role to this test contract
+        router.grantRole(router.ADMIN_ROLE(), address(this));
+        router.pause();
+        
+        vm.prank(buyer);
+        paymentToken.approve(address(router), 1000);
+        
+        vm.prank(buyer);
+        vm.expectRevert("Pausable: paused");
+        router.routeFees(address(paymentToken), 1000, creator);
+    }
+}

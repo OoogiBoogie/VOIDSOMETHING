@@ -4,8 +4,10 @@ import { useState } from "react"
 import { DISTRICTS, type District } from "@/lib/districts"
 import { propertyRegistry, type PropertyListing } from "@/lib/real-estate-system"
 import { useTeleportSystem } from "@/lib/hooks/use-teleport-system"
-import { X, Zap, MapPin, Lock, Plus, Minus, Building2, Home, Store } from "lucide-react"
+import { X, Zap, MapPin, Lock, Plus, Minus, Building2, Home, Store, Shield } from "lucide-react"
 import { useAccount } from "wagmi"
+import { useVoidUnlocks } from "@/hooks/useVoidUnlocks"
+import { useVoidScore } from "@/hooks/useVoidScore"
 
 interface CyberpunkCityMapProps {
   playerPosition: { x: number; z: number }
@@ -20,9 +22,38 @@ export function CyberpunkCityMap({ playerPosition, onTeleport, onClose }: Cyberp
   const [zoomLevel, setZoomLevel] = useState(1)
   const teleportSystem = useTeleportSystem()
   const { address } = useAccount()
+  const { checkAccess, nextZone } = useVoidUnlocks()
+  const { voidScore } = useVoidScore()
 
   const mapSize = 4000
   const scale = 0.12 * zoomLevel
+
+  // Map district IDs to zone IDs for unlock checking
+  const getZoneIdForDistrict = (districtId: string): 'base_city' | 'district_2' | 'district_3' | 'district_4' | 'agency_hq' | 's_tier_sector' => {
+    switch (districtId) {
+      case 'spawn-zone':
+      case 'residential-north':
+        return 'base_city';
+      case 'commercial-east':
+      case 'social-plaza':
+        return 'district_2';
+      case 'defi-district':
+      case 'entertainment-south':
+        return 'district_3';
+      case 'tech-sector':
+      case 'luxury-district':
+        return 'district_4';
+      case 'industrial-zone':
+        return 's_tier_sector';
+      default:
+        return 'base_city';
+    }
+  };
+
+  const isDistrictLocked = (district: District): boolean => {
+    const zoneId = getZoneIdForDistrict(district.id);
+    return !checkAccess(zoneId);
+  };
 
   const districtProperties = selectedDistrict
     ? propertyRegistry.getAllListings().filter((p) => {
@@ -136,6 +167,7 @@ export function CyberpunkCityMap({ playerPosition, onTeleport, onClose }: Cyberp
                 const w = district.sizeX * scale
                 const h = district.sizeZ * scale
                 const isSelected = selectedDistrict?.id === district.id
+                const locked = isDistrictLocked(district)
 
                 return (
                   <g key={district.id}>
@@ -144,26 +176,54 @@ export function CyberpunkCityMap({ playerPosition, onTeleport, onClose }: Cyberp
                       y={y}
                       width={w}
                       height={h}
-                      fill={district.color}
-                      fillOpacity={isSelected ? 0.35 : 0.15}
-                      stroke={district.color}
+                      fill={locked ? "#666666" : district.color}
+                      fillOpacity={locked ? 0.1 : (isSelected ? 0.35 : 0.15)}
+                      stroke={locked ? "#666666" : district.color}
                       strokeWidth={isSelected ? 5 : 2.5}
-                      strokeOpacity={isSelected ? 1 : 0.6}
-                      className="cursor-pointer transition-all hover:fill-opacity-30 hover:stroke-width-4"
+                      strokeOpacity={locked ? 0.3 : (isSelected ? 1 : 0.6)}
+                      className={locked ? "cursor-not-allowed" : "cursor-pointer transition-all hover:fill-opacity-30 hover:stroke-width-4"}
                       onClick={() => {
-                        setSelectedDistrict(district)
-                        setSelectedProperty(null)
+                        if (locked) {
+                          alert(`Locked: Requires ${voidScore?.tier || 'higher'} tier to unlock`);
+                        } else {
+                          setSelectedDistrict(district);
+                          setSelectedProperty(null);
+                        }
                       }}
                       filter={isSelected ? "url(#glow)" : undefined}
                       rx="8"
                       ry="8"
                     />
 
+                    {locked && (
+                      <g>
+                        <rect
+                          x={x + w / 2 - 20}
+                          y={y + h / 2 - 20}
+                          width={40}
+                          height={40}
+                          fill="rgba(0,0,0,0.8)"
+                          rx="8"
+                        />
+                        <text
+                          x={x + w / 2}
+                          y={y + h / 2 + 6}
+                          textAnchor="middle"
+                          fill="#999"
+                          fontSize="24"
+                          fontWeight="bold"
+                          className="pointer-events-none"
+                        >
+                          🔒
+                        </text>
+                      </g>
+                    )}
+
                     <text
                       x={x + w / 2}
                       y={y + h / 2 - 10}
                       textAnchor="middle"
-                      fill={district.color}
+                      fill={locked ? "#666" : district.color}
                       fontSize={zoomLevel > 1.2 ? "18" : zoomLevel > 0.8 ? "14" : "11"}
                       fontWeight="bold"
                       className="pointer-events-none font-mono uppercase [text-shadow:_0_0_20px_rgb(0_0_0_/_100%),_0_0_10px_currentColor]"

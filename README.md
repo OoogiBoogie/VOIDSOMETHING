@@ -199,6 +199,66 @@ pnpm start
 
 ---
 
+## 🧪 E2E Testing
+
+**Quick Start:** [START-HERE-E2E.md](./START-HERE-E2E.md) (5-minute setup)
+
+### Test Conductor (Automated E2E)
+
+Run comprehensive end-to-end testing with one command:
+
+```powershell
+# Install Foundry (one-time)
+.\install-foundry-windows.ps1
+
+# Run E2E tests (replace with your testnet private key)
+.\scripts\Test-Conductor.ps1 -WalletPrivKey 0xYOUR_TESTNET_KEY
+```
+
+**What it validates:**
+- ✅ Environment setup (Node, Foundry, RPC, Chain ID)
+- ✅ UI availability (localhost:3000)
+- ✅ Fee routing (0.3% swap fees → Router)
+- ✅ Staking APR (12% + XP boost display)
+- ✅ World ↔ HUD sync (≤3s)
+- ✅ FPS performance (≥55 FPS target)
+
+**Results:** Automated JSONL logs in `qa-reports/`
+
+### Operations Scripts (Read-Only Monitoring)
+
+Located in `scripts/ops/` - safe to run anytime:
+
+```powershell
+# System health check
+.\scripts\ops\status.ps1
+
+# Watch live events (VOID/USDC/Land transfers)
+.\scripts\ops\watch-events.ps1 -Follow
+
+# Audit fee routing (last 10k blocks)
+.\scripts\ops\fee-audit.ps1
+
+# Monitor gas prices
+.\scripts\ops\gas-watch.ps1 -Follow
+
+# Export land ownership (CSV/JSON)
+.\scripts\ops\land-snapshot.ps1
+
+# Query subgraph
+.\scripts\ops\graph-query.ps1 -SubgraphUrl https://... -QueryType meta
+```
+
+**Documentation:**
+- **[DEV-E2E-ACCESS-GUIDE.md](./DEV-E2E-ACCESS-GUIDE.md)** - Comprehensive developer setup
+- **[E2E-QUICK-START.md](./E2E-QUICK-START.md)** - Testing procedures
+- **[TEST-CONDUCTOR-RESULTS.md](./TEST-CONDUCTOR-RESULTS.md)** - Results template
+- **[scripts/ops/README.md](./scripts/ops/README.md)** - Ops pack overview
+- **[docs/OPS-RUNBOOK.md](./docs/OPS-RUNBOOK.md)** - Operations guide
+- **[docs/RUNBOOKS.md](./docs/RUNBOOKS.md)** - Incident response
+
+---
+
 ## 🎯 Key Systems Breakdown
 
 ### Systems Hub

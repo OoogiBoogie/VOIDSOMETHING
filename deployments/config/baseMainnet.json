@@ -1,0 +1,48 @@
+{
+  "network": "Base Mainnet",
+  "chainId": 8453,
+  "rpcUrl": "${BASE_MAINNET_RPC_URL}",
+  "blockExplorer": "https://basescan.org",
+  
+  "externalTokens": {
+    "USDC": "0x833589fCD6eDb6E08f4c7C32D4f71b54bDA02913",
+    "WETH": "0x4200000000000000000000000000000000000006"
+  },
+  
+  "governanceRoles": {
+    "routerAdmin": "${ROUTER_ADMIN_MSIG}",
+    "psxTreasury": "${TREASURY_PSX_MSIG}",
+    "createTreasury": "${TREASURY_CREATE_MSIG}",
+    "agencyWallet": "${AGENCY_OPS_MSIG}",
+    "creatorGrantsVault": "${GRANTS_VAULT_MSIG}",
+    "securityReserve": "${SECURITY_RESERVE_MSIG}",
+    "pauseGuardian": "${PAUSE_GUARDIAN_MSIG}",
+    "xVoidStakingPool": "${XVOID_STAKING_POOL_MSIG}"
+  },
+  
+  "feeModel": {
+    "creatorShareBPS": 4000,
+    "stakerShareBPS": 2000,
+    "psxTreasuryShareBPS": 1000,
+    "createTreasuryShareBPS": 1000,
+    "agencyShareBPS": 1000,
+    "grantsShareBPS": 500,
+    "securityShareBPS": 500,
+    "totalMustEqual": 10000
+  },
+  
+  "economicBounds": {
+    "maxAPRBoostBPS": 2000,
+    "baseAPRBPS": 500,
+    "xpStalenessThreshold": 7200,
+    "maxWeeklyEmissionMultiplier": "1.0"
+  },
+  
+  "deploymentOptions": {
+    "deployMockTokens": false,
+    "deployCosmetics": false,
+    "deployUniswapHook": false,
+    "useProxies": true,
+    "verifyContracts": true
+  }
+}

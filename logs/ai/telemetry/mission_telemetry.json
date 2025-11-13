@@ -1,0 +1,14 @@
+{
+  "timestamp": "2025-11-11T02:54:04.029Z",
+  "hub": "ALL",
+  "activeMissions": 9,
+  "completionRate": 0.42,
+  "totalXPRewards": 2825,
+  "totalSIGNALRewards": 1800,
+  "difficultyDistribution": {
+    "easy": 3,
+    "medium": 3,
+    "hard": 3
+  },
+  "averageEstimatedTime": "12 minutes"
+}

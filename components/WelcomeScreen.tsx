@@ -122,7 +122,7 @@ export function WelcomeScreen({ onComplete }: WelcomeScreenProps) {
   // Handle user input
   const handleEnter = () => {
     const input = userInput.trim().toUpperCase()
-    const validCommands = ["ENTER THE VOID", "I ACCEPT", "ENTER"]
+    const validCommands = ["THE VOID"]
     
     if (phase === "invitation" && validCommands.includes(input)) {
       setPhase("entry")
@@ -387,7 +387,7 @@ export function WelcomeScreen({ onComplete }: WelcomeScreenProps) {
                     value={userInput}
                     onChange={handleInputChange}
                     onKeyDown={handleInputKeyDown}
-                    placeholder="ENTER THE VOID"
+                    placeholder="THE VOID"
                     className="w-full px-4 py-3 bg-black/80 border-2 border-[#00f0ff]/30 text-[#00f0ff] font-mono text-lg tracking-widest uppercase placeholder:text-[#00f0ff]/20 focus:border-[#00f0ff] focus:outline-none focus:shadow-[0_0_20px_rgba(0,240,255,0.3)] transition-all"
                     style={{
                       textShadow: inputError ? '0 0 10px rgba(255, 0, 50, 0.8)' : '0 0 10px rgba(0, 240, 255, 0.5)',
@@ -412,9 +412,9 @@ export function WelcomeScreen({ onComplete }: WelcomeScreenProps) {
                   className="font-mono text-xs text-[#00f0ff]/40 mt-2 tracking-wider text-center"
                 >
                   {inputError ? (
-                    <span className="text-[#ff0032]">INVALID COMMAND</span>
+                    <span className="text-[#ff0032]">ACCESS DENIED</span>
                   ) : (
-                    <>ACCEPTED: "ENTER THE VOID" • "I ACCEPT" • "ENTER"</>
+                    <>TYPE: "THE VOID"</>
                   )}
                 </motion.p>
               </div>

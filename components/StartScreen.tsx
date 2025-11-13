@@ -2,13 +2,17 @@
 
 import { motion } from "framer-motion"
 import { useState } from "react"
+import { usePrivy } from "@privy-io/react-auth"
+import { useAccount } from "wagmi"
+import { Wallet, CheckCircle } from "lucide-react"
 
 interface StartScreenProps {
   onStart: () => void
 }
 
 export function StartScreen({ onStart }: StartScreenProps) {
-  const isConnected = true
+  const { authenticated, login } = usePrivy()
+  const { address, isConnected } = useAccount()
   const [showMenu, setShowMenu] = useState(false)
 
   return (
@@ -98,10 +102,42 @@ export function StartScreen({ onStart }: StartScreenProps) {
             <div className="bg-black/90 backdrop-blur-2xl border-2 border-cyan-400/50 rounded-2xl p-8">
               <h2 className="text-4xl font-black chrome-text mb-6 glow-text">WELCOME TO THE VOID</h2>
 
-              <div className="mb-8 bg-cyan-500/20 border border-cyan-400/50 rounded-xl p-4">
-                <p className="text-cyan-400 font-bold text-center glow-text">
-                  Demo Mode - Wallet Integration Coming Soon
-                </p>
+              {/* Wallet Connection Section */}
+              <div className="mb-8 bg-gradient-to-r from-cyan-500/20 to-purple-500/20 border-2 border-cyan-400/50 rounded-xl p-6">
+                {authenticated && isConnected ? (
+                  <div className="flex items-center justify-center gap-3">
+                    <CheckCircle className="w-6 h-6 text-green-400" />
+                    <div>
+                      <p className="text-green-400 font-bold text-center glow-text">
+                        Wallet Connected
+                      </p>
+                      <p className="text-xs text-gray-400 font-mono text-center mt-1">
+                        {address?.slice(0, 6)}...{address?.slice(-4)} • Base Sepolia
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-center gap-3 mb-3">
+                      <Wallet className="w-6 h-6 text-cyan-400" />
+                      <p className="text-cyan-400 font-bold glow-text">
+                        Connect Your Wallet
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => login()}
+                      className="w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-cyan-600 rounded-lg text-white font-bold hover:scale-105 transition-transform"
+                      style={{
+                        boxShadow: "0 0 20px rgba(168, 85, 247, 0.4)",
+                      }}
+                    >
+                      Connect with Privy
+                    </button>
+                    <p className="text-xs text-gray-400 text-center">
+                      Email, Google, Twitter, Discord, or Web3 wallet
+                    </p>
+                  </div>
+                )}
               </div>
 
               <div className="space-y-4 mb-8">

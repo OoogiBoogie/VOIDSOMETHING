@@ -918,7 +918,8 @@ Minting Flows:
 World Layout:
 - Regions arranged in spiral pattern from genesis
 - Teleportation between regions via map or portal buildings
-- egionOffset = spiralPosition[index]  (REGION_SIZE + GAP)
+- 
+egionOffset = spiralPosition[index]  (REGION_SIZE + GAP)
 
 ---
 
@@ -932,7 +933,8 @@ World Layout:
 5. Update mock data to 4040 with tier/district assignments
 
 **PHASE 2** (High - 3-5 hours):
-6. Update coordinate system in egistry-api.ts (add regionId param)
+6. Update coordinate system in 
+egistry-api.ts (add regionId param)
 7. Create lib/land/tier-calculator.ts for tier/district logic
 8. Create lib/land/region-system.ts for multi-region management
 9. Update pricing formula with tierdistrictscarcity

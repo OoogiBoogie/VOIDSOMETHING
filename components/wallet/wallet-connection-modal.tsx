@@ -1,18 +1,38 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { useCoinbaseWallet } from "./coinbase-wallet-provider"
+import { usePrivy } from "@privy-io/react-auth"
 
 interface WalletConnectionModalProps {
   isOpen: boolean
   onClose: () => void
   onConnected: (address: string, method: "privy" | "coinbase") => void
+  onSkip?: () => void // Optional skip/bypass callback
 }
 
-export function WalletConnectionModal({ isOpen, onClose, onConnected }: WalletConnectionModalProps) {
+export function WalletConnectionModal({ isOpen, onClose, onConnected, onSkip }: WalletConnectionModalProps) {
   const { connect, isConnecting } = useCoinbaseWallet()
+  const { login, ready, authenticated, user } = usePrivy()
   const [selectedMethod, setSelectedMethod] = useState<"privy" | "coinbase" | null>(null)
+
+  // Handle Privy authentication success
+  useEffect(() => {
+    if (authenticated && user?.wallet?.address && selectedMethod === "privy") {
+      onConnected(user.wallet.address, "privy")
+      onClose()
+      setSelectedMethod(null)
+    }
+  }, [authenticated, user, selectedMethod, onConnected, onClose])
+
+  const handleSkip = () => {
+    if (onSkip) {
+      onSkip()
+    } else {
+      onClose()
+    }
+  }
 
   const handleCoinbaseConnect = async () => {
     setSelectedMethod("coinbase")
@@ -77,15 +97,19 @@ export function WalletConnectionModal({ isOpen, onClose, onConnected }: WalletCo
                 </div>
               </motion.button>
 
-              {/* Privy (Existing) */}
+              {/* Privy (Email & Social) */}
               <motion.button
-                onClick={() => {
+                onClick={async () => {
+                  if (!ready) return
                   setSelectedMethod("privy")
-                  // Trigger existing Privy connection flow
-                  onConnected("", "privy")
-                  onClose()
+                  try {
+                    await login()
+                  } catch (error) {
+                    console.error("Privy login error:", error)
+                    setSelectedMethod(null)
+                  }
                 }}
-                disabled={isConnecting || selectedMethod === "privy"}
+                disabled={!ready || isConnecting || selectedMethod === "privy" || authenticated}
                 className="w-full p-4 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all border-2 border-purple-400/30"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
@@ -103,6 +127,32 @@ export function WalletConnectionModal({ isOpen, onClose, onConnected }: WalletCo
                   )}
                 </div>
               </motion.button>
+            </div>
+
+            {/* Bypass/Skip Section */}
+            <div className="mt-6 pt-6 border-t border-gray-700">
+              <motion.button
+                onClick={handleSkip}
+                className="w-full p-4 rounded-xl bg-gray-800/50 hover:bg-gray-700/50 border-2 border-gray-600/30 hover:border-gray-500/50 transition-all"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-gray-700 rounded-xl flex items-center justify-center">
+                    <span className="text-2xl">👤</span>
+                  </div>
+                  <div className="flex-1 text-left">
+                    <h3 className="text-white font-bold text-lg">Continue as Guest</h3>
+                    <p className="text-gray-400 text-xs">Explore without connecting wallet</p>
+                  </div>
+                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
+              </motion.button>
+              <p className="text-xs text-gray-500 text-center mt-3">
+                You can connect your wallet later from settings
+              </p>
             </div>
 
             <button

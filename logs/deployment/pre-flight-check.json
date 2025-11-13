@@ -1,0 +1,60 @@
+{
+  "timestamp": "2025-11-11T02:58:52.967Z",
+  "checks": {
+    "environment": {
+      "passed": true,
+      "present": [
+        "BASE_SEPOLIA_RPC_URL",
+        "DEPLOYER_PRIVATE_KEY",
+        "BASESCAN_API_KEY",
+        "DATABASE_URL"
+      ]
+    },
+    "rpc": {
+      "passed": true,
+      "network": {
+        "name": "base-sepolia",
+        "chainId": "84532"
+      }
+    },
+    "wallet": {
+      "passed": true,
+      "wallet": {
+        "address": "0xc3dc4c7E449a0a1dD85B00559a5f80d2B16D6e2f",
+        "balance": "0.1"
+      }
+    },
+    "database": {
+      "passed": false,
+      "error": "Command failed: psql \"postgresql://user:password@localhost:5432/void_testnet\" -c \"SELECT version();\"\n'psql' is not recognized as an internal or external command,\r\noperable program or batch file.\r\n"
+    },
+    "hardhat": {
+      "passed": true,
+      "version": "2.27.0"
+    },
+    "contracts": {
+      "passed": false,
+      "deployed": false
+    },
+    "telemetry": {
+      "passed": false,
+      "running": false,
+      "stale": true
+    },
+    "landGrid": {
+      "passed": false,
+      "error": "Command failed: psql \"postgresql://user:password@localhost:5432/void_testnet\" -t -c \"SELECT COUNT(*) FROM land_parcels;\"\n'psql' is not recognized as an internal or external command,\r\noperable program or batch file.\r\n"
+    },
+    "cosmeticsLock": {
+      "passed": true,
+      "exists": true,
+      "locked": true
+    }
+  },
+  "summary": {
+    "passed": 5,
+    "failed": 4,
+    "total": 9
+  },
+  "ready": true
+}

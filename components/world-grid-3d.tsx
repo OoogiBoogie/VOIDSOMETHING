@@ -3,6 +3,7 @@
 import { Suspense, useMemo } from "react"
 import * as THREE from "three"
 import { BUILDINGS, ROADS } from "@/lib/city-assets"
+import { ALL_DISTRICTS } from "@/lib/parcels"
 import { ModelBuilding } from "./model-building"
 import { DistrictBoundaries } from "./district-boundaries"
 import { PSXHQBuilding } from "./psx-hq-building"

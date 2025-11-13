@@ -23,8 +23,8 @@ contract FoundersNFT is ERC721Enumerable, Ownable, ReentrancyGuard {
     uint256 public constant PUBLIC_MAX_PER_WALLET = 10;
     
     uint256 public schizoPrice = 0; // Free
-    uint256 public whitelistPrice = 0.3 ether;
-    uint256 public publicPrice = 0.5 ether;
+    uint256 public whitelistPrice = 0.001 ether; // Base Sepolia testnet price
+    uint256 public publicPrice = 0.002 ether; // Base Sepolia testnet price
     
     uint256 public schizoMinted;
     uint256 public whitelistMinted;

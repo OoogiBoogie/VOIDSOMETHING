@@ -1,0 +1,117 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.24;
+
+import "forge-std/Test.sol";
+import "../contracts/xVOIDVault.sol";
+import "../contracts/mocks/ERC20Mock.sol";
+
+/**
+ * @title xVOIDVault APR Tests
+ * @notice Tests for APR boost cap and staking economics
+ */
+contract xVOIDVaultTest is Test {
+    xVOIDVault public vault;
+    ERC20Mock public voidToken;
+    address public xpOracle = address(0x100);
+    address public staker1 = address(0x1);
+    address public staker2 = address(0x2);
+    
+    function setUp() public {
+        voidToken = new ERC20Mock("VOID Token", "VOID", 1_000_000 * 1e18);
+        vault = new xVOIDVault(address(voidToken), xpOracle);
+        
+        // Fund stakers
+        voidToken.transfer(staker1, 10_000 * 1e18);
+        voidToken.transfer(staker2, 10_000 * 1e18);
+    }
+
+    /// @notice Test that maxAPRBoostBPS is set to 2000 (20%)
+    function testAPRBoostCapConstant() public {
+        assertEq(vault.maxAPRBoostBPS(), 2000, "APR boost cap must be 2000 BPS (20%)");
+    }
+
+    /// @notice Test APR boost never exceeds 20% even with max vXP
+    function testAPRBoostNeverExceeds20Percent() public {
+        // Mock extreme vXP (should still cap at 20%)
+        uint256 extremeVXP = 1_000_000 * 1e18;
+        
+        // Mock the oracle call (in real test, would mock XPOracle)
+        vm.mockCall(
+            xpOracle,
+            abi.encodeWithSignature("getXP(address)", staker1),
+            abi.encode(extremeVXP)
+        );
+        
+        uint256 boost = vault.calculateAPRBoost(staker1);
+        assertLe(boost, 2000, "APR boost must never exceed 2000 BPS");
+    }
+
+    /// @notice Test staking flow
+    function testStakingFlow() public {
+        uint256 stakeAmount = 1000 * 1e18;
+        
+        vm.startPrank(staker1);
+        voidToken.approve(address(vault), stakeAmount);
+        vault.stake(stakeAmount);
+        vm.stopPrank();
+        
+        assertEq(vault.balanceOf(staker1), stakeAmount, "Should receive xVOID 1:1");
+        assertEq(voidToken.balanceOf(address(vault)), stakeAmount, "Vault should hold VOID");
+    }
+
+    /// @notice Test unstaking flow
+    function testUnstakingFlow() public {
+        uint256 stakeAmount = 1000 * 1e18;
+        
+        // Stake first
+        vm.startPrank(staker1);
+        voidToken.approve(address(vault), stakeAmount);
+        vault.stake(stakeAmount);
+        
+        // Unstake
+        vault.unstake(stakeAmount);
+        vm.stopPrank();
+        
+        assertEq(vault.balanceOf(staker1), 0, "Should have no xVOID after unstaking");
+        assertEq(voidToken.balanceOf(staker1), 10_000 * 1e18, "Should get VOID back");
+    }
+
+    /// @notice Test reward distribution increases APR
+    function testRewardDistribution() public {
+        uint256 stakeAmount = 1000 * 1e18;
+        uint256 rewardAmount = 100 * 1e18;
+        
+        // Staker deposits
+        vm.startPrank(staker1);
+        voidToken.approve(address(vault), stakeAmount);
+        vault.stake(stakeAmount);
+        vm.stopPrank();
+        
+        // Simulate reward distribution
+        voidToken.transfer(address(vault), rewardAmount);
+        vault.notifyRewardAmount(rewardAmount);
+        
+        // Fast forward time
+        vm.warp(block.timestamp + 7 days);
+        
+        // Claim rewards
+        vm.prank(staker1);
+        uint256 earned = vault.earned(staker1);
+        
+        assertGt(earned, 0, "Should have earned rewards");
+    }
+
+    /// @notice Fuzz test: APR boost always ≤ 20%
+    function testFuzzAPRBoostCap(uint256 vxpAmount) public {
+        vm.assume(vxpAmount < type(uint128).max);
+        
+        vm.mockCall(
+            xpOracle,
+            abi.encodeWithSignature("getXP(address)", staker1),
+            abi.encode(vxpAmount)
+        );
+        
+        uint256 boost = vault.calculateAPRBoost(staker1);
+        assertLe(boost, 2000, "APR boost must never exceed 2000 BPS");
+    }
+}

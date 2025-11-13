@@ -1,0 +1,30 @@
+{
+  "timestamp": "2025-11-11T02:54:04.028Z",
+  "uptime": 240,
+  "cycleCount": 5,
+  "lastCycleTimestamp": "2025-11-11T02:54:04.028Z",
+  "services": {
+    "mission": {
+      "status": "ONLINE",
+      "lastUpdate": "2025-11-11T02:54:04.029Z",
+      "activeMissions": 9,
+      "completionRate": 0.42
+    },
+    "emission": {
+      "status": "ONLINE",
+      "lastUpdate": "2025-11-11T02:54:04.030Z",
+      "treasuryBalance": 75000,
+      "emissionRate": 0.8,
+      "systemStatus": "HEALTHY"
+    },
+    "vault": {
+      "status": "ONLINE",
+      "lastUpdate": "2025-11-11T02:54:04.030Z",
+      "totalVaults": 4,
+      "criticalVaults": 2,
+      "systemHealth": "CRITICAL"
+    }
+  },
+  "systemHealth": "CRITICAL_ISSUES",
+  "errors": []
+}

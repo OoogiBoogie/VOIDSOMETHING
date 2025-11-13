@@ -4,98 +4,93 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* Replaced neutral theme with Emo Chrome Y2K metallic palette */
-  --background: oklch(0.12 0.02 260); /* Deep space blue-black */
-  --foreground: oklch(0.98 0 0); /* Bright white chrome */
+  /* VOID Theme - Neon Cyberpunk Engagement HUD */
+  --void-black: #040508;
+  --void-deep: #060914;
+  --void-purple: #7C00FF;
+  --signal-green: #00FF9D;
+  --cyber-cyan: #00D4FF;
+  --psx-blue: #3AA3FF;
+  --agency-red: #FF3A52;
+  --bio-silver: #C7D8FF;
+  --error-red: #FF3344;
 
-  --card: oklch(0.18 0.03 260); /* Dark metallic panel */
-  --card-foreground: oklch(0.95 0 0);
+  /* Original theme vars mapped to void theme */
+  --background: #040508; /* void-black */
+  --foreground: #C7D8FF; /* bio-silver */
 
-  --popover: oklch(0.15 0.03 260);
-  --popover-foreground: oklch(0.98 0 0);
+  --card: #060914; /* void-deep */
+  --card-foreground: #C7D8FF;
 
-  --primary: oklch(0.65 0.24 195); /* Cyan chrome */
-  --primary-foreground: oklch(0.98 0 0);
+  --popover: #060914;
+  --popover-foreground: #C7D8FF;
 
-  --secondary: oklch(0.6 0.2 290); /* Purple emo accent */
-  --secondary-foreground: oklch(0.98 0 0);
+  --primary: #00FF9D; /* signal-green */
+  --primary-foreground: #040508;
+
+  --secondary: #7C00FF; /* void-purple */
+  --secondary-foreground: #C7D8FF;
 
   --muted: oklch(0.25 0.03 260);
   --muted-foreground: oklch(0.65 0.02 260);
 
-  --accent: oklch(0.62 0.22 330); /* Pink emo accent */
-  --accent-foreground: oklch(0.98 0 0);
+  --accent: #00D4FF; /* cyber-cyan */
+  --accent-foreground: #040508;
 
-  --destructive: oklch(0.55 0.25 15);
-  --destructive-foreground: oklch(0.98 0 0);
+  --destructive: #FF3344; /* error-red */
+  --destructive-foreground: #C7D8FF;
 
-  --border: oklch(0.35 0.05 260); /* Subtle metallic border */
-  --input: oklch(0.2 0.03 260);
-  --ring: oklch(0.65 0.24 195); /* Cyan glow */
+  --border: rgba(0, 255, 157, 0.3); /* signal-green/30 */
+  --input: #060914;
+  --ring: #00FF9D; /* signal-green */
 
-  /* Chrome Y2K surface colors */
-  --chrome-surface: oklch(0.22 0.04 260); /* Primary metallic surface */
-  --chrome-surface-alt: oklch(0.28 0.05 270); /* Lighter variation */
-  --chrome-highlight: oklch(0.85 0.05 195); /* Bright metallic shine */
+  --radius: 1rem;
 
-  /* Neon glow accents */
-  --accent-glow: oklch(0.68 0.26 195); /* Cyan neon */
-  --accent-emo: oklch(0.58 0.22 290); /* Purple emo */
-  --accent-pink: oklch(0.62 0.24 330); /* Pink emo */
-
-  /* HUD-specific colors */
-  --hud-text-primary: oklch(0.98 0 0);
-  --hud-text-secondary: oklch(0.7 0.03 260);
-  --hud-border: oklch(0.45 0.15 195);
-  --hud-shadow: oklch(0.08 0.02 260);
-  --hud-highlight: oklch(0.9 0.1 195);
-
-  --radius: 0.75rem; /* Slightly more rounded for Y2K */
-
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --chart-1: #00FF9D;
+  --chart-2: #00D4FF;
+  --chart-3: #7C00FF;
+  --chart-4: #3AA3FF;
+  --chart-5: #FF3A52;
+  
+  --sidebar: #060914;
+  --sidebar-foreground: #C7D8FF;
+  --sidebar-primary: #00FF9D;
+  --sidebar-primary-foreground: #040508;
+  --sidebar-accent: #7C00FF;
+  --sidebar-accent-foreground: #C7D8FF;
+  --sidebar-border: rgba(0, 255, 157, 0.2);
+  --sidebar-ring: #00FF9D;
 }
 
 .dark {
-  /* Dark mode uses same chrome theme - no change needed */
-  --background: oklch(0.12 0.02 260);
-  --foreground: oklch(0.98 0 0);
-  --card: oklch(0.145 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.145 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.985 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
+  /* Dark mode same as light for void theme */
+  --background: #040508;
+  --foreground: #C7D8FF;
+  --card: #060914;
+  --card-foreground: #C7D8FF;
+  --popover: #060914;
+  --popover-foreground: #C7D8FF;
+  --primary: #00FF9D;
+  --primary-foreground: #040508;
+  --secondary: #7C00FF;
+  --secondary-foreground: #C7D8FF;
   --muted: oklch(0.269 0 0);
   --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.396 0.141 25.723);
-  --destructive-foreground: oklch(0.637 0.237 25.331);
-  --border: oklch(0.269 0 0);
-  --input: oklch(0.269 0 0);
-  --ring: oklch(0.439 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --accent: #00D4FF;
+  --accent-foreground: #040508;
+  --destructive: #FF3344;
+  --destructive-foreground: #C7D8FF;
+  --border: rgba(0, 255, 157, 0.3);
+  --input: #060914;
+  --ring: #00FF9D;
+  --chart-1: #00FF9D;
+  --chart-2: #00D4FF;
+  --chart-3: #7C00FF;
+  --chart-4: #3AA3FF;
+  --chart-5: #FF3A52;
+  --sidebar: #060914;
+  --sidebar-foreground: #C7D8FF;
+  --sidebar-primary: #00FF9D;
   --sidebar-primary-foreground: oklch(0.985 0 0);
   --sidebar-accent: oklch(0.269 0 0);
   --sidebar-accent-foreground: oklch(0.985 0 0);
@@ -104,22 +99,20 @@
 }
 
 @theme inline {
-  --font-sans: "Rajdhani", "Geist", "Geist Fallback";
-  --font-display: "Audiowide", "Rajdhani";
-  --font-mono: "Geist Mono", "Geist Mono Fallback";
+  --font-sans: "Inter", "Geist", "Geist Fallback";
+  --font-display: "Space Grotesk", "Audiowide", "Rajdhani";
+  --font-mono: "Share Tech Mono", "Geist Mono", "Geist Mono Fallback";
 
-  /* Map all chrome variables to Tailwind */
-  --color-chrome-surface: var(--chrome-surface);
-  --color-chrome-surface-alt: var(--chrome-surface-alt);
-  --color-chrome-highlight: var(--chrome-highlight);
-  --color-accent-glow: var(--accent-glow);
-  --color-accent-emo: var(--accent-emo);
-  --color-accent-pink: var(--accent-pink);
-  --color-hud-text-primary: var(--hud-text-primary);
-  --color-hud-text-secondary: var(--hud-text-secondary);
-  --color-hud-border: var(--hud-border);
-  --color-hud-shadow: var(--hud-shadow);
-  --color-hud-highlight: var(--hud-highlight);
+  /* VOID Theme Color Mappings */
+  --color-void-black: #040508;
+  --color-void-deep: #060914;
+  --color-void-purple: #7C00FF;
+  --color-signal-green: #00FF9D;
+  --color-cyber-cyan: #00D4FF;
+  --color-psx-blue: #3AA3FF;
+  --color-agency-red: #FF3A52;
+  --color-bio-silver: #C7D8FF;
+  --color-error-red: #FF3344;
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -167,45 +160,58 @@
     box-sizing: border-box;
   }
 
-  /* Force fullscreen with viewport units and remove all constraints */
-  html {
-    width: 100vw;
-    height: 100vh;
-    overflow: hidden;
-    margin: 0;
-    padding: 0;
+  html, body, #root {
+    @apply h-full bg-void-black text-bio-silver;
   }
 
   body {
-    @apply bg-background text-foreground;
-    width: 100vw;
-    height: 100vh;
-    overflow: hidden;
-    margin: 0;
-    padding: 0;
-    position: fixed;
-    top: 0;
-    left: 0;
+    @apply font-sans;
   }
 
-  /* Force Next.js root to be fullscreen */
-  #__next {
-    width: 100vw;
-    height: 100vh;
-    overflow: hidden;
-    position: fixed;
-    top: 0;
-    left: 0;
+  h1, h2, h3, h4 {
+    @apply font-display font-extrabold uppercase tracking-[0.25em];
   }
 
-  /* : Apply display font to headings */
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
-    font-family: var(--font-display);
+  .data-text {
+    @apply font-mono font-bold;
+  }
+}
+
+@layer components {
+  /* HUD Card - Neon cyberpunk panel */
+  .hud-card {
+    @apply bg-black/70 backdrop-blur-xl border rounded-2xl p-4;
+    box-shadow: 0 0 30px rgba(0, 255, 157, 0.4);
+  }
+
+  .hud-card-signal {
+    @apply border-[#00FF9D]/35;
+    box-shadow: 0 0 30px rgba(0, 255, 157, 0.4);
+  }
+
+  .hud-card-void {
+    @apply border-[#7C00FF]/35;
+    box-shadow: 0 0 30px rgba(124, 0, 255, 0.4);
+  }
+
+  .hud-card-cyber {
+    @apply border-[#00D4FF]/35;
+    box-shadow: 0 0 30px rgba(0, 212, 255, 0.4);
+  }
+
+  .hud-card-psx {
+    @apply border-[#3AA3FF]/35;
+    box-shadow: 0 0 30px rgba(58, 163, 255, 0.4);
+  }
+
+  /* HUD Pill - Small status badge */
+  .hud-pill {
+    @apply px-3 py-1 rounded-full text-[0.65rem] font-mono tracking-[0.25em] uppercase;
+  }
+
+  /* Void gradient background */
+  .void-gradient {
+    background: radial-gradient(circle at top, rgba(0, 255, 157, 0.13) 0, #060914 55%, #000000 100%);
   }
 }
 
@@ -522,4 +528,39 @@
   }
 
   /* Removed redundant liquid-chrome-plastic class and heavy animations */
+}
+
+/* ===============================================
+   BLACK SCROLLBARS - VOID THEME
+   =============================================== */
+
+/* Webkit browsers (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #000000;
+  border-radius: 0;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1a1a1a;
+  border-radius: 5px;
+  border: 2px solid #000000;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #2a2a2a;
+}
+
+::-webkit-scrollbar-corner {
+  background: #000000;
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #1a1a1a #000000;
 }

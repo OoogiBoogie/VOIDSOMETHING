@@ -1,43 +1,31 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { Suspense, lazy } from "react"
+import React, { Suspense } from "react";
+import { PrivyProvider } from "@privy-io/react-auth";
+import { base, baseSepolia } from "viem/chains";
 
-const PrivyProvider = lazy(() => {
-  // Check if Privy is configured before attempting to load
-  const privyAppId = process.env.NEXT_PUBLIC_PRIVY_APP_ID
+const privyAppId = process.env.NEXT_PUBLIC_PRIVY_APP_ID ?? '';
 
-  if (!privyAppId || privyAppId === "") {
-    console.log("[v0] Privy not configured, skipping provider")
-    return Promise.resolve({
-      default: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-    })
-  }
+// helper: decide chain once
+const USE_TESTNET = true; // flip to false when you go mainnet
+const defaultChain = USE_TESTNET ? baseSepolia : base;
 
-  return import("@privy-io/react-auth")
-    .then((mod) => ({ default: mod.PrivyProvider }))
-    .catch((error) => {
-      console.error("[v0] Failed to load Privy provider:", error)
-      return {
-        default: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-      }
-    })
-})
+type Props = {
+  children: React.ReactNode;
+};
 
-export function PrivyProviderWrapper({ children }: { children: React.ReactNode }) {
-  const privyAppId = process.env.NEXT_PUBLIC_PRIVY_APP_ID
+export function PrivyProviderWrapper({ children }: Props) {
+  // If app id missing/invalid, render children without Privy instead of crashing
+  const isValid = typeof privyAppId === 'string' && privyAppId.trim().length > 10;
 
-  if (!privyAppId || privyAppId === "") {
-    return <>{children}</>
-  }
-
-  let baseChain
-  try {
-    const viemChains = require("viem/chains")
-    baseChain = viemChains.base
-  } catch (error) {
-    console.error("[v0] Failed to load viem chains:", error)
-    return <>{children}</>
+  if (!isValid) {
+    if (typeof window !== "undefined") {
+      console.warn(
+        "[PSX VOID] Privy disabled: missing or invalid NEXT_PUBLIC_PRIVY_APP_ID. " +
+          "Set it in your .env.local to enable wallet auth."
+      );
+    }
+    return <>{children}</>;
   }
 
   return (
@@ -45,27 +33,21 @@ export function PrivyProviderWrapper({ children }: { children: React.ReactNode }
       <PrivyProvider
         appId={privyAppId}
         config={{
+          // chain configuration
+          defaultChain,
+          supportedChains: [baseSepolia, base],
+
+          // auth & wallets
           loginMethods: ["email", "google", "twitter", "discord", "wallet"],
           appearance: {
             theme: "dark",
-            accentColor: "#06FFA5",
-            logo: "https://psx.agency/logo.png",
-            walletList: ["coinbase_wallet", "metamask", "rainbow", "wallet_connect"],
-          },
-          embeddedWallets: {
-            createOnLogin: "users-without-wallets",
-          },
-          defaultChain: baseChain,
-          supportedChains: [baseChain],
-          externalWallets: {
-            coinbaseWallet: {
-              connectionOptions: "all",
-            },
+            accentColor: "#a855ff", // matches VOID neon purple
+            logo: "/icon-dark-32x32.png",
           },
         }}
       >
         {children}
       </PrivyProvider>
     </Suspense>
-  )
+  );
 }

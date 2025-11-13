@@ -1,0 +1,231 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.24;
+
+import "forge-std/Test.sol";
+import "../contracts/EscrowVault.sol";
+import "../contracts/mocks/ERC20Mock.sol";
+
+/**
+ * @title EscrowVault Tests
+ * @notice Tests for job escrow lifecycle and payment flow
+ */
+contract EscrowVaultTest is Test {
+    EscrowVault public escrow;
+    ERC20Mock public paymentToken;
+    
+    address public admin = address(this);
+    address public agencyManager = address(0x1);
+    address public dao = address(0x2);
+    address public client = address(0x3);
+    address public worker = address(0x4);
+    
+    // Struct to match contract struct
+    struct JobEscrow {
+        uint256 jobId;
+        address client;
+        address worker;
+        address paymentToken;
+        uint256 totalBudget;
+        uint256 totalPaid;
+        EscrowVault.EscrowStatus status;
+        uint256 createdAt;
+        uint256 disputedAt;
+        address disputeInitiator;
+        string metadataURI;
+    }
+    
+    function setUp() public {
+        paymentToken = new ERC20Mock("USDC", "USDC", 1_000_000 * 1e6);
+        escrow = new EscrowVault(admin, agencyManager, dao);
+        
+        // Fund client
+        paymentToken.transfer(client, 50_000 * 1e6);
+    }
+
+    /// @notice Test escrow creation
+    function testCreateEscrow() public {
+        uint256 budget = 1000 * 1e6;
+        uint256 jobId = 1;
+        
+        // Prepare milestones
+        string[] memory descriptions = new string[](2);
+        descriptions[0] = "Design Phase";
+        descriptions[1] = "Development Phase";
+        
+        uint256[] memory payouts = new uint256[](2);
+        payouts[0] = 500 * 1e6;
+        payouts[1] = 500 * 1e6;
+        
+        // Client funds escrow
+        vm.startPrank(client);
+        paymentToken.approve(address(escrow), budget);
+        vm.stopPrank();
+        
+        // Agency manager creates escrow
+        vm.prank(agencyManager);
+        uint256 escrowId = escrow.createEscrow(
+            jobId,
+            client,
+            worker,
+            address(paymentToken),
+            budget,
+            descriptions,
+            payouts,
+            "ipfs://job001"
+        );
+        
+        (JobEscrow memory job) = escrow.escrows(escrowId);
+        
+        assertEq(job.jobId, jobId, "Job ID mismatch");
+        assertEq(job.client, client, "Client mismatch");
+        assertEq(job.worker, worker, "Worker mismatch");
+        assertEq(job.paymentToken, address(paymentToken), "Payment token mismatch");
+        assertEq(job.totalBudget, budget, "Budget mismatch");
+        assertTrue(job.status == EscrowVault.EscrowStatus.FUNDED, "Should be funded");
+    }
+
+    /// @notice Test milestone payment flow
+    function testMilestonePayment() public {
+        uint256 budget = 2000 * 1e6;
+        uint256 jobId = 2;
+        
+        string[] memory descriptions = new string[](2);
+        descriptions[0] = "Milestone 1";
+        descriptions[1] = "Milestone 2";
+        
+        uint256[] memory payouts = new uint256[](2);
+        payouts[0] = 1000 * 1e6;
+        payouts[1] = 1000 * 1e6;
+        
+        // Client approves
+        vm.prank(client);
+        paymentToken.approve(address(escrow), budget);
+        
+        // Agency creates escrow
+        vm.prank(agencyManager);
+        uint256 escrowId = escrow.createEscrow(
+            jobId, client, worker, address(paymentToken), budget, descriptions, payouts, "ipfs://job002"
+        );
+        
+        // Client funds
+        vm.prank(client);
+        escrow.fundEscrow(escrowId);
+        
+        // Agency marks milestone complete
+        vm.prank(agencyManager);
+        escrow.markMilestoneComplete(escrowId, 0);
+        
+        // Release payment
+        vm.prank(agencyManager);
+        escrow.releasePayment(escrowId, 0);
+        
+        // Verify worker received payment
+        assertEq(paymentToken.balanceOf(worker), 1000 * 1e6, "Worker should receive milestone payment");
+    }
+
+    /// @notice Test complete escrow lifecycle
+    function testCompleteEscrowLifecycle() public {
+        uint256 budget = 3000 * 1e6;
+        uint256 jobId = 3;
+        
+        string[] memory descriptions = new string[](3);
+        descriptions[0] = "Phase 1";
+        descriptions[1] = "Phase 2";
+        descriptions[2] = "Final";
+        
+        uint256[] memory payouts = new uint256[](3);
+        payouts[0] = 1000 * 1e6;
+        payouts[1] = 1000 * 1e6;
+        payouts[2] = 1000 * 1e6;
+        
+        vm.prank(client);
+        paymentToken.approve(address(escrow), budget);
+        
+        vm.prank(agencyManager);
+        uint256 escrowId = escrow.createEscrow(
+            jobId, client, worker, address(paymentToken), budget, descriptions, payouts, "ipfs://job003"
+        );
+        
+        vm.prank(client);
+        escrow.fundEscrow(escrowId);
+        
+        uint256 workerBalanceBefore = paymentToken.balanceOf(worker);
+        
+        // Complete all three milestones
+        for (uint256 i = 0; i < 3; i++) {
+            vm.prank(agencyManager);
+            escrow.markMilestoneComplete(escrowId, i);
+            vm.prank(agencyManager);
+            escrow.releasePayment(escrowId, i);
+        }
+        
+        // Verify
+        uint256 workerBalanceAfter = paymentToken.balanceOf(worker);
+        assertEq(workerBalanceAfter - workerBalanceBefore, budget, "Worker should receive full budget");
+    }
+
+    /// @notice Test dispute resolution
+    function testDisputeResolution() public {
+        uint256 budget = 5000 * 1e6;
+        uint256 jobId = 4;
+        
+        string[] memory descriptions = new string[](1);
+        descriptions[0] = "Full Job";
+        
+        uint256[] memory payouts = new uint256[](1);
+        payouts[0] = 5000 * 1e6;
+        
+        vm.prank(client);
+        paymentToken.approve(address(escrow), budget);
+        
+        vm.prank(agencyManager);
+        uint256 escrowId = escrow.createEscrow(
+            jobId, client, worker, address(paymentToken), budget, descriptions, payouts, "ipfs://job004"
+        );
+        
+        vm.prank(client);
+        escrow.fundEscrow(escrowId);
+        
+        // Initiate dispute
+        vm.prank(client);
+        escrow.initiateDispute(escrowId);
+        
+        // DAO resolves dispute (50% to worker, 50% refund to client)
+        uint256 clientBalanceBefore = paymentToken.balanceOf(client);
+        uint256 workerBalanceBefore = paymentToken.balanceOf(worker);
+        
+        vm.prank(dao);
+        escrow.resolveDispute(escrowId, 2500 * 1e6, 2500 * 1e6);
+        
+        assertEq(paymentToken.balanceOf(worker) - workerBalanceBefore, 2500 * 1e6, "Worker gets 50%");
+        assertEq(paymentToken.balanceOf(client) - clientBalanceBefore, 2500 * 1e6, "Client gets 50% refund");
+    }
+
+    /// @notice Test cannot release payment before milestone complete
+    function testCannotReleaseBeforeComplete() public {
+        uint256 budget = 1000 * 1e6;
+        uint256 jobId = 5;
+        
+        string[] memory descriptions = new string[](1);
+        descriptions[0] = "Task";
+        
+        uint256[] memory payouts = new uint256[](1);
+        payouts[0] = 1000 * 1e6;
+        
+        vm.prank(client);
+        paymentToken.approve(address(escrow), budget);
+        
+        vm.prank(agencyManager);
+        uint256 escrowId = escrow.createEscrow(
+            jobId, client, worker, address(paymentToken), budget, descriptions, payouts, "ipfs://job005"
+        );
+        
+        vm.prank(client);
+        escrow.fundEscrow(escrowId);
+        
+        // Attempt to release without marking complete
+        vm.prank(agencyManager);
+        vm.expectRevert();
+        escrow.releasePayment(escrowId, 0);
+    }
+}
