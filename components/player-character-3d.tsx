@@ -231,6 +231,59 @@ export function PlayerCharacter3D({
   const currentParcelIdRef = useRef<number | null>(null)
   const currentDistrictRef = useRef<string | null>(null)
 
+  // Handle external position changes (e.g., UI teleport from PlayerPositionContext)
+  useEffect(() => {
+    const externalPos = { x: position.x, y: position.y, z: position.z };
+    const currentPos = localPosRef.current;
+    
+    // Check if position changed externally (teleport)
+    const distSq = 
+      (externalPos.x - currentPos.x) ** 2 + 
+      (externalPos.z - currentPos.z) ** 2;
+    
+    // If position changed significantly (>0.5 units), it's a teleport
+    if (distSq > 0.25) {
+      console.log('[PlayerCharacter3D] Teleport detected:', externalPos);
+      localPosRef.current = externalPos;
+      
+      // Update visual position immediately
+      if (groupRef.current) {
+        groupRef.current.position.set(externalPos.x, externalPos.y, externalPos.z);
+      }
+      
+      // Emit world events for parcel/district change
+      const parcelInfo = getParcelInfo({ x: externalPos.x, z: externalPos.z });
+      
+      if (currentParcelIdRef.current !== parcelInfo.id) {
+        if (currentParcelIdRef.current !== null) {
+          worldEvents.emit(PARCEL_EXITED, {
+            parcelId: currentParcelIdRef.current,
+            newParcelId: parcelInfo.id,
+            timestamp: Date.now(),
+          });
+        }
+        
+        worldEvents.emit(PARCEL_ENTERED, {
+          parcelInfo,
+          previousParcelId: currentParcelIdRef.current,
+          timestamp: Date.now(),
+        });
+        
+        currentParcelIdRef.current = parcelInfo.id;
+      }
+      
+      if (currentDistrictRef.current !== parcelInfo.district) {
+        worldEvents.emit(DISTRICT_ENTERED, {
+          district: parcelInfo.district,
+          parcelId: parcelInfo.id,
+          timestamp: Date.now(),
+        });
+        
+        currentDistrictRef.current = parcelInfo.district;
+      }
+    }
+  }, [position.x, position.y, position.z]);
+
   useEffect(() => {
     if (!controlsEnabled) {
       keys.current = { w: false, a: false, s: false, d: false, shift: false }

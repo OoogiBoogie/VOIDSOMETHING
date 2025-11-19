@@ -1,0 +1,129 @@
+.container {
+  min-height: 100vh;
+  padding: 2rem;
+  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+  color: #00ff88;
+  font-family: 'Courier New', monospace;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.header h1 {
+  margin: 0 0 0.5rem 0;
+  font-size: 2.5rem;
+  text-shadow: 0 0 10px #00ff88;
+}
+
+.subtitle {
+  margin: 0;
+  opacity: 0.7;
+}
+
+.buttonGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+  max-width: 900px;
+  margin: 0 auto 3rem auto;
+}
+
+.button {
+  padding: 1.5rem;
+  background: linear-gradient(135deg, rgba(0, 255, 136, 0.1), rgba(0, 255, 136, 0.05));
+  border: 2px solid #00ff88;
+  border-radius: 8px;
+  color: #00ff88;
+  font-family: 'Courier New', monospace;
+  font-size: 1.25rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.button:hover {
+  background: rgba(0, 255, 136, 0.2);
+  transform: translateY(-4px);
+  box-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+}
+
+.windowOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 2rem;
+}
+
+.windowContainer {
+  position: relative;
+  width: 100%;
+  max-width: 900px;
+  max-height: 90vh;
+  background: #0a0a0a;
+  border: 2px solid #00ff88;
+  border-radius: 8px;
+  box-shadow: 0 0 30px rgba(0, 255, 136, 0.3);
+  overflow-y: auto;
+}
+
+.closeButton {
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  padding: 1rem;
+  background: linear-gradient(135deg, #00ff88, #00cc6a);
+  border: none;
+  color: #0a0a0a;
+  font-family: 'Courier New', monospace;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.closeButton:hover {
+  background: linear-gradient(135deg, #00cc6a, #009955);
+}
+
+.info {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem;
+  background: rgba(0, 255, 136, 0.05);
+  border: 1px solid rgba(0, 255, 136, 0.3);
+  border-radius: 8px;
+}
+
+.info h3 {
+  margin: 0 0 1rem 0;
+  font-size: 1.5rem;
+}
+
+.info ul {
+  margin: 0 0 1.5rem 1.5rem;
+  line-height: 1.8;
+}
+
+.note {
+  margin: 0;
+  padding: 1rem;
+  background: rgba(0, 255, 136, 0.1);
+  border-left: 3px solid #00ff88;
+  border-radius: 4px;
+  font-size: 0.875rem;
+}
+
+.note code {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 0.2rem 0.5rem;
+  border-radius: 3px;
+  color: #00ff88;
+}

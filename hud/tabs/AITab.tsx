@@ -8,15 +8,13 @@
 
 import React from 'react';
 import { useAccount } from 'wagmi';
-import { usePrivy } from '@privy-io/react-auth';
 
 interface AITabProps {
   onClose?: () => void;
 }
 
 export default function AITab({ onClose }: AITabProps) {
-  const { authenticated } = usePrivy();
-  const { address } = useAccount();
+  const { address, isConnected } = useAccount();
 
   // Mock AI telemetry - ready to replace with API call
   const mockTelemetry = {
@@ -44,7 +42,7 @@ export default function AITab({ onClose }: AITabProps) {
     ],
   };
 
-  if (!authenticated) {
+  if (!isConnected) {
     return (
       <div className="p-6 flex flex-col items-center justify-center h-full text-center space-y-4">
         <div className="text-4xl mb-2">🧠</div>

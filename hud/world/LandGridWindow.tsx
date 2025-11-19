@@ -16,10 +16,52 @@ import { useAccount } from 'wagmi'
 import { toast } from 'sonner'
 import { useParcels, useMyParcels, useLandStats } from '@/services/world/useParcels'
 import { useWorldEvent, PARCEL_ENTERED } from '@/services/events/worldEvents'
-import { GRID_SIZE, parcelIdToCoords, DISTRICT_COLORS, DISTRICT_NAMES } from '@/world/WorldCoords'
+import { GRID_SIZE, parcelIdToCoords } from '@/world/WorldCoords'
+import type { DistrictId } from '@/world/map/districts'
 import { voidTheme } from '@/ui/theme/voidTheme'
 import { useParcelProperties } from '@/services/world/useRealEstate'
 import { propertyRegistry } from '@/lib/real-estate-system'
+
+/**
+ * Get district display name from DistrictId
+ */
+const getDistrictName = (district: DistrictId): string => {
+  const names: Record<DistrictId, string> = {
+    HQ: 'PSX HQ',
+    DEFI: 'DeFi District',
+    CREATOR: 'Creator Quarter',
+    DAO: 'DAO Plaza',
+    AI: 'AI Nexus',
+    SOCIAL: 'Social District',
+    IDENTITY: 'Identity District',
+    CENTRAL_EAST: 'Central East',
+    CENTRAL_SOUTH: 'Central South',
+  };
+  return names[district] || 'Unknown Zone';
+};
+
+/**
+ * Get district color from DistrictId
+ */
+const getDistrictColor = (district: DistrictId): string => {
+  const colors: Record<DistrictId, string> = {
+    HQ: voidTheme.colors.textTertiary,
+    DEFI: voidTheme.colors.neonPurple,
+    CREATOR: voidTheme.colors.neonTeal,
+    DAO: voidTheme.colors.neonPink,
+    AI: voidTheme.colors.neonBlue,
+    SOCIAL: '#ff9d00',
+    IDENTITY: '#00ff88',
+    CENTRAL_EAST: voidTheme.colors.textMuted,
+    CENTRAL_SOUTH: voidTheme.colors.textMuted,
+  };
+  return colors[district] || voidTheme.colors.textTertiary;
+};
+
+/**
+ * All district IDs for legend rendering
+ */
+const ALL_DISTRICTS: DistrictId[] = ['HQ', 'DEFI', 'CREATOR', 'DAO', 'AI', 'SOCIAL', 'IDENTITY', 'CENTRAL_EAST', 'CENTRAL_SOUTH'];
 
 export function LandGridWindow() {
   const { address, isConnected } = useAccount()
@@ -38,11 +80,10 @@ export function LandGridWindow() {
   
   const selectedParcel = selectedParcelId !== null ? parcels[selectedParcelId] : null
   const isOwnedByMe = selectedParcelId !== null && ownedParcels.some(p => p.id === selectedParcelId)
-  
+
   // Get properties on selected parcel
-  const selectedParcelProperties = selectedParcelId !== null 
-    ? useParcelProperties(selectedParcelId)
-    : []
+  const parcelProperties = useParcelProperties(selectedParcelId ?? -1)
+  const selectedParcelProperties = selectedParcelId !== null ? parcelProperties : []
   
   const handleBuyParcel = async () => {
     if (!isConnected) {
@@ -159,7 +200,7 @@ export function LandGridWindow() {
               const propertyCount = propertyRegistry.getPropertiesOnParcel(id).length
               const hasBuildings = propertyCount > 0
               
-              const districtColor = DISTRICT_COLORS[parcel?.districtId as keyof typeof DISTRICT_COLORS || 'neutral']
+              const districtColor = parcel?.districtId ? getDistrictColor(parcel.districtId as DistrictId) : voidTheme.colors.textTertiary
               
               return (
                 <button
@@ -248,7 +289,7 @@ export function LandGridWindow() {
                 fontSize: '12px',
                 color: voidTheme.colors.textSecondary,
               }}>
-                {DISTRICT_NAMES[selectedParcel.districtId as keyof typeof DISTRICT_NAMES]} • ({selectedParcel.x}, {selectedParcel.z})
+                {getDistrictName(selectedParcel.districtId as DistrictId)} • ({selectedParcel.x}, {selectedParcel.z})
               </div>
             </div>
             
@@ -374,15 +415,15 @@ export function LandGridWindow() {
         paddingTop: '8px',
         borderTop: `1px solid ${voidTheme.colors.primary}20`,
       }}>
-        {Object.entries(DISTRICT_COLORS).map(([district, color]) => (
+        {ALL_DISTRICTS.map((district) => (
           <div key={district} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <div style={{
               width: '10px',
               height: '10px',
-              background: `${color}40`,
-              border: `1px solid ${color}`,
+              background: `${getDistrictColor(district)}40`,
+              border: `1px solid ${getDistrictColor(district)}`,
             }} />
-            <span>{DISTRICT_NAMES[district as keyof typeof DISTRICT_NAMES]}</span>
+            <span>{getDistrictName(district)}</span>
           </div>
         ))}
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>

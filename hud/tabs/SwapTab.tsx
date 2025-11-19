@@ -8,7 +8,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
-import { usePrivy } from '@privy-io/react-auth';
+
 import { parseUnits, formatUnits, maxUint256 } from 'viem';
 import { VOID_TOKEN_ABI } from '@/lib/contracts/abis';
 import { 
@@ -38,7 +38,7 @@ interface SwapTabProps {
 }
 
 export default function SwapTab({ onClose }: SwapTabProps) {
-  const { authenticated } = usePrivy();
+  
   const { address } = useAccount();
 
   const [fromToken, setFromToken] = useState<'VOID' | 'USDC'>('VOID');
@@ -159,7 +159,7 @@ export default function SwapTab({ onClose }: SwapTabProps) {
     volume24h: 78400,
   };
 
-  if (!authenticated) {
+  if (!isConnected) {
     return (
       <div className="p-6 flex flex-col items-center justify-center h-full text-center space-y-4">
         <div className="text-4xl mb-2">💱</div>

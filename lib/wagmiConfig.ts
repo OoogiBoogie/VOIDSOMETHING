@@ -11,9 +11,10 @@ try {
 
   // RPC fallback array with retry/rank for resilience
   const rpcTransports = fallback([
-    http(process.env.NEXT_PUBLIC_BASE_RPC_URL || "https://sepolia.base.org"), // primary
-    http("https://base-sepolia.rpc.thirdweb.com"), // fallback 1
-    http("https://sepolia.base.org"), // fallback 2 (official backup)
+    http("https://base-sepolia-rpc.publicnode.com"), // fallback 1 (better rate limits)
+    http("https://base-sepolia.blockpi.network/v1/rpc/public"), // fallback 2
+    http(process.env.NEXT_PUBLIC_BASE_RPC_URL || "https://sepolia.base.org"), // primary (official)
+    http("https://base-sepolia.rpc.thirdweb.com"), // fallback 3
   ], { 
     rank: true, 
     retryCount: 3,
@@ -32,7 +33,7 @@ try {
         metadata: {
           name: "PSX VOID Metaverse",
           description: "On-chain creator economy and metaverse on Base",
-          url: "https://psx.void.city",
+          url: typeof window !== 'undefined' ? window.location.origin : "https://psx.void.city",
           icons: ["https://psx.void.city/icon.png"],
         },
         showQrModal: true,

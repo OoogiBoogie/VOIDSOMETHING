@@ -8,7 +8,7 @@
 
 import React, { useState } from 'react';
 import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
-import { usePrivy } from '@privy-io/react-auth';
+
 import { formatUnits, parseUnits, maxUint256 } from 'viem';
 import { VOID_TOKEN_ABI, XVOID_VAULT_ABI } from '@/lib/contracts/abis';
 import { XP_ORACLE_ABI, XP_ORACLE_ADDRESS } from '@/lib/contracts/abis/xpOracle';
@@ -26,7 +26,7 @@ interface WalletTabProps {
 }
 
 export default function WalletTab({ onClose }: WalletTabProps) {
-  const { authenticated } = usePrivy();
+  
   const { address } = useAccount();
   const [stakeAmount, setStakeAmount] = useState('');
   const [unstakeAmount, setUnstakeAmount] = useState('');
@@ -241,13 +241,13 @@ export default function WalletTab({ onClose }: WalletTabProps) {
 
       {/* Staking Actions */}
       <div className="space-y-3">
-        {!authenticated && (
+        {!isConnected && (
           <div className="p-3 bg-red-500/10 border border-red-500/40 rounded text-center text-[0.7rem] text-red-400">
             ⚠️ Connect wallet to access staking
           </div>
         )}
 
-        {authenticated && !isApproved && (
+        {isConnected && !isApproved && (
           <button
             onClick={handleApprove}
             disabled={approveLoading}
@@ -257,7 +257,7 @@ export default function WalletTab({ onClose }: WalletTabProps) {
           </button>
         )}
 
-        {authenticated && isApproved && (
+        {isConnected && isApproved && (
           <div className="grid grid-cols-3 gap-2">
             <div className="col-span-3 space-y-2">
               <input

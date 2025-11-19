@@ -23,6 +23,7 @@ interface HudLayoutProps {
   triggerFX: (fx: string, payload?: any) => void;
   theme: HubTheme;
   fxState: any;
+  onRequestTeleport?: (pos: { x: number; y?: number; z: number }) => void;
 }
 
 export default function VoidHudLayout({
@@ -33,7 +34,8 @@ export default function VoidHudLayout({
   onOpenWindow,
   triggerFX,
   theme,
-  fxState
+  fxState,
+  onRequestTeleport
 }: HudLayoutProps) {
   const hasNearbyPlayers = (snapshot.world?.nearbyPlayers?.length ?? 0) > 0;
 
@@ -48,6 +50,7 @@ export default function VoidHudLayout({
         onOpenWindow={onOpenWindow}
         triggerFX={triggerFX}
         theme={theme}
+        onRequestTeleport={onRequestTeleport}
       />
 
       {/* MAIN 3-COL BODY */}

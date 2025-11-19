@@ -27,8 +27,9 @@ export default function ProfileManagerApp() {
   // Load profile data
   useEffect(() => {
     if (profile) {
-      setDisplayName(profile.displayName || '');
-      setBio(profile.bio || '');
+      // Profile only has wallet, xp, level, lastPosition - no displayName or bio
+      setDisplayName('');
+      setBio('');
     }
   }, [profile]);
   
@@ -36,10 +37,8 @@ export default function ProfileManagerApp() {
     setIsSaving(true);
     
     try {
-      await saveProfile({
-        displayName: displayName || undefined,
-        bio: bio || undefined,
-      });
+      // Note: NetProfile doesn't support displayName/bio yet
+      await saveProfile({});
       
       console.log('[ProfileManager] Profile saved successfully');
     } catch (error) {

@@ -8,9 +8,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAccount, useReadContract } from 'wagmi';
-import { usePrivy } from '@privy-io/react-auth';
+
 import { useWorldEvent, PLAYER_MOVED, PARCEL_ENTERED } from '@/services/events/worldEvents';
-import { worldToParcel, getDistrict, District } from '@/world/WorldCoords';
+import { cityWorldToParcel, getDistrict } from '@/world/WorldCoords';
+import type { DistrictId } from '@/world/map/districts';
 
 const WORLD_LAND = "0xC4559144b784A8991924b1389a726d68C910A206" as const;
 
@@ -22,11 +23,11 @@ interface CurrentParcelData {
   x: number;
   z: number;
   parcelId: number;
-  district: District;
+  district: DistrictId;
 }
 
 export default function LandTab({ onClose }: LandTabProps) {
-  const { authenticated } = usePrivy();
+  
   const { address } = useAccount();
   const [currentParcel, setCurrentParcel] = useState<CurrentParcelData | null>(null);
 
@@ -50,7 +51,7 @@ export default function LandTab({ onClose }: LandTabProps) {
 
   // Listen to player movement events
   useWorldEvent(PLAYER_MOVED, (eventData) => {
-    const parcelCoords = worldToParcel(eventData.position);
+    const parcelCoords = cityWorldToParcel(eventData.position);
     const parcelId = eventData.parcelId;
     const district = getDistrict(parcelCoords);
 
@@ -75,26 +76,34 @@ export default function LandTab({ onClose }: LandTabProps) {
   }, []);
 
   // Helper functions
-  const getDistrictName = (district: District): string => {
-    const names = {
-      defi: 'DeFi District',
-      creator: 'Creator Quarter',
-      dao: 'DAO Plaza',
-      ai: 'AI Nexus',
-      neutral: 'Neutral Zone',
+  const getDistrictName = (district: DistrictId): string => {
+    const names: Record<DistrictId, string> = {
+      HQ: 'PSX HQ',
+      DEFI: 'DeFi District',
+      CREATOR: 'Creator Quarter',
+      DAO: 'DAO Plaza',
+      AI: 'AI Nexus',
+      SOCIAL: 'Social District',
+      IDENTITY: 'Identity District',
+      CENTRAL_EAST: 'Central East',
+      CENTRAL_SOUTH: 'Central South',
     };
-    return names[district] || names.neutral;
+    return names[district] || 'Unknown Zone';
   };
 
-  const getDistrictColor = (district: District): string => {
-    const colors = {
-      defi: 'var(--void-neon-purple)',
-      creator: 'var(--void-neon-teal)',
-      dao: 'var(--void-neon-pink)',
-      ai: 'var(--void-neon-blue)',
-      neutral: 'var(--void-text-tertiary)',
+  const getDistrictColor = (district: DistrictId): string => {
+    const colors: Record<DistrictId, string> = {
+      HQ: 'var(--void-text-tertiary)',
+      DEFI: 'var(--void-neon-purple)',
+      CREATOR: 'var(--void-neon-teal)',
+      DAO: 'var(--void-neon-pink)',
+      AI: 'var(--void-neon-blue)',
+      SOCIAL: '#ff9d00',
+      IDENTITY: '#00ff88',
+      CENTRAL_EAST: 'var(--void-text-muted)',
+      CENTRAL_SOUTH: 'var(--void-text-muted)',
     };
-    return colors[district] || colors.neutral;
+    return colors[district] || 'var(--void-text-tertiary)';
   };
 
   const getOwnershipStatus = (): { text: string; color: string; isOwned: boolean } => {
@@ -214,13 +223,13 @@ export default function LandTab({ onClose }: LandTabProps) {
           Map
         </button>
         <button 
-          disabled={!authenticated}
+          disabled={!isConnected}
           className="py-2 px-3 bg-void-purple/20 border border-void-purple hover:bg-void-purple/30 rounded text-void-purple font-bold text-xs uppercase tracking-wider transition-all disabled:opacity-50"
         >
           Transfer
         </button>
         <button 
-          disabled={!authenticated}
+          disabled={!isConnected}
           className="py-2 px-3 bg-signal-green/20 border border-signal-green hover:bg-signal-green/30 rounded text-signal-green font-bold text-xs uppercase tracking-wider transition-all disabled:opacity-50"
         >
           List
@@ -273,7 +282,7 @@ export default function LandTab({ onClose }: LandTabProps) {
         </div>
       </div>
 
-      {!authenticated && (
+      {!isConnected && (
         <div className="p-3 bg-red-500/10 border border-red-500/40 rounded text-center text-[0.7rem] text-red-400">
           ⚠️ Connect wallet to manage land
         </div>

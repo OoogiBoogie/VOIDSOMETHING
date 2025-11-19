@@ -11,8 +11,9 @@
  */
 
 import React, { useState, useCallback, useMemo } from 'react';
-import { useAccount, useBalance } from 'wagmi';
-import { usePrivy } from '@privy-io/react-auth';
+import { useBalance } from 'wagmi';
+import { useWallet } from '@/hud/hooks/useWallet';
+import { useVoidBalance } from '@/hooks/useVoidBalance';
 import { 
   useVoidEmitter, 
   useVoidVault, 
@@ -21,7 +22,6 @@ import {
   useVotingPower 
 } from '@/hooks/useVoidEngine';
 import { useWorldState } from '@/hooks/useWorldState';
-import { useLandMap } from '@/hooks/useLandData';
 import { useGamification } from '@/hooks/useGamification';
 import { useDemoData } from '@/hooks/useDemoData';
 import { VOID_CONFIG, isDemoMode } from '@/config/voidConfig';
@@ -43,23 +43,82 @@ import { PhoneWindow } from '@/hud/world/windows/PhoneWindow';
 import { JobDetailWindow } from '@/hud/world/windows/JobDetailWindow';
 import { LeaderboardsWindow } from '@/hud/world/windows/LeaderboardsWindow';
 import { VoidToastContainer } from '@/components/VoidToastContainer';
+import { MiniAppLauncherModal } from '@/src/miniapps/MiniAppLauncherModal';
+import { usePlayerPosition } from '@/contexts/PlayerPositionContext';
+import { useWorldSnapshot } from '@/hooks/useWorldSnapshot';
+import type { DistrictId } from '@/world/map/districts';
+import { DISTRICTS } from '@/world/map/districts';
+import { WorldEventToaster } from '@/hud/events/WorldEventToaster';
+import { DebugOverlay } from '@/hud/debug/DebugOverlay';
+import { RealEstatePanel } from '@/hud/economy/RealEstatePanel';
+import RealEstateMarketWindow from '@/hud/economy/RealEstateMarketWindow';
+import { RealEstateLeaderboardWindow } from '@/hud/economy/RealEstateLeaderboardWindow'; // PHASE 5.1
+import { ZoneMiniMap } from '@/hud/navigation/ZoneMiniMap';
+import { VoidCityMap } from '@/hud/navigation/VoidCityMap';
+import { ENABLE_BURN_UI } from '@/config/voidConfig';
+
+// Conditional burn window imports (only if burn UI enabled)
+let DistrictUnlockWindow: any;
+let CreatorToolsWindow: any;
+let PrestigeSystemWindow: any;
+let MiniAppBurnAccessWindow: any;
+
+if (ENABLE_BURN_UI) {
+  DistrictUnlockWindow = require('@/hud/utility/DistrictUnlockWindow').DistrictUnlockWindow;
+  CreatorToolsWindow = require('@/hud/utility/CreatorToolsWindow').CreatorToolsWindow;
+  PrestigeSystemWindow = require('@/hud/utility/PrestigeSystemWindow').PrestigeSystemWindow;
+  MiniAppBurnAccessWindow = require('@/hud/utility/MiniAppBurnAccessWindow').MiniAppBurnAccessWindow;
+}
+
+// Conditional seasonal burn window imports (feature flag protected)
+const ENABLE_SEASONAL_BURN_UI = process.env.NEXT_PUBLIC_ENABLE_SEASONAL_BURN_UI === 'true';
+let SeasonDashboard: any;
+let SeasonalXPPanel: any;
+let SeasonalActionsPanel: any;
+
+if (ENABLE_SEASONAL_BURN_UI) {
+  SeasonDashboard = require('@/hud/seasonal/SeasonDashboard').SeasonDashboard;
+  SeasonalXPPanel = require('@/hud/seasonal/SeasonalXPPanel').SeasonalXPPanel;
+  SeasonalActionsPanel = require('@/hud/seasonal/SeasonalActionsPanel').SeasonalActionsPanel;
+}
+
+/**
+ * Get district display name from DistrictId
+ */
+const getDistrictName = (district: DistrictId): string => {
+  const names: Record<DistrictId, string> = {
+    HQ: 'PSX HQ',
+    DEFI: 'DeFi District',
+    CREATOR: 'Creator Quarter',
+    DAO: 'DAO Plaza',
+    AI: 'AI Nexus',
+    SOCIAL: 'Social District',
+    IDENTITY: 'Identity District',
+    CENTRAL_EAST: 'Central East',
+    CENTRAL_SOUTH: 'Central South',
+  };
+  return names[district] || 'VOID_CORE';
+};
 
 export default function VoidHudApp() {
-  const { address, isConnected } = useAccount();
-  const { authenticated } = usePrivy();
+  const { address, isConnected, authenticated } = useWallet();
+  const { position: sharedPosition, requestTeleport } = usePlayerPosition();
   
   // Demo data (only if demo mode enabled)
   const demoData = useDemoData();
   
+  // VOID token balance (live from blockchain)
+  const { balance: voidTokenBalance, isLoading: voidBalanceLoading } = useVoidBalance(address);
+  
   // Token balances (live mode)
   const { data: voidBalance } = useBalance({
-    address: address,
+    address: address || undefined,
     token: VOID_CONFIG.contracts.VOID,
     query: { enabled: !!address && !isDemoMode() }
   });
   
   const { data: xVoidBalance } = useBalance({
-    address: address,
+    address: address || undefined,
     token: VOID_CONFIG.contracts.xVOIDVault,
     query: { enabled: !!address && !isDemoMode() }
   });
@@ -85,8 +144,8 @@ export default function VoidHudApp() {
   const { rewards } = useClaimableRewards(address || '');
   const { votingPower } = useVotingPower(address || '');
   const gamification = useGamification(address || '');
-  const { position, nearbyEvents = [], friends = [] } = useWorldState(address) || {};
-  const { districts = [], parcels = [] } = useLandMap() || {};
+  const { nearbyEvents = [], friends = [] } = useWorldState(address || undefined) || {};
+  const worldSnapshot = useWorldSnapshot({ onlineFriends: friends?.length || 0 });
 
   // FX trigger system (MUST be defined before other callbacks that use it)
   const triggerFX = useCallback((fx: string, payload?: any) => {
@@ -101,6 +160,15 @@ export default function VoidHudApp() {
       });
     }, 1000);
   }, []);
+
+  const handleTeleportRequest = useCallback((coords: { x: number; z: number; y?: number }) => {
+    requestTeleport({
+      x: coords.x,
+      y: coords.y ?? sharedPosition.y ?? 1,
+      z: coords.z,
+    });
+    triggerFX('mapPulse', { hub: 'WORLD', x: coords.x, y: coords.z });
+  }, [requestTeleport, sharedPosition, triggerFX]);
 
   // Window management
   const openWindow = useCallback((type: WindowType, props: any = {}) => {
@@ -139,17 +207,24 @@ export default function VoidHudApp() {
     
     return {
       world: {
-        zone: districts[0]?.name || 'VOID_CORE',
-        coordinates: position || { x: 0, z: 0 },
-        onlineFriends: friends?.length || 0,
+        zone: getDistrictName(worldSnapshot.district),
+        coordinates: worldSnapshot.coordinates,
+  onlineFriends: worldSnapshot.onlineFriends ?? (friends?.length || 0),
         nearbyPlayers: [],
         nearbyProjects: [],
-        districts: (districts || []).map(d => ({
-          id: d.id,
-          name: d.name,
-          color: d.color || 'var(--void-neon-teal)',
-          bounds: { x: [0, 100], z: [0, 100] }
-        }))
+        districts: worldSnapshot.districts.map(d => {
+          const districtConfig = DISTRICTS.find(dist => dist.id === d.id);
+          const worldRect = districtConfig?.worldRect || { minX: 0, maxX: 0, minZ: 0, maxZ: 0 };
+          return {
+            id: d.id,
+            name: d.name,
+            color: d.color,
+            bounds: {
+              x: [worldRect.minX, worldRect.maxX] as [number, number],
+              z: [worldRect.minZ, worldRect.maxZ] as [number, number]
+            }
+          };
+        })
       },
       creator: {
         royaltiesEarned: royalties ? parseFloat(royalties.totalEarned || '0') : 0,
@@ -198,7 +273,7 @@ export default function VoidHudApp() {
       tickerItems: [],
       chatMessages: isDemoMode() && demoData ? demoData.chatMessages : []
     };
-  }, [districts, position, friends, royalties, votingPower, level, demoData]);
+  }, [worldSnapshot, friends, royalties, votingPower, level, demoData]);
 
   // OPTIMIZATION: Memoize player state
   const playerState: PlayerState = useMemo(() => ({
@@ -210,12 +285,12 @@ export default function VoidHudApp() {
     xpProgress,
     streak: 4,
     achievements: 0,
-    voidBalance: (positions || []).reduce((sum, p) => sum + parseFloat(p.stakedAmount || '0'), 0) || 1250,
+    voidBalance: voidTokenBalance, // Use real blockchain balance
     signalBalance: 0,
     psxBalance: typeof votingPower?.psxHeld === 'string' ? parseFloat(votingPower.psxHeld) : (votingPower?.psxHeld || 50000),
     createBalance: royalties ? parseFloat(royalties.totalEarned || '0') : 0,
     chain: 'Base'
-  }), [address, level, currentXP, xpProgress, positions, votingPower, royalties]);
+  }), [address, level, currentXP, xpProgress, voidTokenBalance, votingPower, royalties]);
 
   const theme = HUB_THEME[hubMode];
 
@@ -224,6 +299,9 @@ export default function VoidHudApp() {
       className="relative w-full h-screen overflow-hidden text-bio-silver transition-colors duration-700"
     >
       {/* 3D world viewport shows through - no background on HUD */}
+
+      {/* PHASE 5.1: World Event Toaster */}
+      <WorldEventToaster />
 
       {/* HUD shell (no page scrolling) */}
       <VoidHudLayout
@@ -235,10 +313,11 @@ export default function VoidHudApp() {
         triggerFX={triggerFX}
         theme={theme}
         fxState={fxState}
+        onRequestTeleport={handleTeleportRequest}
       />
 
       {/* Center pop-out bay: between header & footer, within safe play column */}
-      <div className="pointer-events-auto absolute inset-x-0 top-[90px] bottom-[90px] flex justify-center items-center z-[60]">
+      <div className="pointer-events-none absolute inset-x-0 top-[90px] bottom-[90px] flex justify-center items-center z-[80] px-2 sm:px-0">
         {activeWindow && (
           <VoidWindowShell
             windowType={activeWindow.type}
@@ -246,11 +325,7 @@ export default function VoidHudApp() {
             onClose={closeWindow}
           >
             {activeWindow.type === 'WORLD_MAP' && (
-              <CyberpunkCityMap 
-                playerPosition={position || { x: 0, z: 0 }} 
-                onTeleport={(x, z) => console.log('Teleport to:', x, z)}
-                onClose={closeWindow} 
-              />
+              <VoidCityMap onClose={closeWindow} />
             )}
             {(activeWindow.type === 'PROPERTY_MARKET' || activeWindow.type === 'ZONES') && (
               <div className="h-full">
@@ -345,8 +420,78 @@ export default function VoidHudApp() {
               <LeaderboardsWindow onClose={closeWindow} />
             )}
 
+            {activeWindow.type === 'MINIAPP_LAUNCHER' && (
+              <MiniAppLauncherModal 
+                onClose={closeWindow}
+                onOpenApp={(appId) => {
+                  // Handle opening the selected miniapp
+                  closeWindow();
+                }}
+              />
+            )}
+
+            {activeWindow.type === 'REAL_ESTATE' && (
+              <RealEstatePanel onClose={closeWindow} />
+            )}
+
+            {activeWindow.type === 'REAL_ESTATE_MARKET' && (
+              <RealEstateMarketWindow />
+            )}
+
+            {/* PHASE 5.1: Real Estate Leaderboard */}
+            {activeWindow.type === 'REAL_ESTATE_LEADERBOARD' && (
+              <RealEstateLeaderboardWindow onClose={closeWindow} />
+            )}
+
+            {/* PHASE 9: VOID Burn System Windows (Feature Flag Protected) */}
+            {ENABLE_BURN_UI && activeWindow.type === 'DISTRICT_UNLOCK' && DistrictUnlockWindow && (
+              <DistrictUnlockWindow onClose={closeWindow} />
+            )}
+
+            {ENABLE_BURN_UI && activeWindow.type === 'CREATOR_TOOLS' && CreatorToolsWindow && (
+              <CreatorToolsWindow onClose={closeWindow} />
+            )}
+
+            {ENABLE_BURN_UI && activeWindow.type === 'PRESTIGE_SYSTEM' && PrestigeSystemWindow && (
+              <PrestigeSystemWindow onClose={closeWindow} />
+            )}
+
+            {ENABLE_BURN_UI && activeWindow.type === 'MINIAPP_ACCESS' && MiniAppBurnAccessWindow && (
+              <MiniAppBurnAccessWindow onClose={closeWindow} />
+            )}
+
+            {/* SEASONAL BURN SYSTEM: Season Dashboard, XP Panel, Actions Panel */}
+            {ENABLE_SEASONAL_BURN_UI && activeWindow.type === 'SEASON_DASHBOARD' && SeasonDashboard && (
+              <SeasonDashboard onClose={closeWindow} />
+            )}
+
+            {ENABLE_SEASONAL_BURN_UI && activeWindow.type === 'SEASONAL_XP' && SeasonalXPPanel && (
+              <SeasonalXPPanel onClose={closeWindow} />
+            )}
+
+            {ENABLE_SEASONAL_BURN_UI && activeWindow.type === 'SEASONAL_ACTIONS' && SeasonalActionsPanel && (
+              <SeasonalActionsPanel onClose={closeWindow} />
+            )}
+
             {/* Fallback for windows without specific content yet */}
-            {!['WORLD_MAP', 'LAND_REGISTRY', 'PROPERTY_MARKET', 'ZONES', 'DEFI_OVERVIEW', 'VAULT_DETAIL', 'MULTI_TAB', 'MUSIC', 'WALLET', 'AGENCY_BOARD', 'GUILDS', 'PLAYER_PROFILE', 'GLOBAL_CHAT', 'PHONE', 'JOB_DETAIL', 'LEADERBOARDS'].includes(activeWindow.type) && (
+            {activeWindow && (() => {
+              const excludedWindows = [
+                'WORLD_MAP', 'LAND_REGISTRY', 'PROPERTY_MARKET', 'ZONES', 'DEFI_OVERVIEW', 'VAULT_DETAIL', 
+                'MULTI_TAB', 'MUSIC', 'WALLET', 'AGENCY_BOARD', 'GUILDS', 'PLAYER_PROFILE', 'GLOBAL_CHAT', 
+                'PHONE', 'JOB_DETAIL', 'LEADERBOARDS', 'MINIAPP_LAUNCHER', 'REAL_ESTATE', 'REAL_ESTATE_MARKET', 
+                'REAL_ESTATE_LEADERBOARD'
+              ];
+              
+              if (ENABLE_BURN_UI) {
+                excludedWindows.push('DISTRICT_UNLOCK', 'CREATOR_TOOLS', 'PRESTIGE_SYSTEM', 'MINIAPP_ACCESS');
+              }
+              
+              if (ENABLE_SEASONAL_BURN_UI) {
+                excludedWindows.push('SEASON_DASHBOARD', 'SEASONAL_XP', 'SEASONAL_ACTIONS');
+              }
+              
+              return !excludedWindows.includes(activeWindow.type);
+            })() && (
               <div className="text-bio-silver p-6 text-center">
                 <h3 className="text-lg font-bold mb-2">{getWindowLabel(activeWindow.type)}</h3>
                 <p className="text-sm text-bio-silver/60">Window content coming soon...</p>
@@ -366,6 +511,14 @@ export default function VoidHudApp() {
 
       {/* Toast Notification Container */}
       <VoidToastContainer />
+
+      {/* Debug overlay */}
+      <DebugOverlay />
+      
+      {/* Zone Mini Map (top-right) - canonical radar */}
+      <div className="fixed top-4 right-4 z-40 pointer-events-auto">
+        <ZoneMiniMap onOpenFullMap={() => openWindow('WORLD_MAP')} />
+      </div>
     </div>
   );
 }

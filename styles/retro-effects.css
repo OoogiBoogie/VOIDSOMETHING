@@ -1,0 +1,417 @@
+/**
+ * VOID RETRO EFFECTS - Optional CSS Utilities
+ * 
+ * Apply these classes to any component for PS1/CRT/Xbox aesthetic
+ * All effects are opt-in - add classes only where you want them
+ * Hub theming logic is completely preserved
+ */
+
+/* ═══════════════════════════════════════════════════════════════
+   DITHER PATTERNS
+   ═══════════════════════════════════════════════════════════════ */
+
+.dither-light {
+  background-image: 
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(255, 255, 255, 0.03) 2px,
+      rgba(255, 255, 255, 0.03) 4px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 2px,
+      rgba(255, 255, 255, 0.03) 2px,
+      rgba(255, 255, 255, 0.03) 4px
+    );
+}
+
+.dither-medium {
+  background-image: 
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 1px,
+      rgba(255, 255, 255, 0.06) 1px,
+      rgba(255, 255, 255, 0.06) 2px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 1px,
+      rgba(255, 255, 255, 0.06) 1px,
+      rgba(255, 255, 255, 0.06) 2px
+    );
+}
+
+.dither-heavy {
+  background-image: 
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 1px,
+      rgba(255, 255, 255, 0.1) 1px,
+      rgba(255, 255, 255, 0.1) 2px
+    );
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   CRT SCANLINES
+   ═══════════════════════════════════════════════════════════════ */
+
+.scanlines {
+  position: relative;
+}
+
+.scanlines::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0px,
+    rgba(0, 0, 0, 0.15) 1px,
+    transparent 2px
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+.scanlines-subtle {
+  position: relative;
+}
+
+.scanlines-subtle::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0px,
+    rgba(0, 0, 0, 0.05) 1px,
+    transparent 3px
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   CRT STATIC/NOISE
+   ═══════════════════════════════════════════════════════════════ */
+
+.crt-noise {
+  position: relative;
+}
+
+.crt-noise::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  opacity: 0.4;
+  pointer-events: none;
+  z-index: 1;
+  animation: noise-flicker 0.2s infinite;
+}
+
+@keyframes noise-flicker {
+  0%, 100% { opacity: 0.03; }
+  50% { opacity: 0.05; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   CHROMATIC ABERRATION (RGB SPLIT)
+   ═══════════════════════════════════════════════════════════════ */
+
+.chromatic-text {
+  position: relative;
+  text-shadow:
+    -1px 0 rgba(255, 0, 0, 0.4),
+    1px 0 rgba(0, 255, 255, 0.4);
+}
+
+.chromatic-border {
+  position: relative;
+  box-shadow:
+    -2px 0 0 rgba(255, 0, 0, 0.3),
+    2px 0 0 rgba(0, 255, 255, 0.3);
+}
+
+.chromatic-glow {
+  filter: 
+    drop-shadow(-1px 0 2px rgba(255, 0, 0, 0.5))
+    drop-shadow(1px 0 2px rgba(0, 255, 255, 0.5));
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   XBOX 360 CHROME BORDERS
+   ═══════════════════════════════════════════════════════════════ */
+
+.chrome-border {
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.5),
+    0 0 8px rgba(255, 255, 255, 0.2);
+}
+
+.chrome-border-thick {
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.6),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.6),
+    0 0 12px rgba(255, 255, 255, 0.3);
+}
+
+.chrome-glow-green {
+  box-shadow:
+    0 0 16px rgba(0, 255, 157, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.chrome-glow-cyan {
+  box-shadow:
+    0 0 16px rgba(0, 212, 255, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.chrome-glow-purple {
+  box-shadow:
+    0 0 16px rgba(124, 0, 255, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   XBOX BLADE ROUNDED CORNERS
+   ═══════════════════════════════════════════════════════════════ */
+
+.xbox-rounded {
+  border-radius: 12px;
+}
+
+.xbox-rounded-sm {
+  border-radius: 8px;
+}
+
+.xbox-rounded-lg {
+  border-radius: 16px;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Y2K GLOSSY GRADIENT OVERLAYS
+   ═══════════════════════════════════════════════════════════════ */
+
+.y2k-gloss {
+  position: relative;
+}
+
+.y2k-gloss::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 40%;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.15) 0%,
+    transparent 100%
+  );
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.y2k-metallic {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    transparent 50%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   GLITCH ANIMATIONS
+   ═══════════════════════════════════════════════════════════════ */
+
+.glitch-jitter {
+  animation: jitter 0.1s infinite;
+}
+
+@keyframes jitter {
+  0%, 100% { transform: translate(0, 0); }
+  25% { transform: translate(-1px, 0); }
+  75% { transform: translate(1px, 0); }
+}
+
+.glitch-flicker {
+  animation: flicker 3s infinite;
+}
+
+@keyframes flicker {
+  0%, 94%, 96%, 98%, 100% { opacity: 1; }
+  95%, 97% { opacity: 0.7; }
+}
+
+.glitch-rgb-shift {
+  animation: rgb-shift 2s infinite;
+}
+
+@keyframes rgb-shift {
+  0%, 100% { 
+    text-shadow:
+      -1px 0 rgba(255, 0, 0, 0.3),
+      1px 0 rgba(0, 255, 255, 0.3);
+  }
+  50% { 
+    text-shadow:
+      -2px 0 rgba(255, 0, 0, 0.5),
+      2px 0 rgba(0, 255, 255, 0.5);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   XBOX ACHIEVEMENT GLOW (for XP popups)
+   ═══════════════════════════════════════════════════════════════ */
+
+.xbox-achievement-glow {
+  animation: achievement-pulse 2s ease-out;
+  box-shadow: 
+    0 0 20px rgba(0, 255, 157, 0.8),
+    0 0 40px rgba(0, 255, 157, 0.4);
+}
+
+@keyframes achievement-pulse {
+  0% { 
+    box-shadow: 
+      0 0 40px rgba(0, 255, 157, 1),
+      0 0 80px rgba(0, 255, 157, 0.6);
+  }
+  100% { 
+    box-shadow: 
+      0 0 20px rgba(0, 255, 157, 0.8),
+      0 0 40px rgba(0, 255, 157, 0.4);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   BLADE SLIDE ANIMATIONS (Xbox 360 style)
+   ═══════════════════════════════════════════════════════════════ */
+
+.blade-slide-in-right {
+  animation: blade-slide-in-right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes blade-slide-in-right {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.blade-slide-in-left {
+  animation: blade-slide-in-left 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes blade-slide-in-left {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.blade-slide-out-right {
+  animation: blade-slide-out-right 0.3s cubic-bezier(0.6, 0, 0.84, 0);
+}
+
+@keyframes blade-slide-out-right {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PIXELATION EFFECT (PS1 style)
+   ═══════════════════════════════════════════════════════════════ */
+
+.pixelated {
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   VHS DISTORTION (rare glitch effect)
+   ═══════════════════════════════════════════════════════════════ */
+
+.vhs-distort {
+  animation: vhs-distort 0.3s ease-out;
+}
+
+@keyframes vhs-distort {
+  0%, 100% { 
+    transform: translateX(0) scaleX(1);
+    filter: hue-rotate(0deg);
+  }
+  20% { 
+    transform: translateX(-3px) scaleX(1.02);
+    filter: hue-rotate(5deg);
+  }
+  40% { 
+    transform: translateX(3px) scaleX(0.98);
+    filter: hue-rotate(-5deg);
+  }
+  60% { 
+    transform: translateX(-2px) scaleX(1.01);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   HOVER STATES (Xbox style)
+   ═══════════════════════════════════════════════════════════════ */
+
+.retro-button-hover {
+  transition: all 0.15s ease;
+}
+
+.retro-button-hover:hover {
+  transform: translateY(-1px);
+  box-shadow: 
+    0 0 12px rgba(0, 255, 157, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.retro-button-hover:active {
+  transform: translateY(0);
+  box-shadow: 
+    0 0 8px rgba(0, 255, 157, 0.4),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   COMBINATION CLASSES (Common Presets)
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Use these to apply multiple effects at once */
+
+/* Example usage in HTML/JSX:
+   <div className="retro-window">
+   <div className="retro-panel">
+   <div className="retro-achievement">
+*/

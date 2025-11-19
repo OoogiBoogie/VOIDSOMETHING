@@ -22,7 +22,7 @@ export default function VoidHudFooter({
   theme
 }: VoidHudFooterProps) {
   return (
-    <footer className="pointer-events-auto px-6 pb-4 pt-2 flex-none">
+    <footer className="pointer-events-auto px-6 pb-4 pt-2 flex-none relative z-[70]">
       <div className="flex flex-col gap-2">
         <ContextActionBar
           hubMode={hubMode}

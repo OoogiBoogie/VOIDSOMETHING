@@ -8,7 +8,7 @@
 
 import React, { useState } from 'react';
 import { useAccount } from 'wagmi';
-import { usePrivy } from '@privy-io/react-auth';
+
 
 interface Mission {
   id: number;
@@ -25,7 +25,7 @@ interface CreatorTabProps {
 }
 
 export default function CreatorTab({ onClose }: CreatorTabProps) {
-  const { authenticated } = usePrivy();
+  
   const { address } = useAccount();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newMission, setNewMission] = useState({
@@ -57,7 +57,7 @@ export default function CreatorTab({ onClose }: CreatorTabProps) {
     setNewMission({ title: '', description: '', vxpReward: 0, voidReward: 0 });
   };
 
-  if (!authenticated) {
+  if (!isConnected) {
     return (
       <div className="p-6 flex flex-col items-center justify-center h-full text-center space-y-4">
         <div className="text-4xl mb-2">🎨</div>

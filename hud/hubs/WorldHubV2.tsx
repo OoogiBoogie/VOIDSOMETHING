@@ -2,15 +2,13 @@
 
 import React, { useState, useMemo, useCallback } from 'react';
 import { useAccount } from 'wagmi';
-import { 
-  useVoidEmitter, 
-  useVoidVault, 
+import {
+  useVoidEmitter,
+  useVoidVault,
   useCreatorRoyalties,
-  useClaimableRewards 
+  useClaimableRewards
 } from '@/hooks/useVoidEngine';
 import { useWorldState } from '@/hooks/useWorldState';
-import { useLandMap } from '@/hooks/useLandData';
-import { useGamification } from '@/hooks/useGamification';
 import PlayerChip from '@/hud/world/PlayerChip';
 import TopTicker from '@/hud/world/TopTicker';
 import MiniMap from '@/hud/world/MiniMap';
@@ -19,7 +17,29 @@ import RightRail from '@/hud/world/RightRail';
 import ContextActionBar from '@/hud/world/ContextActionBar';
 import BottomAppDock from '@/hud/world/BottomAppDock';
 import WindowShell, { type WindowType } from '@/hud/world/WindowShell';
-import type { EconomySnapshot, PlayerState as PlayerStateType } from '@/hud/types/economySnapshot';
+import type { EconomySnapshot, PlayerState as PlayerStateType, POI } from '@/hud/types/economySnapshot';
+import { usePlayerPosition } from '@/contexts/PlayerPositionContext';
+import { useWorldSnapshot } from '@/hooks/useWorldSnapshot';
+import type { DistrictId } from '@/world/map/districts';
+import { DISTRICTS } from '@/world/map/districts';
+
+/**
+ * Get district display name from DistrictId
+ */
+const getDistrictName = (district: DistrictId): string => {
+  const names: Record<DistrictId, string> = {
+    HQ: 'PSX HQ',
+    DEFI: 'DeFi District',
+    CREATOR: 'Creator Quarter',
+    DAO: 'DAO Plaza',
+    AI: 'AI Nexus',
+    SOCIAL: 'Social District',
+    IDENTITY: 'Identity District',
+    CENTRAL_EAST: 'Central East',
+    CENTRAL_SOUTH: 'Central South',
+  };
+  return names[district] || 'VOID_CORE';
+};
 
 export default function WorldHubV2() {
   const { address } = useAccount();
@@ -29,9 +49,9 @@ export default function WorldHubV2() {
   const { positions } = useVoidVault(address || '');
   const { royalties } = useCreatorRoyalties(address || '');
   const { rewards } = useClaimableRewards(address || '');
-  const gamification = useGamification(address || '');
-  const { position, nearbyEvents, friends } = useWorldState(address);
-  const { districts, parcels } = useLandMap();
+  const { friends = [] } = useWorldState(address) || {};
+  const { position: sharedPosition, requestTeleport } = usePlayerPosition();
+  const worldSnapshot = useWorldSnapshot({ onlineFriends: friends.length });
 
   // Window management
   const [activeWindow, setActiveWindow] = useState<{ type: WindowType; props?: any } | null>(null);
@@ -71,20 +91,90 @@ export default function WorldHubV2() {
   const totalStaked = voidBalance;
   const claimableRewards = rewards?.reduce((sum, r) => sum + parseFloat(r.amount), 0) || 0;
 
+  const triggerFX = useCallback((type: string, data?: any) => {
+    console.log('🎮 FX:', type, data);
+    // TODO: wire to audio/visual FX system
+  }, []);
+
+  const handleTeleport = useCallback((coords: { x: number; z: number; y?: number }) => {
+    requestTeleport({
+      x: coords.x,
+      y: coords.y ?? sharedPosition.y ?? 1,
+      z: coords.z,
+    });
+    triggerFX('mapPulse', { hub: 'WORLD', x: coords.x, y: coords.z });
+  }, [requestTeleport, sharedPosition, triggerFX]);
+
+  const worldDistricts = useMemo(() => (
+    worldSnapshot.districts.map(d => {
+      const districtConfig = DISTRICTS.find(dist => dist.id === d.id);
+      const worldRect = districtConfig?.worldRect || { minX: 0, maxX: 0, minZ: 0, maxZ: 0 };
+      return {
+        id: d.id,
+        name: d.name,
+        color: d.color,
+        bounds: {
+          x: [worldRect.minX, worldRect.maxX] as [number, number],
+          z: [worldRect.minZ, worldRect.maxZ] as [number, number]
+        }
+      };
+    })
+  ), [worldSnapshot.districts]);
+
+  const featurePoiType = useCallback((featureType: string): POI['type'] => {
+    switch (featureType) {
+      case 'portal':
+        return 'vault';
+      case 'quest':
+        return 'gig';
+      case 'event':
+        return 'hotspot';
+      case 'landmark':
+      case 'hub':
+      case 'spawn':
+      case 'shop':
+      default:
+        return 'drop';
+    }
+  }, []);
+
+  const poiEntries = useMemo(() => (
+    worldSnapshot.features
+      .filter(feature => feature.hub !== 'WORLD')
+      .map(feature => ({
+        id: feature.id,
+        hub: feature.hub,
+        type: featurePoiType(feature.type),
+        position: feature.worldPos,
+        label: feature.label,
+        active: true,
+      }))
+  ), [worldSnapshot.features, featurePoiType]);
+
+  const aiOpsHotspots = useMemo(() => (
+    worldSnapshot.features
+      .filter(feature => feature.type === 'event')
+      .map(feature => ({
+        x: feature.worldPos.x,
+        z: feature.worldPos.z,
+        reason: feature.description || feature.label,
+        hub: feature.hub,
+      }))
+  ), [worldSnapshot.features]);
+
+  const miniMapHotspots = useMemo(() => (
+    aiOpsHotspots.map(({ hub: _hub, ...rest }) => rest)
+  ), [aiOpsHotspots]);
+
   // Build EconomySnapshot from all hub data
   const economySnapshot: EconomySnapshot = useMemo(() => ({
     world: {
-      zone: districts[0]?.name || 'VOID_CORE',
-      coordinates: position || { x: 0, z: 0 },
-      onlineFriends: friends?.length || 0,
+      zone: getDistrictName(worldSnapshot.district),
+      coordinates: worldSnapshot.coordinates,
+      onlineFriends: worldSnapshot.onlineFriends ?? friends.length,
       nearbyPlayers: [],
       nearbyProjects: [],
-      districts: districts.map(d => ({
-        id: d.id,
-        name: d.name,
-        color: d.color || '#00FF9D',
-        bounds: { x: [0, 100] as [number, number], z: [0, 100] as [number, number] }
-      }))
+      districts: worldDistricts,
     },
     creator: {
       royaltiesEarned: createBalance,
@@ -117,7 +207,8 @@ export default function WorldHubV2() {
     },
     dao: {
       activeProposals: [
-        { id: '27', title: 'Increase creator emissions', endsAt: Date.now() + 7200000, status: 'ACTIVE', votesFor: 125000, votesAgainst: 45000 }
+        // TODO: Replace with real governance data from DAO service
+        // { id: '27', title: 'Increase creator emissions', endsAt: timestamp + 7200000, status: 'ACTIVE', votesFor: 125000, votesAgainst: 45000 }
       ],
       myVotingPower: 1.0,
       psxBalance: psxBalance,
@@ -137,12 +228,11 @@ export default function WorldHubV2() {
     },
     aiOps: {
       logs: [
-        { id: '1', agent: 'EmissionAI', action: 'tilting toward creator rewards this epoch', timestamp: Date.now(), hub: 'DEFI' },
-        { id: '2', agent: 'VaultAI', action: 'rebalanced pools toward creator tokens', timestamp: Date.now() - 120000, hub: 'DEFI' }
+        // TODO: Replace with real AI agent logs from telemetry service
+        // { id: '1', agent: 'EmissionAI', action: 'tilting toward creator rewards this epoch', timestamp: ..., hub: 'DEFI' },
+        // { id: '2', agent: 'VaultAI', action: 'rebalanced pools toward creator tokens', timestamp: ..., hub: 'DEFI' }
       ],
-      hotspots: [
-        { x: 10, z: 15, reason: 'New creator drop: Lattice Dreams #01', hub: 'CREATOR' }
-      ],
+      hotspots: aiOpsHotspots,
       suggestions: [],
       riskFlags: []
     },
@@ -152,7 +242,8 @@ export default function WorldHubV2() {
       { id: '3', hub: 'CREATOR', title: 'Support a creator drop', description: 'Mint from any creator', progress: 100, reward: '+25 CREATE', onClick: () => console.log('Open Creator Hub') }
     ],
     recentRewards: [
-      { id: '1', hub: 'WORLD', action: 'Mission complete', tokens: [{ symbol: 'SIGNAL', amount: 35 }], timestamp: Date.now() - 300000 }
+      // TODO: Replace with real reward history from VXP/rewards service
+      // { id: '1', hub: 'WORLD', action: 'Mission complete', tokens: [{ symbol: 'SIGNAL', amount: 35 }], timestamp: ... }
     ],
     tickerItems: [
       { id: '1', hub: 'DEFI', message: `VOID $1.23 (+4.2%) · SIGNAL epoch 132 · 1.32×`, priority: 10 },
@@ -160,13 +251,9 @@ export default function WorldHubV2() {
       { id: '3', hub: 'CREATOR', message: '"Lattice Dreams #01" mint 23% · District 7', priority: 7 },
       { id: '4', hub: 'AI_OPS', message: 'EmissionAI tilting toward creator rewards', priority: 6 }
     ],
-    pois: [
-      { id: '1', hub: 'CREATOR', type: 'drop', position: { x: 10, z: 15 }, label: 'Lattice Dreams', active: true },
-      { id: '2', hub: 'DEFI', type: 'vault', position: { x: -20, z: 10 }, label: 'Vault #47', active: true },
-      { id: '3', hub: 'AGENCY', type: 'gig', position: { x: 20, z: 30 }, label: 'Job Board', active: true }
-    ],
+    pois: poiEntries,
     chatMessages: []
-  }), [position, friends, districts, positions, createBalance, psxBalance, royalties]);
+  }), [friends, worldSnapshot, worldDistricts, positions, createBalance, psxBalance, poiEntries, aiOpsHotspots]);
 
   // Build PlayerState
   const playerState: PlayerStateType = useMemo(() => ({
@@ -184,12 +271,6 @@ export default function WorldHubV2() {
     psxBalance,
     createBalance
   }), [address, level, currentXP, xpProgress, voidBalance, signalBalance, psxBalance, createBalance]);
-
-  // Dopamine FX trigger
-  const triggerFX = (type: string, data?: any) => {
-    console.log('🎮 FX:', type, data);
-    // TODO: wire to audio/visual FX system
-  };
 
   const hasNearbyPlayers = (friends?.length || 0) > 0;
 
@@ -269,10 +350,14 @@ export default function WorldHubV2() {
               districts={economySnapshot.world.districts}
               nearbyPlayers={economySnapshot.world.nearbyPlayers}
               pois={economySnapshot.pois.filter((p): p is typeof p & { hub: 'DEFI' | 'DAO' | 'CREATOR' | 'AGENCY' | 'AI_OPS' } => 
-                p.hub !== 'WORLD'
+                ['DEFI', 'DAO', 'CREATOR', 'AGENCY', 'AI_OPS'].includes(p.hub)
               )}
-              aiHotspots={economySnapshot.aiOps.hotspots}
-              onMapClick={() => openWindow('worldMap', { world: economySnapshot.world })}
+              aiHotspots={miniMapHotspots}
+              onMapClick={() => {
+                // Note: WorldHubV2 uses WindowShell which doesn't support WORLD_MAP
+                // Full map functionality is available in VoidHudApp
+                console.log('Map click - use VoidHudApp for full map experience');
+              }}
             />
           </div>
         </div>
@@ -337,10 +422,10 @@ export default function WorldHubV2() {
             
             <BottomAppDock
               onAppClick={(appId) => {
-                const windowMap: Record<string, WindowType> = {
+                const windowMap: Record<string, WindowType | null> = {
                   phone: 'friendsList',
                   friends: 'friendsList',
-                  map: 'worldMap',
+                  map: null, // WindowShell doesn't support map - use VoidHudApp instead
                   vault: 'defiOverview',
                   dao: 'daoConsole',
                   agency: 'agencyBoard',
@@ -350,7 +435,6 @@ export default function WorldHubV2() {
                 const windowType = windowMap[appId];
                 if (windowType) {
                   const props: Record<string, any> = {};
-                  if (windowType === 'worldMap') props.world = economySnapshot.world;
                   if (windowType === 'defiOverview') props.defi = economySnapshot.defi;
                   if (windowType === 'daoConsole') props.dao = economySnapshot.dao;
                   if (windowType === 'agencyBoard') props.agency = economySnapshot.agency;

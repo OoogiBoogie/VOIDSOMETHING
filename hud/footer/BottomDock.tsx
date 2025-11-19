@@ -100,8 +100,8 @@ export default function BottomDock({
         <div className="pointer-events-none absolute top-0 left-4 right-4 h-0.5 bg-gradient-to-r from-signal-green via-cyber-cyan via-void-purple via-psx-blue to-signal-green opacity-60" />
 
         <div className="relative flex items-center justify-center gap-2">
-          {/* MINIAPP LAUNCHER - handled by MiniAppDock component */}
-          <MiniAppDock />
+          {/* MINIAPP LAUNCHER - integrated with window system */}
+          <MiniAppDock onOpenWindow={onOpenWindow} />
 
           {visibleApps.map(app => {
           const Icon: React.ElementType = app.icon;

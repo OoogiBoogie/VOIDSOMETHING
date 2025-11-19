@@ -3,6 +3,32 @@
  * Single source of truth for all addresses and protocol identifiers
  */
 
+// ═══════════════════════════════════════════════════════════════
+// 🎛️ FEATURE FLAGS
+// ═══════════════════════════════════════════════════════════════
+
+/**
+ * BURN UI FEATURE FLAG
+ * 
+ * Controls visibility of the entire VOID Utility Burn System UI.
+ * When false, all burn-related windows, buttons, and badges are hidden.
+ * 
+ * Set to `true` after contracts are deployed and tested on Base Sepolia.
+ * Set to `false` to hide burn UI from users (pre-deployment safety).
+ * 
+ * Affected UI:
+ * - HUD burn windows (District, Creator, Prestige, MiniApp)
+ * - Prestige badge in PlayerChipV2
+ * - Land upgrade section in RealEstatePanel
+ * - Any direct burn controls
+ * 
+ * Does NOT affect:
+ * - Smart contracts (can still be called directly)
+ * - Hooks (safe to keep, just not invoked by UI)
+ * - Config addresses (remain in voidConfig)
+ */
+export const ENABLE_BURN_UI = true; // ✅ ENABLED for QA testing (Nov 16, 2025)
+
 // Network configuration
 export const VOID_NETWORK = {
   chainId: 84532, // Base Sepolia
@@ -59,6 +85,33 @@ export const CONTRACTS = {
   
   // Agency and gigs
   VoidAgency: process.env.NEXT_PUBLIC_VOID_AGENCY_ADDRESS as `0x${string}` || '0xYourVoidAgencyAddress' as `0x${string}`,
+  
+  // ═══════════════════════════════════════════════════════════════
+  // VOID BURN SYSTEM (Phase 9 - Utility Burn)
+  // ═══════════════════════════════════════════════════════════════
+  //
+  // These addresses must be populated after running:
+  // `npx hardhat run scripts/deploy-burn-system.ts --network baseSepolia`
+  //
+  // Network: Base Sepolia (testnet) - Chain ID: 84532
+  //
+  // Post-deployment:
+  // 1. Copy addresses from deployment output
+  // 2. Update .env.local with NEXT_PUBLIC_* variables
+  // 3. Restart Next.js dev server
+  //
+  // For mainnet (Base - Chain ID: 8453):
+  // 1. Create separate .env.production with mainnet addresses
+  // 2. Ensure all contracts verified on Basescan before launch
+  // ═══════════════════════════════════════════════════════════════
+  
+  VoidBurnUtility: process.env.NEXT_PUBLIC_VOID_BURN_UTILITY as `0x${string}` || '0x0000000000000000000000000000000000000000' as `0x${string}`,
+  DistrictAccessBurn: process.env.NEXT_PUBLIC_DISTRICT_ACCESS_BURN as `0x${string}` || '0x0000000000000000000000000000000000000000' as `0x${string}`,
+  LandUpgradeBurn: process.env.NEXT_PUBLIC_LAND_UPGRADE_BURN as `0x${string}` || '0x0000000000000000000000000000000000000000' as `0x${string}`,
+  CreatorToolsBurn: process.env.NEXT_PUBLIC_CREATOR_TOOLS_BURN as `0x${string}` || '0x0000000000000000000000000000000000000000' as `0x${string}`,
+  PrestigeBurn: process.env.NEXT_PUBLIC_PRESTIGE_BURN as `0x${string}` || '0x0000000000000000000000000000000000000000' as `0x${string}`,
+  MiniAppBurnAccess: process.env.NEXT_PUBLIC_MINIAPP_BURN_ACCESS as `0x${string}` || '0x0000000000000000000000000000000000000000' as `0x${string}`,
+  AIUtilityGovernor: process.env.NEXT_PUBLIC_AI_UTILITY_GOVERNOR as `0x${string}` || '0x0000000000000000000000000000000000000000' as `0x${string}`,
 };
 
 // Anti-spam configuration (matches ANTI_SPAM_SPEC.md v2.0)

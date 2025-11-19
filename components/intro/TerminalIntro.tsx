@@ -30,6 +30,34 @@ export function TerminalIntro({ onComplete }: TerminalIntroProps) {
         onComplete();
         return;
       }
+
+      // CRITICAL: Clear any wallet connection data on fresh terminal boot
+      // Force users to explicitly select wallet each time
+      // Clears RainbowKit's cached connections
+      try {
+        // Clear RainbowKit wallet cache
+        Object.keys(localStorage).forEach(key => {
+          if (
+            key.startsWith('wagmi.') || 
+            key.startsWith('rainbowkit.') ||
+            key.includes('walletconnect') ||
+            key.includes('wallet')
+          ) {
+            localStorage.removeItem(key);
+          }
+        });
+        
+        // Also clear any session storage wallet data
+        Object.keys(sessionStorage).forEach(key => {
+          if (key.includes('wallet') || key.includes('wagmi')) {
+            sessionStorage.removeItem(key);
+          }
+        });
+        
+        console.log('[TerminalIntro] ✓ Cleared cached wallet connections - fresh start required');
+      } catch (error) {
+        console.warn('[TerminalIntro] Failed to clear wallet cache:', error);
+      }
     }
 
     // Cursor blink
@@ -52,11 +80,12 @@ export function TerminalIntro({ onComplete }: TerminalIntroProps) {
       "> MOUNTING 3D WORLD GRID [40x40]... OK",
       "> LINKING HUD ↔ SCENE BUS... OK",
       "> LOADING DEFI PROTOCOLS... OK",
-      "> INITIALIZING WALLET LAYER... STANDBY",
-      "> ACTIVATING PRIVY AUTH... READY",
-      "> DEPLOYING ONCHAINKIT... READY",
+      "> CLEARING CACHED WALLET SESSIONS... OK",
+      "> INITIALIZING WEB3 WALLET LAYER... STANDBY",
+      "> ACTIVATING RAINBOWKIT AUTH... READY",
       "",
       "> SYSTEM STATUS: ONLINE",
+      "> WALLET SELECTION REQUIRED",
       "> AWAITING AUTHORIZATION...",
     ];
 

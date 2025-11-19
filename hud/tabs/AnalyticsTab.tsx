@@ -8,7 +8,7 @@
 
 import React from 'react';
 import { useAccount, useReadContract } from 'wagmi';
-import { usePrivy } from '@privy-io/react-auth';
+
 import { formatUnits } from 'viem';
 import { VOID_TOKEN_ABI, XVOID_VAULT_ABI } from '@/lib/contracts/abis';
 
@@ -20,7 +20,7 @@ const VOID_TOKEN_ADDRESS = '0x8de4043445939B0D0Cc7d6c752057707279D9893';
 const XVOID_VAULT_ADDRESS = '0xab10B2B5E1b07447409BCa889d14F046bEFd8192';
 
 export default function AnalyticsTab({ onClose }: AnalyticsTabProps) {
-  const { authenticated } = usePrivy();
+  
   const { address } = useAccount();
 
   // Live contract reads
@@ -82,7 +82,7 @@ export default function AnalyticsTab({ onClose }: AnalyticsTabProps) {
 
   const maxVolume = Math.max(...mockVolumeHistory.map(d => d.volume));
 
-  if (!authenticated) {
+  if (!isConnected) {
     return (
       <div className="p-6 flex flex-col items-center justify-center h-full text-center space-y-4">
         <div className="text-4xl mb-2">📊</div>

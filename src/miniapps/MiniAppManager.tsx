@@ -11,7 +11,6 @@
 
 import React, { createContext, useContext, useState, useCallback, useMemo, ReactNode } from 'react';
 import { useAccount } from 'wagmi';
-import { usePrivy } from '@privy-io/react-auth';
 import { useNetProfile } from '@/hooks/useNetProfile';
 import { useVoidScore } from '@/hooks/useVoidScore';
 import { MINIAPP_REGISTRY, getMiniAppById } from './miniapps.registry';
@@ -40,9 +39,8 @@ interface MiniAppManagerProviderProps {
 
 export function MiniAppManagerProvider({ children }: MiniAppManagerProviderProps) {
   const { address, isConnected, chainId } = useAccount();
-  const { authenticated } = usePrivy();
   const { profile: netProfile } = useNetProfile();
-  const { vxp, tier, level } = useVoidScore(address || '');
+  const { voidScore } = useVoidScore(address || '');
   
   // Manager state
   const [activeMiniAppId, setActiveMiniAppId] = useState<string | null>(null);
@@ -57,23 +55,23 @@ export function MiniAppManagerProvider({ children }: MiniAppManagerProviderProps
       // Wallet
       walletAddress: address || null,
       chainId: chainId || null,
-      isConnected: isConnected && authenticated,
+      isConnected: isConnected,
       
       // Net Protocol Profile
       netProfile: netProfile ? {
-        agentId: netProfile.agentId,
+        agentId: address || '',
         xp: netProfile.xp,
         level: netProfile.level,
-        lastSceneId: netProfile.lastSceneId,
+        lastSceneId: 'main-hub',
         lastPosition: netProfile.lastPosition,
-        displayName: netProfile.displayName,
+        displayName: address ? `${address.slice(0, 6)}...${address.slice(-4)}` : undefined,
       } : null,
       
       // XP System (from VoidScore)
-      xp: vxp !== undefined ? {
-        current: vxp,
-        level: level || 1,
-        tier: tier || 'INITIATE',
+      xp: voidScore ? {
+        current: BigInt(voidScore.currentScore || 0),
+        level: voidScore.tier === 'S_TIER' ? 4 : voidScore.tier === 'GOLD' ? 3 : voidScore.tier === 'SILVER' ? 2 : 1,
+        tier: voidScore.tier || 'INITIATE',
       } : undefined,
       
       // Land Summary (TODO: integrate useLandMap when needed)
@@ -81,9 +79,9 @@ export function MiniAppManagerProvider({ children }: MiniAppManagerProviderProps
       
       // Additional context
       hubMode: undefined,
-      currentScene: netProfile?.lastSceneId,
+      currentScene: 'main-hub',
     };
-  }, [address, chainId, isConnected, authenticated, netProfile, vxp, level, tier]);
+  }, [address, chainId, isConnected, netProfile, voidScore]);
 
   /**
    * Open a miniapp by ID
@@ -93,7 +91,7 @@ export function MiniAppManagerProvider({ children }: MiniAppManagerProviderProps
     console.log(`[MiniAppManager] Opening miniapp: ${id}`);
     
     // Validate wallet is connected
-    if (!authenticated || !address) {
+    if (!isConnected || !address) {
       console.error(`[MiniAppManager] Cannot open miniapp - wallet not connected`);
       // TODO: Trigger wallet connect modal
       return;
@@ -115,7 +113,7 @@ export function MiniAppManagerProvider({ children }: MiniAppManagerProviderProps
     // Update state
     setActiveMiniAppId(id);
     setHistory(prev => [...prev, id]);
-  }, [authenticated, address]);
+  }, [isConnected, address]);
 
   /**
    * Close the active miniapp

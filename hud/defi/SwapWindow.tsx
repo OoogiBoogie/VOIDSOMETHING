@@ -7,13 +7,12 @@
 
 import React, { useState, useEffect } from 'react'
 import { useAccount } from 'wagmi'
-import { usePrivy } from '@privy-io/react-auth'
 import { toast } from 'sonner'
 import { useSwap, type SwapToken } from '@/hooks/useSwap'
+import { ConnectButton } from '@rainbow-me/rainbowkit';
 
 export function SwapWindow() {
   const { address, isConnected } = useAccount()
-  const { authenticated, login } = usePrivy()
   const { swap, fetchQuote, quoteOut, fee, isLoading, priceImpact } = useSwap()
   
   const [tokenIn, setTokenIn] = useState<SwapToken>('VOID')
@@ -28,7 +27,7 @@ export function SwapWindow() {
   }, [amountIn, tokenIn, fetchQuote])
   
   const handleSwap = async () => {
-    if (!authenticated || !isConnected) {
+    if (!isConnected) {
       toast.error('Connect wallet first')
       return
     }
@@ -62,17 +61,12 @@ export function SwapWindow() {
   const feeAmount = amountIn ? (parseFloat(amountIn) * 0.3 / 100).toFixed(6) : '0'
   const highImpact = priceImpact && parseFloat(priceImpact) > 5
   
-  if (!authenticated || !isConnected) {
+  if (!isConnected) {
     return (
       <div className="flex flex-col items-center justify-center h-full p-8 space-y-4">
         <h3 className="text-xl font-bold text-purple-400">SWAP</h3>
         <p className="text-sm text-gray-400">Connect wallet to swap tokens</p>
-        <button 
-          onClick={() => login()} 
-          className="px-6 py-3 bg-purple-600 hover:bg-purple-500 rounded-lg font-bold transition-colors"
-        >
-          Connect Wallet
-        </button>
+        <ConnectButton />
       </div>
     )
   }

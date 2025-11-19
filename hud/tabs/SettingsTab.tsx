@@ -7,14 +7,14 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { usePrivy } from '@privy-io/react-auth';
+
 
 interface SettingsTabProps {
   onClose?: () => void;
 }
 
 export default function SettingsTab({ onClose }: SettingsTabProps) {
-  const { authenticated } = usePrivy();
+  
 
   // Audio settings (localStorage allowed for UI prefs)
   const [masterVolume, setMasterVolume] = useState(70);

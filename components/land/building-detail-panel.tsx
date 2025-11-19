@@ -5,6 +5,9 @@ import { X, MapPin, Building2, Users, DollarSign, FileText, Zap } from "lucide-r
 import { Parcel, ParcelStatus, TierType, DistrictType, LicenseType } from "@/lib/land/types"
 import { ChromePanel, ChromeHeader, ChromeStat, ChromeButton } from "../ui/chrome-panel"
 import { landRegistryAPI } from "@/lib/land/registry-api"
+import { useSelectionState } from "@/state/selection/useSelectionState"
+import { useParcelOwnership, useParcelListing } from "@/world/economy/ownershipHooks"
+import { useRealEstateToasts } from "@/world/economy/useRealEstateToasts"
 
 interface BuildingDetailPanelProps {
   parcel: Parcel | null
@@ -13,8 +16,20 @@ interface BuildingDetailPanelProps {
 
 export function BuildingDetailPanel({ parcel, onClose }: BuildingDetailPanelProps) {
   const [activeTab, setActiveTab] = useState<'info' | 'business' | 'lease'>('info')
+  const { setActiveParcel } = useSelectionState();
+  
+  // Convert parcelId to number for hooks
+  const parcelIdNum = parcel ? parseInt(parcel.parcelId, 10) : null;
+  
+  // Get ownership status for this parcel
+  const { isOwnedByCurrentPlayer } = useParcelOwnership(parcelIdNum);
+  const { activeListing, listParcel } = useParcelListing(parcelIdNum);
+  const { notifyListed } = useRealEstateToasts();
+  
+  const [showListingForm, setShowListingForm] = useState(false);
+  const [listPrice, setListPrice] = useState('');
 
-  if (!parcel) return null
+  if (!parcel) return null;
 
   const gridCoords = landRegistryAPI.parcelIdToCoords(parcel.parcelId)
   
@@ -99,6 +114,71 @@ export function BuildingDetailPanel({ parcel, onClose }: BuildingDetailPanelProp
             {parcel.district} DISTRICT
           </span>
         </div>
+
+        {/* Quick Actions */}
+        <div className="flex flex-wrap gap-2 mb-6 pb-6 border-b border-gray-700">
+          <button
+            onClick={() => {
+              // Open REAL_ESTATE window and focus this parcel
+              if (parcelIdNum !== null) {
+                setActiveParcel(parcelIdNum, parcel.district as any);
+              }
+              // Note: You'd typically call onOpenWindow('REAL_ESTATE') here if available
+              // For now, just setting the selection will update the panel if it's open
+            }}
+            className="px-3 py-1.5 bg-amber-400/10 border border-amber-400/40 hover:border-amber-400/70 rounded text-amber-400 text-xs font-semibold uppercase tracking-wide transition-all"
+          >
+            🏢 View in Real Estate
+          </button>
+          
+          {isOwnedByCurrentPlayer && !activeListing && (
+            <button
+              onClick={() => setShowListingForm(!showListingForm)}
+              className="px-3 py-1.5 bg-green-400/10 border border-green-400/40 hover:border-green-400/70 rounded text-green-400 text-xs font-semibold uppercase tracking-wide transition-all"
+            >
+              💰 List Parcel
+            </button>
+          )}
+        </div>
+        
+        {/* Inline Listing Form */}
+        {showListingForm && (
+          <div className="mb-6 p-4 bg-black/50 rounded-lg border border-green-400/30">
+            <div className="text-xs text-green-400/70 mb-3">Quick List (VOID)</div>
+            <div className="flex gap-2">
+              <input
+                type="number"
+                value={listPrice}
+                onChange={(e) => setListPrice(e.target.value)}
+                placeholder="1000"
+                className="flex-1 px-3 py-2 bg-black/60 border border-green-400/30 rounded text-green-400 text-sm font-mono focus:outline-none focus:border-green-400/60"
+              />
+              <button
+                onClick={() => {
+                  const price = parseFloat(listPrice);
+                  if (!isNaN(price) && price > 0) {
+                    listParcel(price);
+                    notifyListed(parcel.parcelId, listPrice);
+                    setShowListingForm(false);
+                    setListPrice('');
+                  }
+                }}
+                className="px-4 py-2 bg-green-400/20 border border-green-400/50 hover:bg-green-400/30 rounded text-green-400 text-sm font-semibold transition-all"
+              >
+                List
+              </button>
+              <button
+                onClick={() => {
+                  setShowListingForm(false);
+                  setListPrice('');
+                }}
+                className="px-4 py-2 bg-red-400/20 border border-red-400/50 hover:bg-red-400/30 rounded text-red-400 text-sm font-semibold transition-all"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Tabs */}
         <div className="flex gap-2 mb-6 border-b border-gray-700">

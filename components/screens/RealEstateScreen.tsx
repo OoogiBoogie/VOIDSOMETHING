@@ -6,8 +6,26 @@ import { Building2, Home, Key, TrendingUp, Plus } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useMyParcels } from '@/services/world/useParcels';
 import { useParcelProperties } from '@/services/world/useRealEstate';
-import { DISTRICT_NAMES } from '@/world/WorldCoords';
+import type { DistrictId } from '@/world/map/districts';
 import { useAccount } from 'wagmi';
+
+/**
+ * Get district display name from DistrictId
+ */
+const getDistrictName = (district: DistrictId | string): string => {
+  const names: Record<DistrictId, string> = {
+    HQ: 'PSX HQ',
+    DEFI: 'DeFi District',
+    CREATOR: 'Creator Quarter',
+    DAO: 'DAO Plaza',
+    AI: 'AI Nexus',
+    SOCIAL: 'Social District',
+    IDENTITY: 'Identity District',
+    CENTRAL_EAST: 'Central East',
+    CENTRAL_SOUTH: 'Central South',
+  };
+  return names[district as DistrictId] || district;
+};
 
 /**
  * REAL ESTATE SCREEN
@@ -143,7 +161,7 @@ function ParcelCard({ parcel }: { parcel: any }) {
             Parcel #{parcel.id}
           </h4>
           <p className="text-xs text-white/60">
-            {DISTRICT_NAMES[parcel.districtId as keyof typeof DISTRICT_NAMES]} • ({parcel.x}, {parcel.z})
+            {getDistrictName(parcel.districtId)} • ({parcel.x}, {parcel.z})
           </p>
         </div>
         <div className="px-2 py-1 rounded bg-[#00f0ff]/20 text-[#00f0ff] text-xs font-mono">

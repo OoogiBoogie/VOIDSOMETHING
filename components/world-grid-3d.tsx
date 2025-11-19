@@ -1,6 +1,6 @@
 "use client"
 
-import { Suspense, useMemo } from "react"
+import React, { Suspense, useMemo } from "react"
 import * as THREE from "three"
 import { BUILDINGS, ROADS } from "@/lib/city-assets"
 import { ALL_DISTRICTS } from "@/lib/parcels"
@@ -12,6 +12,9 @@ import { CreatorHubBuilding } from "./creator-hub-building"
 import { SignalsPlaza } from "./signals-plaza"
 import { DeFiDistrictTower } from "./defi-district-tower"
 import { SocialDistrictPlaza } from "./social-district-plaza"
+
+// PHASE 7: World Layout Integration
+import { LANDMARK_BUILDINGS, type BuildingConfig } from "@/world/config/WorldLayout"
 
 interface WorldGrid3DProps {
   zones: any[]
@@ -200,6 +203,9 @@ function BuildingBox({
 }
 
 export function WorldGrid3D({ zones }: WorldGrid3DProps) {
+  // DEBUG: Log landmark buildings being spawned from config
+  console.log('[WorldGrid3D] Spawning buildings from config:', LANDMARK_BUILDINGS.length);
+  
   const grassPatches = useMemo(
     () => [
       { x: -45, z: -35, width: 25, depth: 20 },
@@ -215,6 +221,20 @@ export function WorldGrid3D({ zones }: WorldGrid3DProps) {
     ],
     [],
   )
+  
+  // Map landmark buildings from config to specific components
+  // This maintains existing custom models while reading from WorldLayout config
+  const landmarkComponents = useMemo(() => {
+    const components: Record<string, React.ReactElement> = {
+      'psx-hq': <PSXHQBuilding key="psx-hq" />,
+      'glizzy-world-casino': <GlizzyWorldCasino key="glizzy-world-casino" />,
+      'creator-hub': <CreatorHubBuilding key="creator-hub" />,
+      'signals-plaza': <SignalsPlaza key="signals-plaza" />,
+      'defi-tower': <DeFiDistrictTower key="defi-tower" />,
+      'social-plaza': <SocialDistrictPlaza key="social-plaza" />,
+    };
+    return components;
+  }, []);
 
   return (
     <group>
@@ -222,12 +242,31 @@ export function WorldGrid3D({ zones }: WorldGrid3DProps) {
 
       <DistrictBoundaries />
 
-      <PSXHQBuilding />
-      <GlizzyWorldCasino />
-      <CreatorHubBuilding />
-      <SignalsPlaza />
-      <DeFiDistrictTower />
-      <SocialDistrictPlaza />
+      {/* PHASE 7: Spawn landmark buildings from WorldLayout config */}
+      {/* This ensures 3D world and HUD use same building data */}
+      {LANDMARK_BUILDINGS.map((building) => {
+        const component = landmarkComponents[building.id];
+        if (component) {
+          // Use existing custom component if available
+          return component;
+        }
+        
+        // TODO: For new landmarks not yet in landmarkComponents,
+        // spawn generic BuildingBox or ModelBuilding here
+        // Example:
+        // return (
+        //   <BuildingBox
+        //     key={building.id}
+        //     x={building.position.x}
+        //     z={building.position.z}
+        //     width={building.dimensions.width}
+        //     height={building.dimensions.height}
+        //     depth={building.dimensions.depth}
+        //   />
+        // );
+        
+        return null;
+      })}
 
       {grassPatches.map((patch, i) => (
         <GrassPatch key={i} {...patch} />

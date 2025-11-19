@@ -5,7 +5,8 @@
  * Separates spatial (districts) from functional (hubs)
  */
 
-import type { WorldPosition, District, ParcelCoords } from "./WorldCoords";
+import type { WorldPosition, ParcelCoords } from "./WorldCoords";
+import type { DistrictId } from "./map/districts";
 
 /**
  * Hub = functional vertical (what economic/social system owns this)
@@ -42,7 +43,7 @@ export interface WorldFeature {
   label: string;
   type: WorldFeatureType;
   hub: WorldHub;           // Functional vertical
-  district: District;      // Spatial quadrant
+  district: DistrictId;    // Spatial quadrant
   worldPos: WorldPosition;
   parcel: ParcelCoords;
   accessibleFrom?: ("world" | "defi" | "dao" | "creator" | "ai" | "agency")[];
@@ -55,7 +56,7 @@ export interface WorldFeature {
  * District metadata for world snapshot
  */
 export interface DistrictMeta {
-  id: District;
+  id: DistrictId;
   name: string;
   color: string;
   parcelCount: number;      // How many parcels in this district
@@ -70,7 +71,7 @@ export interface BuildingBinding {
   building: any; // From city-assets Building type
   parcelId: number;
   parcelCoords: ParcelCoords;
-  district: District;
+  district: DistrictId;
 }
 
 /**
@@ -82,7 +83,7 @@ export interface VoidWorldSnapshot {
   coordinates: WorldPosition;      // Player world position
   parcelCoords: ParcelCoords;      // Derived from coordinates
   parcelId: number;
-  district: District;
+  district: DistrictId;
 
   // World data
   districts: DistrictMeta[];       // All district summaries

@@ -2,24 +2,53 @@
  * VOID PROTOCOL - WORLD COORDINATE SYSTEM
  * 
  * Converts between:
- * - 3D world coordinates (Three.js x, z)
+ * - 3D world coordinates (Three.js x, z within CITY_BOUNDS)
  * - Parcel grid coordinates (0-39, 0-39)
  * - Parcel IDs (0-1599)
  * - District assignments
  * 
- * Grid Layout (40x40 = 1600 parcels):
- *   z=0 (top):    Parcels 1200-1599 (DAO District left, AI District right)
- *   z=19 (mid):   Parcels 600-999
- *   z=39 (bot):   Parcels 0-399 (DeFi District left, Creator District right)
- *   
- *   x: 0 (left) → 39 (right)
+ * UNIFIED WITH CITY_BOUNDS:
+ * - CITY_BOUNDS: X [-300, 300], Z [-120, 120]
+ * - Parcel grid: 40×40 = 1600 parcels
+ * - PARCEL_SIZE: 40 world units (matches CybercityWorld rendering)
+ * - Parcel extent: 1600 units (40 × 40)
+ * 
+ * Parcel grid fills CITY_BOUNDS via parcelToCityWorld() transforms
+ * 
+ * ═══════════════════════════════════════════════════════════════
+ * 🔧 EXPANSION GUIDE — How to Scale to More Parcels
+ * ═══════════════════════════════════════════════════════════════
+ * 
+ * To increase total parcels (e.g., 40×40 → 50×50 or 60×60):
+ * 
+ * 1. Change GRID_SIZE and MAX_PARCELS constants below:
+ *    export const GRID_SIZE = 50;           // Was 40
+ *    export const MAX_PARCELS = 2500;       // Was 1600 (50 × 50)
+ * 
+ * 2. That's it! All coordinate transforms use these constants:
+ *    - coordsToParcelId() uses GRID_SIZE for row calculation
+ *    - parcelIdToCoords() uses GRID_SIZE for grid mapping
+ *    - parcelToCityWorld() normalizes via GRID_SIZE
+ *    - cityWorldToParcel() scales via GRID_SIZE
+ * 
+ * 3. DO NOT hardcode parcel counts anywhere else in the codebase.
+ *    Real estate, HUD, spawn system all scale automatically.
+ * 
+ * 4. For non-square grids (e.g., 50×40), refactor to use:
+ *    GRID_COLS and GRID_ROWS instead of single GRID_SIZE.
+ * 
+ * ⚠️ WARNING: Do NOT modify transform function logic unless you
+ *             understand the entire coordinate system flow.
+ * 
+ * ═══════════════════════════════════════════════════════════════
  */
 
-export const GRID_SIZE = 40;
-export const MAX_PARCELS = 1600;
-export const PARCEL_SIZE = 100; // meters per parcel in 3D space
+import { CITY_BOUNDS } from '@/lib/city-assets';
+import type { DistrictId } from './map/districts';
 
-export type District = 'defi' | 'creator' | 'dao' | 'ai' | 'neutral';
+export const GRID_SIZE = 40;        // ← CHANGE THIS to expand grid (e.g., 50, 60)
+export const MAX_PARCELS = 1600;    // ← CHANGE THIS to GRID_SIZE × GRID_SIZE
+export const PARCEL_SIZE = 40;      // world units per parcel (matches CybercityWorld)
 
 export interface ParcelCoords {
   x: number; // 0-39
@@ -34,23 +63,8 @@ export interface WorldPosition {
 export interface ParcelInfo {
   id: number;
   coords: ParcelCoords;
-  district: District;
+  district: DistrictId;
   center: WorldPosition;
-}
-
-/**
- * Convert 3D world position to parcel grid coordinates
- */
-export function worldToParcel(worldPos: WorldPosition): ParcelCoords {
-  // Clamp to grid bounds (0 to GRID_SIZE * PARCEL_SIZE)
-  const maxWorld = GRID_SIZE * PARCEL_SIZE;
-  const clampedX = Math.max(0, Math.min(maxWorld - 1, worldPos.x));
-  const clampedZ = Math.max(0, Math.min(maxWorld - 1, worldPos.z));
-
-  return {
-    x: Math.floor(clampedX / PARCEL_SIZE),
-    z: Math.floor(clampedZ / PARCEL_SIZE),
-  };
 }
 
 /**
@@ -77,7 +91,60 @@ export function parcelIdToCoords(parcelId: number): ParcelCoords {
 }
 
 /**
- * Convert parcel coords to 3D world position (center of parcel)
+ * ============================================================================
+ * UNIFIED CITY ↔ PARCEL TRANSFORMS
+ * ============================================================================
+ * 
+ * Maps the 40×40 parcel grid into CITY_BOUNDS (-300→300 X, -120→120 Z)
+ * This is the CANONICAL transform - all other systems use this.
+ */
+
+/**
+ * Convert parcel grid coordinates (0-39) to CITY_BOUNDS world position
+ * Parcels are evenly distributed across CITY_BOUNDS
+ */
+export function parcelToCityWorld(coords: ParcelCoords): WorldPosition {
+  const { minX, maxX, minZ, maxZ } = CITY_BOUNDS;
+  
+  // Normalize parcel coords to 0-1
+  const u = (coords.x + 0.5) / GRID_SIZE; // center of parcel
+  const v = (coords.z + 0.5) / GRID_SIZE;
+  
+  // Map to CITY_BOUNDS
+  const x = minX + u * (maxX - minX);
+  const z = minZ + v * (maxZ - minZ);
+  
+  return { x, z };
+}
+
+/**
+ * Convert CITY_BOUNDS world position to parcel grid coordinates
+ */
+export function cityWorldToParcel(worldPos: WorldPosition): ParcelCoords {
+  const { minX, maxX, minZ, maxZ } = CITY_BOUNDS;
+  
+  // Clamp to CITY_BOUNDS
+  const clampedX = Math.max(minX, Math.min(maxX - 0.01, worldPos.x));
+  const clampedZ = Math.max(minZ, Math.min(maxZ - 0.01, worldPos.z));
+  
+  // Normalize to 0-1
+  const u = (clampedX - minX) / (maxX - minX);
+  const v = (clampedZ - minZ) / (maxZ - minZ);
+  
+  // Map to grid coords
+  const x = Math.floor(u * GRID_SIZE);
+  const z = Math.floor(v * GRID_SIZE);
+  
+  return {
+    x: Math.max(0, Math.min(GRID_SIZE - 1, x)),
+    z: Math.max(0, Math.min(GRID_SIZE - 1, z)),
+  };
+}
+
+/**
+ * LEGACY: Convert parcel coords to local parcel space (0-1600 range)
+ * Used internally for parcel-relative calculations only
+ * DO NOT use for rendering - use parcelToCityWorld instead
  */
 export function parcelToWorld(coords: ParcelCoords): WorldPosition {
   return {
@@ -89,49 +156,82 @@ export function parcelToWorld(coords: ParcelCoords): WorldPosition {
 /**
  * Determine district based on parcel coordinates
  * 
- * Layout:
- * - Bottom-left (x < 20, z >= 20): DeFi District
- * - Bottom-right (x >= 20, z >= 20): Creator District  
- * - Top-left (x < 20, z < 20): DAO District
- * - Top-right (x >= 20, z < 20): AI District
+ * Layout (aligned with new 9-district system):
+ * - Uses parcelToCityWorld to map to CITY_BOUNDS
+ * - Then checks against new district boundaries
+ * - Falls back to legacy 4-district quadrants for compatibility
  */
-export function getDistrict(coords: ParcelCoords): District {
+/**
+ * Get district for given parcel coordinates
+ * Maps old 4-quadrant system to new 9-district system
+ * OLD: lowercase ("defi", "dao", etc.) → NEW: uppercase ("DEFI", "DAO", etc.)
+ */
+export function getDistrict(coords: ParcelCoords): DistrictId {
   const midPoint = GRID_SIZE / 2;
 
   if (coords.x < midPoint && coords.z >= midPoint) {
-    return 'defi';
+    return 'DEFI';      // Was "defi" - SE quadrant
   }
   if (coords.x >= midPoint && coords.z >= midPoint) {
-    return 'creator';
+    return 'CREATOR';   // Was "creator" - NE quadrant
   }
   if (coords.x < midPoint && coords.z < midPoint) {
-    return 'dao';
+    return 'DAO';       // Was "dao" - SW quadrant
   }
   if (coords.x >= midPoint && coords.z < midPoint) {
-    return 'ai';
+    return 'AI';        // Was "ai" - NW quadrant
   }
 
-  return 'neutral'; // Shouldn't happen with valid coords
+  return 'HQ';          // Was "neutral" - Center/default
 }
 
 /**
- * Get full parcel information from 3D world position
+ * Get full parcel information from CITY_BOUNDS world position
+ * THIS IS THE CANONICAL FUNCTION - use this for all player position tracking
  */
 export function getParcelInfo(worldPos: WorldPosition): ParcelInfo {
-  const coords = worldToParcel(worldPos);
+  const coords = cityWorldToParcel(worldPos); // Use CITY transform
   const id = coordsToParcelId(coords);
   const district = getDistrict(coords);
-  const center = parcelToWorld(coords);
+  const center = parcelToCityWorld(coords); // Use CITY transform
 
   return { id, coords, district, center };
+}
+
+/**
+ * PHASE 5.1: Convert parcel ID directly to CITY_BOUNDS world position
+ * Used for home parcel spawn system
+ * 
+ * @param parcelId - Parcel ID (0-1599)
+ * @param districtId - Optional district ID (unused for now, reserved for validation)
+ * @returns World position in CITY_BOUNDS coordinates with Y=1 for spawn
+ */
+export function parcelIdToWorldCoords(parcelId: number, districtId?: string): { x: number; y: number; z: number } | null {
+  try {
+    // Convert parcel ID to grid coords
+    const coords = parcelIdToCoords(parcelId);
+    
+    // Convert grid coords to city world position (center of parcel)
+    const worldPos = parcelToCityWorld(coords);
+    
+    // Return with Y=1 for spawn height
+    return {
+      x: worldPos.x,
+      y: 1, // Spawn height above ground
+      z: worldPos.z,
+    };
+  } catch (err) {
+    console.error(`[WorldCoords] Failed to convert parcel ${parcelId} to world coords:`, err);
+    return null;
+  }
 }
 
 /**
  * Check if two world positions are in the same parcel
  */
 export function isSameParcel(pos1: WorldPosition, pos2: WorldPosition): boolean {
-  const parcel1 = worldToParcel(pos1);
-  const parcel2 = worldToParcel(pos2);
+  const parcel1 = cityWorldToParcel(pos1);
+  const parcel2 = cityWorldToParcel(pos2);
   return parcel1.x === parcel2.x && parcel1.z === parcel2.z;
 }
 
@@ -167,46 +267,26 @@ export function getAdjacentParcels(parcelId: number): number[] {
 }
 
 /**
- * District theme colors (matching voidTheme)
+ * LEGACY: Parcel-local extent (internal use only)
+ * DO NOT use for rendering - use CITY_BOUNDS instead
  */
-export const DISTRICT_COLORS: Record<District, string> = {
-  defi: '#09f0c8',     // Neon teal
-  creator: '#ff3bd4',  // Neon pink
-  dao: '#8f3bff',      // Neon purple
-  ai: '#3b8fff',       // Neon blue
-  neutral: '#888',     // Gray
-};
+export const WORLD_EXTENT = GRID_SIZE * PARCEL_SIZE; // 40 * 40 = 1600
 
 /**
- * District names
- */
-export const DISTRICT_NAMES: Record<District, string> = {
-  defi: 'DeFi District',
-  creator: 'Creator District',
-  dao: 'DAO District',
-  ai: 'AI District',
-  neutral: 'Neutral Zone',
-};
-
-/**
- * World extent (total world size in 3D units)
- */
-export const WORLD_EXTENT = GRID_SIZE * PARCEL_SIZE; // 40 * 100 = 4000
-
-/**
- * Normalize a world position (x,z) into map percentages (0-100)
- * for UI minimaps.
+ * DEPRECATED: Use worldToMinimap from world/map/mapUtils.ts instead
+ * This function uses legacy coordinate system
  */
 export function worldPosToPercent(worldPos: WorldPosition) {
-  const maxWorld = WORLD_EXTENT;
+  // For legacy compatibility - map CITY_BOUNDS to percent
+  const { minX, maxX, minZ, maxZ } = CITY_BOUNDS;
+  
+  const clampedX = Math.max(minX, Math.min(maxX, worldPos.x));
+  const clampedZ = Math.max(minZ, Math.min(maxZ, worldPos.z));
+  
+  const xPct = ((clampedX - minX) / (maxX - minX)) * 100;
+  const zPct = ((clampedZ - minZ) / (maxZ - minZ)) * 100;
 
-  const clampedX = Math.max(0, Math.min(maxWorld - 1, worldPos.x));
-  const clampedZ = Math.max(0, Math.min(maxWorld - 1, worldPos.z));
-
-  return {
-    xPct: (clampedX / maxWorld) * 100,
-    zPct: (clampedZ / maxWorld) * 100,
-  };
+  return { xPct, zPct };
 }
 
 /**

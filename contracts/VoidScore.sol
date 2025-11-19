@@ -111,7 +111,7 @@ contract VoidScore {
     // ============ ERRORS ============
 
     error ZeroAddress();
-    error DailyCap Reached(uint8 messageType, uint256 cap);
+    error DailyCapReached(uint8 messageType, uint256 cap);
     error InvalidMessageType();
 
     // ============ CONSTRUCTOR ============

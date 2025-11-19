@@ -9,11 +9,9 @@ import {
   getParcelInfo,
   GRID_SIZE,
   MAX_PARCELS,
-  DISTRICT_COLORS,
-  DISTRICT_NAMES,
   type WorldPosition,
-  type District,
 } from "./WorldCoords";
+import { DISTRICTS, type DistrictId } from "./map/districts";
 import { CORE_WORLD_FEATURES } from "./features";
 import { BOUND_BUILDINGS } from "./buildings";
 import type { VoidWorldSnapshot, DistrictMeta } from "./schema";
@@ -29,36 +27,26 @@ interface BuildSnapshotOptions {
  * Build district metadata by counting parcels, buildings, and features
  */
 function buildDistrictMeta(): DistrictMeta[] {
-  const districts: District[] = ["defi", "creator", "dao", "ai", "neutral"];
-  
-  return districts.map(districtId => {
-    // Count parcels in this district
-    const midPoint = GRID_SIZE / 2;
-    let parcelCount = 0;
+  return DISTRICTS.map(district => {
+    const { id, name, color, worldRect } = district;
     
-    for (let z = 0; z < GRID_SIZE; z++) {
-      for (let x = 0; x < GRID_SIZE; x++) {
-        let d: District = "neutral";
-        
-        if (x < midPoint && z >= midPoint) d = "defi";
-        else if (x >= midPoint && z >= midPoint) d = "creator";
-        else if (x < midPoint && z < midPoint) d = "dao";
-        else if (x >= midPoint && z < midPoint) d = "ai";
-        
-        if (d === districtId) parcelCount++;
-      }
-    }
+    // Count parcels in this district's worldRect
+    // Each parcel is PARCEL_SIZE (40m) × PARCEL_SIZE (40m)
+    // Convert worldRect bounds to parcel count
+    const parcelWidth = Math.floor((worldRect.maxX - worldRect.minX) / 40);
+    const parcelHeight = Math.floor((worldRect.maxZ - worldRect.minZ) / 40);
+    const parcelCount = parcelWidth * parcelHeight;
     
-    // Count buildings
-    const buildingCount = BOUND_BUILDINGS.filter(b => b.district === districtId).length;
+    // Count buildings in this district
+    const buildingCount = BOUND_BUILDINGS.filter(b => b.district === id).length;
     
-    // Count features
-    const featureCount = CORE_WORLD_FEATURES.filter(f => f.district === districtId).length;
+    // Count features in this district
+    const featureCount = CORE_WORLD_FEATURES.filter(f => f.district === id).length;
     
     return {
-      id: districtId,
-      name: DISTRICT_NAMES[districtId],
-      color: DISTRICT_COLORS[districtId],
+      id,
+      name,
+      color,
       parcelCount,
       buildingCount,
       featureCount,

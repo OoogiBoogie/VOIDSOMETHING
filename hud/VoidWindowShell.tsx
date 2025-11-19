@@ -35,6 +35,7 @@ export default function VoidWindowShell({
         border-2
         shadow-2xl
         transition-all duration-500
+        pointer-events-auto
         ${isMinimized ? 'h-16' : 'h-[70vh]'}
       `}
       style={{

@@ -8,6 +8,9 @@
 import { useMemo } from 'react';
 import { DEMO, isDemoMode, getDemoWallet } from '@/config/voidConfig';
 import type { Tier } from '@/hooks/useVoidScore';
+import type { HubMode } from '@/hud/theme';
+
+type HubType = HubMode;
 
 export interface DemoData {
   // Passport data
@@ -63,21 +66,23 @@ export interface DemoData {
   // Chat messages
   chatMessages: Array<{
     id: string;
-    sender: string;
-    senderAddress: string;
+    channel: 'GLOBAL' | 'NEARBY' | 'PARTY' | 'GUILD';
+    username?: string;
+    hub?: HubType;
     message: string;
     timestamp: number;
-    tier: Tier;
   }>;
   
   // Agency gigs
   gigs: Array<{
     id: string;
     title: string;
-    description: string;
-    reward: number;
-    deadline: string;
-    status: 'open' | 'claimed' | 'completed';
+    description?: string;
+    reward: string;
+    hub: HubType;
+    location?: { x: number; z: number };
+    deadline?: string;
+    status?: 'open' | 'claimed' | 'completed';
   }>;
   
   // Trending guilds
@@ -153,67 +158,59 @@ export function useDemoData(): DemoData | null {
       chatMessages: [
         {
           id: 'msg1',
-          sender: 'VoidExplorer',
-          senderAddress: '0x1234567890123456789012345678901234567890',
+          channel: 'GLOBAL' as const,
+          username: 'VoidExplorer',
           message: 'Just unlocked District 3! The vibe here is incredible 🔥',
           timestamp: Date.now() - 120000,
-          tier: 'GOLD',
         },
         {
           id: 'msg2',
-          sender: 'CryptoArtist',
-          senderAddress: '0x2345678901234567890123456789012345678901',
+          channel: 'GLOBAL' as const,
+          username: 'CryptoArtist',
           message: 'Anyone want to join a squad for the Agency mission?',
           timestamp: Date.now() - 90000,
-          tier: 'SILVER',
         },
         {
           id: 'msg3',
-          sender: 'DAOenthusiast',
-          senderAddress: '0x3456789012345678901234567890123456789012',
+          channel: 'GLOBAL' as const,
+          username: 'DAOenthusiast',
           message: 'New governance proposal just dropped. Vote is live!',
           timestamp: Date.now() - 60000,
-          tier: 'S_TIER',
         },
         {
           id: 'msg4',
-          sender: 'BuilderBob',
-          senderAddress: '0x4567890123456789012345678901234567890123',
+          channel: 'GLOBAL' as const,
+          username: 'BuilderBob',
           message: 'Staking rewards are looking juicy today 💰',
           timestamp: Date.now() - 45000,
-          tier: 'GOLD',
         },
         {
           id: 'msg5',
-          sender: 'LandBaronLisa',
-          senderAddress: '0x5678901234567890123456789012345678901234',
+          channel: 'GLOBAL' as const,
+          username: 'LandBaronLisa',
           message: 'Selling prime land parcel in District 2. DM me!',
           timestamp: Date.now() - 30000,
-          tier: 'SILVER',
         },
         {
           id: 'msg6',
-          sender: 'SignalMaster',
-          senderAddress: '0x6789012345678901234567890123456789012345',
+          channel: 'GLOBAL' as const,
+          username: 'SignalMaster',
           message: 'Signal epoch 42 just started. Emission multiplier at 2.4x!',
           timestamp: Date.now() - 15000,
-          tier: 'S_TIER',
         },
         {
           id: 'msg7',
-          sender: 'QuestSeeker',
-          senderAddress: '0x7890123456789012345678901234567890123456',
+          channel: 'GLOBAL' as const,
+          username: 'QuestSeeker',
           message: 'Completed the Explorer Adept quest. 200 XP claimed!',
           timestamp: Date.now() - 10000,
-          tier: 'BRONZE',
         },
         {
           id: 'msg8',
-          sender: 'GuildLeaderAce',
-          senderAddress: '0x8901234567890123456789012345678901234567',
+          channel: 'GLOBAL' as const,
+          username: 'GuildLeaderAce',
           message: 'VOID Builders guild is recruiting! Looking for active members.',
           timestamp: Date.now() - 5000,
-          tier: 'GOLD',
         },
       ],
       
@@ -222,7 +219,8 @@ export function useDemoData(): DemoData | null {
           id: 'gig1',
           title: 'Create PSX Cosmetic NFT Collection',
           description: 'Design and mint 10 unique avatar cosmetics for The VOID marketplace.',
-          reward: 5000,
+          reward: '5000',
+          hub: 'CREATOR' as const,
           deadline: '2025-11-20',
           status: 'open',
         },
@@ -230,7 +228,8 @@ export function useDemoData(): DemoData | null {
           id: 'gig2',
           title: 'Deploy Community Event Smart Contract',
           description: 'Build and audit a custom event contract for DAO-organized gatherings.',
-          reward: 8000,
+          reward: '8000',
+          hub: 'DAO' as const,
           deadline: '2025-11-25',
           status: 'open',
         },
@@ -238,7 +237,8 @@ export function useDemoData(): DemoData | null {
           id: 'gig3',
           title: 'Write Technical Documentation',
           description: 'Create comprehensive docs for the VoidScore contract and integration guide.',
-          reward: 3000,
+          reward: '3000',
+          hub: 'AGENCY' as const,
           deadline: '2025-11-18',
           status: 'claimed',
         },
@@ -246,7 +246,8 @@ export function useDemoData(): DemoData | null {
           id: 'gig4',
           title: 'Design District 5 Zone Layout',
           description: 'Conceptualize the map, landmarks, and POIs for the new expansion district.',
-          reward: 6000,
+          reward: '6000',
+          hub: 'WORLD' as const,
           deadline: '2025-11-30',
           status: 'open',
         },
@@ -254,7 +255,8 @@ export function useDemoData(): DemoData | null {
           id: 'gig5',
           title: 'Organize Guild PvP Tournament',
           description: 'Host and manage a competitive tournament with prize pool distribution.',
-          reward: 4000,
+          reward: '4000',
+          hub: 'AGENCY' as const,
           deadline: '2025-11-22',
           status: 'open',
         },
@@ -262,7 +264,8 @@ export function useDemoData(): DemoData | null {
           id: 'gig6',
           title: 'Develop Custom HUD Plugin',
           description: 'Create a creator tool plugin for the PSX HUD system with API integration.',
-          reward: 7500,
+          reward: '7500',
+          hub: 'CREATOR' as const,
           deadline: '2025-12-01',
           status: 'open',
         },

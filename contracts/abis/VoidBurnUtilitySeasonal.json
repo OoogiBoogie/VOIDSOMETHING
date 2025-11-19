@@ -1,0 +1,1334 @@
+[
+    {
+        "type":  "constructor",
+        "inputs":  [
+                       {
+                           "name":  "_voidToken",
+                           "type":  "address",
+                           "internalType":  "address"
+                       }
+                   ],
+        "stateMutability":  "nonpayable"
+    },
+    {
+        "type":  "function",
+        "name":  "BURN_ADDRESS",
+        "inputs":  [
+
+                   ],
+        "outputs":  [
+                        {
+                            "name":  "",
+                            "type":  "address",
+                            "internalType":  "address"
+                        }
+                    ],
+        "stateMutability":  "view"
+    },
+    {
+        "type":  "function",
+        "name":  "BURN_MANAGER_ROLE",
+        "inputs":  [
+
+                   ],
+        "outputs":  [
+                        {
+                            "name":  "",
+                            "type":  "bytes32",
+                            "internalType":  "bytes32"
+                        }
+                    ],
+        "stateMutability":  "view"
+    },
+    {
+        "type":  "function",
+        "name":  "DEFAULT_ADMIN_ROLE",
+        "inputs":  [
+
+                   ],
+        "outputs":  [
+                        {
+                            "name":  "",
+                            "type":  "bytes32",
+                            "internalType":  "bytes32"
+                        }
+                    ],
+        "stateMutability":  "view"
+    },
+    {
+        "type":  "function",
+        "name":  "GOVERNOR_ROLE",
+        "inputs":  [
+
+                   ],
+        "outputs":  [
+                        {
+                            "name":  "",
+                            "type":  "bytes32",
+                            "internalType":  "bytes32"
+                        }
+                    ],
+        "stateMutability":  "view"
+    },
+    {
+        "type":  "function",
+        "name":  "SEASON_MANAGER_ROLE",
+        "inputs":  [
+
+                   ],
+        "outputs":  [
+                        {
+                            "name":  "",
+                            "type":  "bytes32",
+                            "internalType":  "bytes32"
+                        }
+                    ],
+        "stateMutability":  "view"
+    },
+    {
+        "type":  "function",
+        "name":  "awardXPForBurn",
+        "inputs":  [
+                       {
+                           "name":  "user",
+                           "type":  "address",
+                           "internalType":  "address"
+                       },
+                       {
+                           "name":  "seasonId",
+                           "type":  "uint256",
+                           "internalType":  "uint256"
+                       },
+                       {
+                           "name":  "burnAmount",
+                           "type":  "uint256",
+                           "internalType":  "uint256"
+                       }
+                   ],
+        "outputs":  [
+                        {
+                            "name":  "xpAwarded",
+                            "type":  "uint256",
+                            "internalType":  "uint256"
+                        }
+                    ],
+        "stateMutability":  "nonpayable"
+    },
+    {
+        "type":  "function",
+        "name":  "computeXPFromBurn",
+        "inputs":  [
+                       {
+                           "name":  "user",
+                           "type":  "address",
+                           "internalType":  "address"
+                       },
+                       {
+                           "name":  "seasonId",
+                           "type":  "uint256",
+                           "internalType":  "uint256"
+                       },
+                       {
+                           "name":  "newBurnAmount",
+                           "type":  "uint256",
+                           "internalType":  "uint256"
+                       }
+                   ],
+        "outputs":  [
+                        {
+                            "name":  "xpReward",
+                            "type":  "uint256",
+                            "internalType":  "uint256"
+                        }
+                    ],
+        "stateMutability":  "view"
+    },
+    {
+        "type":  "function",
+        "name":  "createSeason",
+        "inputs":  [
+                       {
+                           "name":  "_seasonId",
+                           "type":  "uint256",
+                           "internalType":  "uint256"
+                       },
+                       {
+                           "name":  "_startTime",
+                           "type":  "uint256",
+                           "internalType":  "uint256"
+                       },
+                       {
+                           "name":  "_endTime",
+                           "type":  "uint256",
+                           "internalType":  "uint256"
+                       },
+                       {
+                           "name":  "_dailyCreditCap",
+                           "type":  "uint256",
+                           "internalType":  "uint256"
+                       },
+                       {
+                           "name":  "_seasonCreditCap",
+                           "type":  "uint256",
+                           "internalType":  "uint256"
+                       },
+                       {
+                           "name":  "_xpConfig",
+                           "type":  "tuple",
+                           "internalType":  "struct VoidBurnUtilitySeasonal.XPConfig",
+                           "components":  [
+                                              {
+                                                  "name":  "baseXPPerVOID",
+                                                  "type":  "uint256",
+                                                  "internalType":  "uint256"
+                                              },
+                                              {
+                                                  "name":  "dailySoftCap1",
+                                                  "type":  "uint256",
+                                                  "internalType":  "uint256"
+                                              },
+                                              {
+                                                  "name":  "dailySoftCap2",
+                                                  "type":  "uint256",
+                                                  "internalType":  "uint256"
+                                              },
+                                              {
+                                                  "name":  "dailyMult1",
+                                                  "type":  "uint256",
+                                                  "internalType":  "uint256"
+                                              },
+                                              {
+                                                  "name":  "dailyMult2",
+                                                  "type":  "uint256",
+                                                  "internalType":  "uint256"
+                                              },
+                                              {
+                                                  "name":  "dailyMult3",
+                                                  "type":  "uint256",
+                                                  "internalType":  "uint256"
+                                              }
+                                          ]
+                       }
+                   ],
+        "outputs":  [
+
+                    ],
+        "stateMutability":  "nonpayable"
+    },
+    {
+        "type":  "function",
+        "name":  "currentSeasonId",
+        "inputs":  [
+
+                   ],
+        "outputs":  [
+                        {
+                            "name":  "",
+                            "type":  "uint256",
+                            "internalType":  "uint256"
+                        }
+                    ],
+        "stateMutability":  "view"
+    },
+    {
+        "type":  "function",
+        "name":  "endCurrentSeason",
+        "inputs":  [
+                       {
+                           "name":  "nextSeasonId",
+                           "type":  "uint256",
+                           "internalType":  "uint256"
+                       }
+                   ],
+        "outputs":  [
+
+                    ],
+        "stateMutability":  "nonpayable"
+    },
+    {
+        "type":  "function",
+        "name":  "getCurrentSeasonConfig",
+        "inputs":  [
+
+                   ],
+        "outputs":  [
+                        {
+                            "name":  "",
+                            "type":  "tuple",
+                            "internalType":  "struct VoidBurnUtilitySeasonal.SeasonConfig",
+                            "components":  [
+                                               {
+                                                   "name":  "id",
+                                                   "type":  "uint256",
+                                                   "internalType":  "uint256"
+                                               },
+                                               {
+                                                   "name":  "startTime",
+                                                   "type":  "uint256",
+                                                   "internalType":  "uint256"
+                                               },
+                                               {
+                                                   "name":  "endTime",
+                                                   "type":  "uint256",
+                                                   "internalType":  "uint256"
+                                               },
+                                               {
+                                                   "name":  "dailyCreditCap",
+                                                   "type":  "uint256",
+                                                   "internalType":  "uint256"
+                                               },
+                                               {
+                                                   "name":  "seasonCreditCap",
+                                                   "type":  "uint256",
+                                                   "internalType":  "uint256"
+                                               },
+                                               {
+                                                   "name":  "xpConfig",
+                                                   "type":  "tuple",
+                                                   "internalType":  "struct VoidBurnUtilitySeasonal.XPConfig",
+                                                   "components":  [
+                                                                      {
+                                                                          "name":  "baseXPPerVOID",
+                                                                          "type":  "uint256",
+                                                                          "internalType":  "uint256"
+                                                                      },
+                                                                      {
+                                                                          "name":  "dailySoftCap1",
+                                                                          "type":  "uint256",
+                                                                          "internalType":  "uint256"
+                                                                      },
+                                                                      {
+                                                                          "name":  "dailySoftCap2",
+                                                                          "type":  "uint256",
+                                                                          "internalType":  "uint256"
+                                                                      },
+                                                                      {
+                                                                          "name":  "dailyMult1",
+                                                                          "type":  "uint256",
+                                                                          "internalType":  "uint256"
+                                                                      },
+                                                                      {
+                                                                          "name":  "dailyMult2",
+                                                                          "type":  "uint256",
+                                                                          "internalType":  "uint256"
+                                                                      },
+                                                                      {
+                                                                          "name":  "dailyMult3",
+                                                                          "type":  "uint256",
+                                                                          "internalType":  "uint256"
+                                                                      }
+                                                                  ]
+                                               },
+                                               {
+                                                   "name":  "active",
+                                                   "type":  "bool",
+                                                   "internalType":  "bool"
+                                               }
+                                           ]
+                        }
+                    ],
+        "stateMutability":  "view"
+    },
+    {
+        "type":  "function",
+        "name":  "getCurrentSeasonId",
+        "inputs":  [
+
+                   ],
+        "outputs":  [
+                        {
+                            "name":  "",
+                            "type":  "uint256",
+                            "internalType":  "uint256"
+                        }
+                    ],
+        "stateMutability":  "view"
+    },
+    {
+        "type":  "function",
+        "name":  "getRoleAdmin",
+        "inputs":  [
+                       {
+                           "name":  "role",
+                           "type":  "bytes32",
+                           "internalType":  "bytes32"
+                       }
+                   ],
+        "outputs":  [
+                        {
+                            "name":  "",
+                            "type":  "bytes32",
+                            "internalType":  "bytes32"
+                        }
+                    ],
+        "stateMutability":  "view"
+    },
+    {
+        "type":  "function",
+        "name":  "getSeasonConfig",
+        "inputs":  [
+                       {
+                           "name":  "seasonId",
+                           "type":  "uint256",
+                           "internalType":  "uint256"
+                       }
+                   ],
+        "outputs":  [
+                        {
+                            "name":  "",
+                            "type":  "tuple",
+                            "internalType":  "struct VoidBurnUtilitySeasonal.SeasonConfig",
+                            "components":  [
+                                               {
+                                                   "name":  "id",
+                                                   "type":  "uint256",
+                                                   "internalType":  "uint256"
+                                               },
+                                               {
+                                                   "name":  "startTime",
+                                                   "type":  "uint256",
+                                                   "internalType":  "uint256"
+                                               },
+                                               {
+                                                   "name":  "endTime",
+                                                   "type":  "uint256",
+                                                   "internalType":  "uint256"
+                                               },
+                                               {
+                                                   "name":  "dailyCreditCap",
+                                                   "type":  "uint256",
+                                                   "internalType":  "uint256"
+                                               },
+                                               {
+                                                   "name":  "seasonCreditCap",
+                                                   "type":  "uint256",
+                                                   "internalType":  "uint256"
+                                               },
+                                               {
+                                                   "name":  "xpConfig",
+                                                   "type":  "tuple",
+                                                   "internalType":  "struct VoidBurnUtilitySeasonal.XPConfig",
+                                                   "components":  [
+                                                                      {
+                                                                          "name":  "baseXPPerVOID",
+                                                                          "type":  "uint256",
+                                                                          "internalType":  "uint256"
+                                                                      },
+                                                                      {
+                                                                          "name":  "dailySoftCap1",
+                                                                          "type":  "uint256",
+                                                                          "internalType":  "uint256"
+                                                                      },
+                                                                      {
+                                                                          "name":  "dailySoftCap2",
+                                                                          "type":  "uint256",
+                                                                          "internalType":  "uint256"
+                                                                      },
+                                                                      {
+                                                                          "name":  "dailyMult1",
+                                                                          "type":  "uint256",
+                                                                          "internalType":  "uint256"
+                                                                      },
+                                                                      {
+                                                                          "name":  "dailyMult2",
+                                                                          "type":  "uint256",
+                                                                          "internalType":  "uint256"
+                                                                      },
+                                                                      {
+                                                                          "name":  "dailyMult3",
+                                                                          "type":  "uint256",
+                                                                          "internalType":  "uint256"
+                                                                      }
+                                                                  ]
+                                               },
+                                               {
+                                                   "name":  "active",
+                                                   "type":  "bool",
+                                                   "internalType":  "bool"
+                                               }
+                                           ]
+                        }
+                    ],
+        "stateMutability":  "view"
+    },
+    {
+        "type":  "function",
+        "name":  "getUserCreditedBurn",
+        "inputs":  [
+                       {
+                           "name":  "user",
+                           "type":  "address",
+                           "internalType":  "address"
+                       },
+                       {
+                           "name":  "seasonId",
+                           "type":  "uint256",
+                           "internalType":  "uint256"
+                       }
+                   ],
+        "outputs":  [
+                        {
+                            "name":  "",
+                            "type":  "uint256",
+                            "internalType":  "uint256"
+                        }
+                    ],
+        "stateMutability":  "view"
+    },
+    {
+        "type":  "function",
+        "name":  "getUserSeasonState",
+        "inputs":  [
+                       {
+                           "name":  "user",
+                           "type":  "address",
+                           "internalType":  "address"
+                       },
+                       {
+                           "name":  "seasonId",
+                           "type":  "uint256",
+                           "internalType":  "uint256"
+                       }
+                   ],
+        "outputs":  [
+                        {
+                            "name":  "",
+                            "type":  "tuple",
+                            "internalType":  "struct VoidBurnUtilitySeasonal.UserSeasonState",
+                            "components":  [
+                                               {
+                                                   "name":  "lastDailyReset",
+                                                   "type":  "uint256",
+                                                   "internalType":  "uint256"
+                                               },
+                                               {
+                                                   "name":  "burnedToday",
+                                                   "type":  "uint256",
+                                                   "internalType":  "uint256"
+                                               },
+                                               {
+                                                   "name":  "burnedThisSeason",
+                                                   "type":  "uint256",
+                                                   "internalType":  "uint256"
+                                               },
+                                               {
+                                                   "name":  "xp",
+                                                   "type":  "uint256",
+                                                   "internalType":  "uint256"
+                                               },
+                                               {
+                                                   "name":  "creditedBurn",
+                                                   "type":  "uint256",
+                                                   "internalType":  "uint256"
+                                               }
+                                           ]
+                        }
+                    ],
+        "stateMutability":  "view"
+    },
+    {
+        "type":  "function",
+        "name":  "getUserSeasonXP",
+        "inputs":  [
+                       {
+                           "name":  "user",
+                           "type":  "address",
+                           "internalType":  "address"
+                       },
+                       {
+                           "name":  "seasonId",
+                           "type":  "uint256",
+                           "internalType":  "uint256"
+                       }
+                   ],
+        "outputs":  [
+                        {
+                            "name":  "",
+                            "type":  "uint256",
+                            "internalType":  "uint256"
+                        }
+                    ],
+        "stateMutability":  "view"
+    },
+    {
+        "type":  "function",
+        "name":  "getUserTotalBurned",
+        "inputs":  [
+                       {
+                           "name":  "user",
+                           "type":  "address",
+                           "internalType":  "address"
+                       }
+                   ],
+        "outputs":  [
+                        {
+                            "name":  "",
+                            "type":  "uint256",
+                            "internalType":  "uint256"
+                        }
+                    ],
+        "stateMutability":  "view"
+    },
+    {
+        "type":  "function",
+        "name":  "grantRole",
+        "inputs":  [
+                       {
+                           "name":  "role",
+                           "type":  "bytes32",
+                           "internalType":  "bytes32"
+                       },
+                       {
+                           "name":  "account",
+                           "type":  "address",
+                           "internalType":  "address"
+                       }
+                   ],
+        "outputs":  [
+
+                    ],
+        "stateMutability":  "nonpayable"
+    },
+    {
+        "type":  "function",
+        "name":  "hasRole",
+        "inputs":  [
+                       {
+                           "name":  "role",
+                           "type":  "bytes32",
+                           "internalType":  "bytes32"
+                       },
+                       {
+                           "name":  "account",
+                           "type":  "address",
+                           "internalType":  "address"
+                       }
+                   ],
+        "outputs":  [
+                        {
+                            "name":  "",
+                            "type":  "bool",
+                            "internalType":  "bool"
+                        }
+                    ],
+        "stateMutability":  "view"
+    },
+    {
+        "type":  "function",
+        "name":  "isModulePaused",
+        "inputs":  [
+                       {
+                           "name":  "",
+                           "type":  "uint8",
+                           "internalType":  "enum VoidBurnUtilitySeasonal.BurnModule"
+                       }
+                   ],
+        "outputs":  [
+                        {
+                            "name":  "",
+                            "type":  "bool",
+                            "internalType":  "bool"
+                        }
+                    ],
+        "stateMutability":  "view"
+    },
+    {
+        "type":  "function",
+        "name":  "isSeasonActive",
+        "inputs":  [
+                       {
+                           "name":  "seasonId",
+                           "type":  "uint256",
+                           "internalType":  "uint256"
+                       }
+                   ],
+        "outputs":  [
+                        {
+                            "name":  "",
+                            "type":  "bool",
+                            "internalType":  "bool"
+                        }
+                    ],
+        "stateMutability":  "view"
+    },
+    {
+        "type":  "function",
+        "name":  "lifetimeState",
+        "inputs":  [
+                       {
+                           "name":  "",
+                           "type":  "address",
+                           "internalType":  "address"
+                       }
+                   ],
+        "outputs":  [
+                        {
+                            "name":  "totalBurnedAllTime",
+                            "type":  "uint256",
+                            "internalType":  "uint256"
+                        },
+                        {
+                            "name":  "prestigeRank",
+                            "type":  "uint8",
+                            "internalType":  "uint8"
+                        },
+                        {
+                            "name":  "creatorTier",
+                            "type":  "uint8",
+                            "internalType":  "uint8"
+                        },
+                        {
+                            "name":  "districtsUnlocked",
+                            "type":  "uint8",
+                            "internalType":  "uint8"
+                        },
+                        {
+                            "name":  "miniAppsUnlocked",
+                            "type":  "uint8",
+                            "internalType":  "uint8"
+                        }
+                    ],
+        "stateMutability":  "view"
+    },
+    {
+        "type":  "function",
+        "name":  "pauseBurns",
+        "inputs":  [
+
+                   ],
+        "outputs":  [
+
+                    ],
+        "stateMutability":  "nonpayable"
+    },
+    {
+        "type":  "function",
+        "name":  "pauseModule",
+        "inputs":  [
+                       {
+                           "name":  "module",
+                           "type":  "uint8",
+                           "internalType":  "enum VoidBurnUtilitySeasonal.BurnModule"
+                       }
+                   ],
+        "outputs":  [
+
+                    ],
+        "stateMutability":  "nonpayable"
+    },
+    {
+        "type":  "function",
+        "name":  "paused",
+        "inputs":  [
+
+                   ],
+        "outputs":  [
+                        {
+                            "name":  "",
+                            "type":  "bool",
+                            "internalType":  "bool"
+                        }
+                    ],
+        "stateMutability":  "view"
+    },
+    {
+        "type":  "function",
+        "name":  "performUtilityBurn",
+        "inputs":  [
+                       {
+                           "name":  "user",
+                           "type":  "address",
+                           "internalType":  "address"
+                       },
+                       {
+                           "name":  "amountVOID",
+                           "type":  "uint256",
+                           "internalType":  "uint256"
+                       },
+                       {
+                           "name":  "module",
+                           "type":  "uint8",
+                           "internalType":  "enum VoidBurnUtilitySeasonal.BurnModule"
+                       },
+                       {
+                           "name":  "moduleData",
+                           "type":  "bytes",
+                           "internalType":  "bytes"
+                       }
+                   ],
+        "outputs":  [
+
+                    ],
+        "stateMutability":  "nonpayable"
+    },
+    {
+        "type":  "function",
+        "name":  "renounceRole",
+        "inputs":  [
+                       {
+                           "name":  "role",
+                           "type":  "bytes32",
+                           "internalType":  "bytes32"
+                       },
+                       {
+                           "name":  "account",
+                           "type":  "address",
+                           "internalType":  "address"
+                       }
+                   ],
+        "outputs":  [
+
+                    ],
+        "stateMutability":  "nonpayable"
+    },
+    {
+        "type":  "function",
+        "name":  "revokeRole",
+        "inputs":  [
+                       {
+                           "name":  "role",
+                           "type":  "bytes32",
+                           "internalType":  "bytes32"
+                       },
+                       {
+                           "name":  "account",
+                           "type":  "address",
+                           "internalType":  "address"
+                       }
+                   ],
+        "outputs":  [
+
+                    ],
+        "stateMutability":  "nonpayable"
+    },
+    {
+        "type":  "function",
+        "name":  "seasonState",
+        "inputs":  [
+                       {
+                           "name":  "",
+                           "type":  "address",
+                           "internalType":  "address"
+                       },
+                       {
+                           "name":  "",
+                           "type":  "uint256",
+                           "internalType":  "uint256"
+                       }
+                   ],
+        "outputs":  [
+                        {
+                            "name":  "lastDailyReset",
+                            "type":  "uint256",
+                            "internalType":  "uint256"
+                        },
+                        {
+                            "name":  "burnedToday",
+                            "type":  "uint256",
+                            "internalType":  "uint256"
+                        },
+                        {
+                            "name":  "burnedThisSeason",
+                            "type":  "uint256",
+                            "internalType":  "uint256"
+                        },
+                        {
+                            "name":  "xp",
+                            "type":  "uint256",
+                            "internalType":  "uint256"
+                        },
+                        {
+                            "name":  "creditedBurn",
+                            "type":  "uint256",
+                            "internalType":  "uint256"
+                        }
+                    ],
+        "stateMutability":  "view"
+    },
+    {
+        "type":  "function",
+        "name":  "seasons",
+        "inputs":  [
+                       {
+                           "name":  "",
+                           "type":  "uint256",
+                           "internalType":  "uint256"
+                       }
+                   ],
+        "outputs":  [
+                        {
+                            "name":  "id",
+                            "type":  "uint256",
+                            "internalType":  "uint256"
+                        },
+                        {
+                            "name":  "startTime",
+                            "type":  "uint256",
+                            "internalType":  "uint256"
+                        },
+                        {
+                            "name":  "endTime",
+                            "type":  "uint256",
+                            "internalType":  "uint256"
+                        },
+                        {
+                            "name":  "dailyCreditCap",
+                            "type":  "uint256",
+                            "internalType":  "uint256"
+                        },
+                        {
+                            "name":  "seasonCreditCap",
+                            "type":  "uint256",
+                            "internalType":  "uint256"
+                        },
+                        {
+                            "name":  "xpConfig",
+                            "type":  "tuple",
+                            "internalType":  "struct VoidBurnUtilitySeasonal.XPConfig",
+                            "components":  [
+                                               {
+                                                   "name":  "baseXPPerVOID",
+                                                   "type":  "uint256",
+                                                   "internalType":  "uint256"
+                                               },
+                                               {
+                                                   "name":  "dailySoftCap1",
+                                                   "type":  "uint256",
+                                                   "internalType":  "uint256"
+                                               },
+                                               {
+                                                   "name":  "dailySoftCap2",
+                                                   "type":  "uint256",
+                                                   "internalType":  "uint256"
+                                               },
+                                               {
+                                                   "name":  "dailyMult1",
+                                                   "type":  "uint256",
+                                                   "internalType":  "uint256"
+                                               },
+                                               {
+                                                   "name":  "dailyMult2",
+                                                   "type":  "uint256",
+                                                   "internalType":  "uint256"
+                                               },
+                                               {
+                                                   "name":  "dailyMult3",
+                                                   "type":  "uint256",
+                                                   "internalType":  "uint256"
+                                               }
+                                           ]
+                        },
+                        {
+                            "name":  "active",
+                            "type":  "bool",
+                            "internalType":  "bool"
+                        }
+                    ],
+        "stateMutability":  "view"
+    },
+    {
+        "type":  "function",
+        "name":  "supportsInterface",
+        "inputs":  [
+                       {
+                           "name":  "interfaceId",
+                           "type":  "bytes4",
+                           "internalType":  "bytes4"
+                       }
+                   ],
+        "outputs":  [
+                        {
+                            "name":  "",
+                            "type":  "bool",
+                            "internalType":  "bool"
+                        }
+                    ],
+        "stateMutability":  "view"
+    },
+    {
+        "type":  "function",
+        "name":  "totalBurned",
+        "inputs":  [
+
+                   ],
+        "outputs":  [
+                        {
+                            "name":  "",
+                            "type":  "uint256",
+                            "internalType":  "uint256"
+                        }
+                    ],
+        "stateMutability":  "view"
+    },
+    {
+        "type":  "function",
+        "name":  "unpauseBurns",
+        "inputs":  [
+
+                   ],
+        "outputs":  [
+
+                    ],
+        "stateMutability":  "nonpayable"
+    },
+    {
+        "type":  "function",
+        "name":  "unpauseModule",
+        "inputs":  [
+                       {
+                           "name":  "module",
+                           "type":  "uint8",
+                           "internalType":  "enum VoidBurnUtilitySeasonal.BurnModule"
+                       }
+                   ],
+        "outputs":  [
+
+                    ],
+        "stateMutability":  "nonpayable"
+    },
+    {
+        "type":  "function",
+        "name":  "updateLifetimeState",
+        "inputs":  [
+                       {
+                           "name":  "user",
+                           "type":  "address",
+                           "internalType":  "address"
+                       },
+                       {
+                           "name":  "_prestigeRank",
+                           "type":  "uint8",
+                           "internalType":  "uint8"
+                       },
+                       {
+                           "name":  "_creatorTier",
+                           "type":  "uint8",
+                           "internalType":  "uint8"
+                       },
+                       {
+                           "name":  "_districtsUnlocked",
+                           "type":  "uint8",
+                           "internalType":  "uint8"
+                       },
+                       {
+                           "name":  "_miniAppsUnlocked",
+                           "type":  "uint8",
+                           "internalType":  "uint8"
+                       }
+                   ],
+        "outputs":  [
+
+                    ],
+        "stateMutability":  "nonpayable"
+    },
+    {
+        "type":  "function",
+        "name":  "userTotalBurned",
+        "inputs":  [
+                       {
+                           "name":  "",
+                           "type":  "address",
+                           "internalType":  "address"
+                       }
+                   ],
+        "outputs":  [
+                        {
+                            "name":  "",
+                            "type":  "uint256",
+                            "internalType":  "uint256"
+                        }
+                    ],
+        "stateMutability":  "view"
+    },
+    {
+        "type":  "function",
+        "name":  "voidToken",
+        "inputs":  [
+
+                   ],
+        "outputs":  [
+                        {
+                            "name":  "",
+                            "type":  "address",
+                            "internalType":  "contract IERC20"
+                        }
+                    ],
+        "stateMutability":  "view"
+    },
+    {
+        "type":  "event",
+        "name":  "BurnResumed",
+        "inputs":  [
+                       {
+                           "name":  "admin",
+                           "type":  "address",
+                           "indexed":  true,
+                           "internalType":  "address"
+                       },
+                       {
+                           "name":  "timestamp",
+                           "type":  "uint256",
+                           "indexed":  false,
+                           "internalType":  "uint256"
+                       }
+                   ],
+        "anonymous":  false
+    },
+    {
+        "type":  "event",
+        "name":  "EmergencyBurnPaused",
+        "inputs":  [
+                       {
+                           "name":  "admin",
+                           "type":  "address",
+                           "indexed":  true,
+                           "internalType":  "address"
+                       },
+                       {
+                           "name":  "timestamp",
+                           "type":  "uint256",
+                           "indexed":  false,
+                           "internalType":  "uint256"
+                       }
+                   ],
+        "anonymous":  false
+    },
+    {
+        "type":  "event",
+        "name":  "ModulePaused",
+        "inputs":  [
+                       {
+                           "name":  "module",
+                           "type":  "uint8",
+                           "indexed":  true,
+                           "internalType":  "enum VoidBurnUtilitySeasonal.BurnModule"
+                       },
+                       {
+                           "name":  "timestamp",
+                           "type":  "uint256",
+                           "indexed":  false,
+                           "internalType":  "uint256"
+                       }
+                   ],
+        "anonymous":  false
+    },
+    {
+        "type":  "event",
+        "name":  "ModuleUnpaused",
+        "inputs":  [
+                       {
+                           "name":  "module",
+                           "type":  "uint8",
+                           "indexed":  true,
+                           "internalType":  "enum VoidBurnUtilitySeasonal.BurnModule"
+                       },
+                       {
+                           "name":  "timestamp",
+                           "type":  "uint256",
+                           "indexed":  false,
+                           "internalType":  "uint256"
+                       }
+                   ],
+        "anonymous":  false
+    },
+    {
+        "type":  "event",
+        "name":  "Paused",
+        "inputs":  [
+                       {
+                           "name":  "account",
+                           "type":  "address",
+                           "indexed":  false,
+                           "internalType":  "address"
+                       }
+                   ],
+        "anonymous":  false
+    },
+    {
+        "type":  "event",
+        "name":  "RoleAdminChanged",
+        "inputs":  [
+                       {
+                           "name":  "role",
+                           "type":  "bytes32",
+                           "indexed":  true,
+                           "internalType":  "bytes32"
+                       },
+                       {
+                           "name":  "previousAdminRole",
+                           "type":  "bytes32",
+                           "indexed":  true,
+                           "internalType":  "bytes32"
+                       },
+                       {
+                           "name":  "newAdminRole",
+                           "type":  "bytes32",
+                           "indexed":  true,
+                           "internalType":  "bytes32"
+                       }
+                   ],
+        "anonymous":  false
+    },
+    {
+        "type":  "event",
+        "name":  "RoleGranted",
+        "inputs":  [
+                       {
+                           "name":  "role",
+                           "type":  "bytes32",
+                           "indexed":  true,
+                           "internalType":  "bytes32"
+                       },
+                       {
+                           "name":  "account",
+                           "type":  "address",
+                           "indexed":  true,
+                           "internalType":  "address"
+                       },
+                       {
+                           "name":  "sender",
+                           "type":  "address",
+                           "indexed":  true,
+                           "internalType":  "address"
+                       }
+                   ],
+        "anonymous":  false
+    },
+    {
+        "type":  "event",
+        "name":  "RoleRevoked",
+        "inputs":  [
+                       {
+                           "name":  "role",
+                           "type":  "bytes32",
+                           "indexed":  true,
+                           "internalType":  "bytes32"
+                       },
+                       {
+                           "name":  "account",
+                           "type":  "address",
+                           "indexed":  true,
+                           "internalType":  "address"
+                       },
+                       {
+                           "name":  "sender",
+                           "type":  "address",
+                           "indexed":  true,
+                           "internalType":  "address"
+                       }
+                   ],
+        "anonymous":  false
+    },
+    {
+        "type":  "event",
+        "name":  "SeasonCreated",
+        "inputs":  [
+                       {
+                           "name":  "seasonId",
+                           "type":  "uint256",
+                           "indexed":  true,
+                           "internalType":  "uint256"
+                       },
+                       {
+                           "name":  "startTime",
+                           "type":  "uint256",
+                           "indexed":  false,
+                           "internalType":  "uint256"
+                       },
+                       {
+                           "name":  "endTime",
+                           "type":  "uint256",
+                           "indexed":  false,
+                           "internalType":  "uint256"
+                       },
+                       {
+                           "name":  "dailyCreditCap",
+                           "type":  "uint256",
+                           "indexed":  false,
+                           "internalType":  "uint256"
+                       },
+                       {
+                           "name":  "seasonCreditCap",
+                           "type":  "uint256",
+                           "indexed":  false,
+                           "internalType":  "uint256"
+                       }
+                   ],
+        "anonymous":  false
+    },
+    {
+        "type":  "event",
+        "name":  "SeasonEnded",
+        "inputs":  [
+                       {
+                           "name":  "seasonId",
+                           "type":  "uint256",
+                           "indexed":  true,
+                           "internalType":  "uint256"
+                       },
+                       {
+                           "name":  "timestamp",
+                           "type":  "uint256",
+                           "indexed":  false,
+                           "internalType":  "uint256"
+                       }
+                   ],
+        "anonymous":  false
+    },
+    {
+        "type":  "event",
+        "name":  "Unpaused",
+        "inputs":  [
+                       {
+                           "name":  "account",
+                           "type":  "address",
+                           "indexed":  false,
+                           "internalType":  "address"
+                       }
+                   ],
+        "anonymous":  false
+    },
+    {
+        "type":  "event",
+        "name":  "UtilityBurn",
+        "inputs":  [
+                       {
+                           "name":  "user",
+                           "type":  "address",
+                           "indexed":  true,
+                           "internalType":  "address"
+                       },
+                       {
+                           "name":  "seasonId",
+                           "type":  "uint256",
+                           "indexed":  true,
+                           "internalType":  "uint256"
+                       },
+                       {
+                           "name":  "module",
+                           "type":  "uint8",
+                           "indexed":  false,
+                           "internalType":  "enum VoidBurnUtilitySeasonal.BurnModule"
+                       },
+                       {
+                           "name":  "amountVOID",
+                           "type":  "uint256",
+                           "indexed":  false,
+                           "internalType":  "uint256"
+                       },
+                       {
+                           "name":  "moduleData",
+                           "type":  "bytes",
+                           "indexed":  false,
+                           "internalType":  "bytes"
+                       },
+                       {
+                           "name":  "timestamp",
+                           "type":  "uint256",
+                           "indexed":  false,
+                           "internalType":  "uint256"
+                       }
+                   ],
+        "anonymous":  false
+    }
+]

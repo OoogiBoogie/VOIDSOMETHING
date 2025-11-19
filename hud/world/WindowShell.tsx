@@ -12,7 +12,6 @@ import {
   DefiOverviewWindow,
   CreatorHubWindow,
   DaoConsoleWindow,
-  WorldMapWindow,
   AgencyBoardWindow,
   AIOpsConsoleWindow,
   MissionDetailWindow,
@@ -23,7 +22,6 @@ import {
 } from './windows/index';
 
 export type WindowType =
-  | "worldMap"
   | "defiOverview"
   | "vaultDetail"
   | "creatorHub"
@@ -93,8 +91,6 @@ export default function WindowShell({ activeWindow, onClose }: WindowShellProps)
 
 function labelForWindowType(type: WindowType): string {
   switch (type) {
-    case "worldMap":
-      return "WORLD · MAP";
     case "defiOverview":
       return "DEFI · VAULT MATRIX";
     case "vaultDetail":
@@ -134,8 +130,6 @@ function renderWindowContent(type: WindowType, props: any, onClose: () => void):
   const sharedProps = { ...props, onClose };
   
   switch (type) {
-    case "worldMap":
-      return <WorldMapWindow {...sharedProps} />;
     case "defiOverview":
       return <DefiOverviewWindow {...sharedProps} />;
     case "casino":

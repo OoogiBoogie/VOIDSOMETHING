@@ -1,0 +1,355 @@
+/**
+ * SeasonalBurnDisplay Styles
+ * 
+ * CRT/retro-futuristic theme matching VOID aesthetic
+ */
+
+.seasonal-burn-display {
+  background: rgba(0, 0, 0, 0.85);
+  border: 2px solid #00ff88;
+  border-radius: 8px;
+  padding: 20px;
+  font-family: 'Courier New', monospace;
+  color: #00ff88;
+  box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+  max-width: 400px;
+  backdrop-filter: blur(10px);
+}
+
+/* ═════════════════════════════════════════════════════════════════════════
+   LOADING STATE
+   ═════════════════════════════════════════════════════════════════════════ */
+
+.seasonal-burn-display.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 40px;
+}
+
+.seasonal-burn-display .spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid rgba(0, 255, 136, 0.2);
+  border-top-color: #00ff88;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.seasonal-burn-display.error {
+  border-color: #ff4444;
+  color: #ff4444;
+  text-align: center;
+  padding: 40px;
+}
+
+/* ═════════════════════════════════════════════════════════════════════════
+   SEASON HEADER
+   ═════════════════════════════════════════════════════════════════════════ */
+
+.season-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(0, 255, 136, 0.3);
+}
+
+.season-badge {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.season-label {
+  font-size: 12px;
+  opacity: 0.7;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.season-number {
+  font-size: 32px;
+  font-weight: bold;
+  text-shadow: 0 0 10px rgba(0, 255, 136, 0.8);
+}
+
+.season-time {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+}
+
+.time-icon {
+  font-size: 16px;
+}
+
+/* ═════════════════════════════════════════════════════════════════════════
+   XP SECTION
+   ═════════════════════════════════════════════════════════════════════════ */
+
+.xp-section {
+  margin-bottom: 20px;
+}
+
+.xp-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.xp-label {
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  opacity: 0.8;
+}
+
+.xp-value {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.xp-zone {
+  background: rgba(0, 255, 136, 0.1);
+  border: 1px solid rgba(0, 255, 136, 0.3);
+  border-radius: 6px;
+  padding: 12px;
+  margin-top: 8px;
+}
+
+.xp-zone.zone-1 {
+  border-color: #22c55e;
+  background: rgba(34, 197, 94, 0.1);
+}
+
+.xp-zone.zone-2 {
+  border-color: #f59e0b;
+  background: rgba(245, 158, 11, 0.1);
+}
+
+.xp-zone.zone-3 {
+  border-color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.zone-badge {
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.zone-next {
+  font-size: 12px;
+  opacity: 0.7;
+  margin-top: 4px;
+}
+
+/* ═════════════════════════════════════════════════════════════════════════
+   CAP SECTION
+   ═════════════════════════════════════════════════════════════════════════ */
+
+.cap-section {
+  margin-bottom: 20px;
+}
+
+.cap-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.cap-label {
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  opacity: 0.8;
+}
+
+.cap-reset {
+  font-size: 12px;
+  opacity: 0.6;
+}
+
+.cap-bar-container {
+  width: 100%;
+  height: 24px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(0, 255, 136, 0.3);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 8px;
+  position: relative;
+}
+
+.cap-bar-fill {
+  height: 100%;
+  transition: width 0.3s ease, background-color 0.3s ease;
+  box-shadow: 0 0 10px currentColor;
+}
+
+.cap-stats {
+  display: flex;
+  gap: 6px;
+  font-size: 13px;
+  align-items: baseline;
+}
+
+.cap-used {
+  font-weight: bold;
+}
+
+.cap-total {
+  opacity: 0.7;
+}
+
+.cap-percent {
+  opacity: 0.6;
+  font-size: 12px;
+  margin-left: auto;
+}
+
+.cap-warning {
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: 4px;
+  font-size: 12px;
+  color: #f59e0b;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ═════════════════════════════════════════════════════════════════════════
+   LIFETIME SECTION
+   ═════════════════════════════════════════════════════════════════════════ */
+
+.lifetime-section {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(0, 255, 136, 0.3);
+}
+
+.lifetime-header {
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  opacity: 0.8;
+  margin-bottom: 12px;
+}
+
+.lifetime-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px;
+  background: rgba(0, 255, 136, 0.05);
+  border: 1px solid rgba(0, 255, 136, 0.2);
+  border-radius: 4px;
+}
+
+.stat-icon {
+  font-size: 20px;
+}
+
+.stat-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  opacity: 0.6;
+}
+
+.stat-value {
+  font-size: 14px;
+  font-weight: bold;
+}
+
+/* ═════════════════════════════════════════════════════════════════════════
+   COMPLIANCE NOTICE
+   ═════════════════════════════════════════════════════════════════════════ */
+
+.compliance-notice {
+  margin-top: 20px;
+  padding: 12px;
+  background: rgba(0, 191, 255, 0.1);
+  border: 1px solid rgba(0, 191, 255, 0.3);
+  border-radius: 4px;
+  font-size: 12px;
+  color: #00bfff;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* ═════════════════════════════════════════════════════════════════════════
+   RESPONSIVE
+   ═════════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 480px) {
+  .seasonal-burn-display {
+    padding: 16px;
+  }
+
+  .season-number {
+    font-size: 24px;
+  }
+
+  .season-time {
+    font-size: 12px;
+  }
+
+  .lifetime-stats {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ═════════════════════════════════════════════════════════════════════════
+   ANIMATIONS
+   ═════════════════════════════════════════════════════════════════════════ */
+
+.cap-bar-fill {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 0 10px currentColor;
+  }
+  50% {
+    box-shadow: 0 0 20px currentColor;
+  }
+}
+
+.seasonal-burn-display {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

@@ -8,7 +8,7 @@
 
 import React, { useState } from 'react';
 import { useAccount } from 'wagmi';
-import { usePrivy } from '@privy-io/react-auth';
+
 
 type HubFilter = 'ALL' | 'WORLD' | 'DEFI' | 'CREATOR' | 'DAO' | 'AI';
 type MissionDifficulty = 'Easy' | 'Medium' | 'Hard';
@@ -31,7 +31,7 @@ interface MissionsTabProps {
 }
 
 export default function MissionsTab({ onClose }: MissionsTabProps) {
-  const { authenticated } = usePrivy();
+  
   const { address } = useAccount();
   const [activeFilter, setActiveFilter] = useState<HubFilter>('ALL');
   const [trackedMission, setTrackedMission] = useState<number | null>(null);
@@ -173,7 +173,7 @@ export default function MissionsTab({ onClose }: MissionsTabProps) {
     totalVXP: mockMissions.filter(m => m.status === 'completed').reduce((sum, m) => sum + m.vxpReward, 0),
   };
 
-  if (!authenticated) {
+  if (!isConnected) {
     return (
       <div className="p-6 flex flex-col items-center justify-center h-full text-center space-y-4">
         <div className="text-4xl mb-2">🎯</div>

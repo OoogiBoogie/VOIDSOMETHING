@@ -1,0 +1,607 @@
+[
+    {
+        "type":  "constructor",
+        "inputs":  [
+                       {
+                           "name":  "_burnUtility",
+                           "type":  "address",
+                           "internalType":  "address"
+                       }
+                   ],
+        "stateMutability":  "nonpayable"
+    },
+    {
+        "type":  "function",
+        "name":  "DEFAULT_ADMIN_ROLE",
+        "inputs":  [
+
+                   ],
+        "outputs":  [
+                        {
+                            "name":  "",
+                            "type":  "bytes32",
+                            "internalType":  "bytes32"
+                        }
+                    ],
+        "stateMutability":  "view"
+    },
+    {
+        "type":  "function",
+        "name":  "MAX_PRESTIGE_RANK",
+        "inputs":  [
+
+                   ],
+        "outputs":  [
+                        {
+                            "name":  "",
+                            "type":  "uint8",
+                            "internalType":  "uint8"
+                        }
+                    ],
+        "stateMutability":  "view"
+    },
+    {
+        "type":  "function",
+        "name":  "PRESTIGE_MANAGER_ROLE",
+        "inputs":  [
+
+                   ],
+        "outputs":  [
+                        {
+                            "name":  "",
+                            "type":  "bytes32",
+                            "internalType":  "bytes32"
+                        }
+                    ],
+        "stateMutability":  "view"
+    },
+    {
+        "type":  "function",
+        "name":  "addCosmeticsToRank",
+        "inputs":  [
+                       {
+                           "name":  "rank",
+                           "type":  "uint8",
+                           "internalType":  "uint8"
+                       },
+                       {
+                           "name":  "cosmetics",
+                           "type":  "string[]",
+                           "internalType":  "string[]"
+                       }
+                   ],
+        "outputs":  [
+
+                    ],
+        "stateMutability":  "nonpayable"
+    },
+    {
+        "type":  "function",
+        "name":  "batchSetCosts",
+        "inputs":  [
+                       {
+                           "name":  "ranks",
+                           "type":  "uint8[]",
+                           "internalType":  "uint8[]"
+                       },
+                       {
+                           "name":  "costs",
+                           "type":  "uint256[]",
+                           "internalType":  "uint256[]"
+                       }
+                   ],
+        "outputs":  [
+
+                    ],
+        "stateMutability":  "nonpayable"
+    },
+    {
+        "type":  "function",
+        "name":  "burnUtility",
+        "inputs":  [
+
+                   ],
+        "outputs":  [
+                        {
+                            "name":  "",
+                            "type":  "address",
+                            "internalType":  "contract VoidBurnUtilitySeasonal"
+                        }
+                    ],
+        "stateMutability":  "view"
+    },
+    {
+        "type":  "function",
+        "name":  "cosmeticUnlocked",
+        "inputs":  [
+                       {
+                           "name":  "",
+                           "type":  "address",
+                           "internalType":  "address"
+                       },
+                       {
+                           "name":  "",
+                           "type":  "uint8",
+                           "internalType":  "uint8"
+                       }
+                   ],
+        "outputs":  [
+                        {
+                            "name":  "",
+                            "type":  "bool",
+                            "internalType":  "bool"
+                        }
+                    ],
+        "stateMutability":  "view"
+    },
+    {
+        "type":  "function",
+        "name":  "cosmeticsByRank",
+        "inputs":  [
+                       {
+                           "name":  "",
+                           "type":  "uint8",
+                           "internalType":  "uint8"
+                       },
+                       {
+                           "name":  "",
+                           "type":  "uint256",
+                           "internalType":  "uint256"
+                       }
+                   ],
+        "outputs":  [
+                        {
+                            "name":  "",
+                            "type":  "string",
+                            "internalType":  "string"
+                        }
+                    ],
+        "stateMutability":  "view"
+    },
+    {
+        "type":  "function",
+        "name":  "getCosmeticsForRank",
+        "inputs":  [
+                       {
+                           "name":  "rank",
+                           "type":  "uint8",
+                           "internalType":  "uint8"
+                       }
+                   ],
+        "outputs":  [
+                        {
+                            "name":  "",
+                            "type":  "string[]",
+                            "internalType":  "string[]"
+                        }
+                    ],
+        "stateMutability":  "view"
+    },
+    {
+        "type":  "function",
+        "name":  "getNextRankCost",
+        "inputs":  [
+                       {
+                           "name":  "user",
+                           "type":  "address",
+                           "internalType":  "address"
+                       }
+                   ],
+        "outputs":  [
+                        {
+                            "name":  "",
+                            "type":  "uint256",
+                            "internalType":  "uint256"
+                        }
+                    ],
+        "stateMutability":  "view"
+    },
+    {
+        "type":  "function",
+        "name":  "getPrestigeRank",
+        "inputs":  [
+                       {
+                           "name":  "user",
+                           "type":  "address",
+                           "internalType":  "address"
+                       }
+                   ],
+        "outputs":  [
+                        {
+                            "name":  "",
+                            "type":  "uint8",
+                            "internalType":  "uint8"
+                        }
+                    ],
+        "stateMutability":  "view"
+    },
+    {
+        "type":  "function",
+        "name":  "getRoleAdmin",
+        "inputs":  [
+                       {
+                           "name":  "role",
+                           "type":  "bytes32",
+                           "internalType":  "bytes32"
+                       }
+                   ],
+        "outputs":  [
+                        {
+                            "name":  "",
+                            "type":  "bytes32",
+                            "internalType":  "bytes32"
+                        }
+                    ],
+        "stateMutability":  "view"
+    },
+    {
+        "type":  "function",
+        "name":  "grantRole",
+        "inputs":  [
+                       {
+                           "name":  "role",
+                           "type":  "bytes32",
+                           "internalType":  "bytes32"
+                       },
+                       {
+                           "name":  "account",
+                           "type":  "address",
+                           "internalType":  "address"
+                       }
+                   ],
+        "outputs":  [
+
+                    ],
+        "stateMutability":  "nonpayable"
+    },
+    {
+        "type":  "function",
+        "name":  "hasCosmetic",
+        "inputs":  [
+                       {
+                           "name":  "user",
+                           "type":  "address",
+                           "internalType":  "address"
+                       },
+                       {
+                           "name":  "rank",
+                           "type":  "uint8",
+                           "internalType":  "uint8"
+                       }
+                   ],
+        "outputs":  [
+                        {
+                            "name":  "",
+                            "type":  "bool",
+                            "internalType":  "bool"
+                        }
+                    ],
+        "stateMutability":  "view"
+    },
+    {
+        "type":  "function",
+        "name":  "hasRole",
+        "inputs":  [
+                       {
+                           "name":  "role",
+                           "type":  "bytes32",
+                           "internalType":  "bytes32"
+                       },
+                       {
+                           "name":  "account",
+                           "type":  "address",
+                           "internalType":  "address"
+                       }
+                   ],
+        "outputs":  [
+                        {
+                            "name":  "",
+                            "type":  "bool",
+                            "internalType":  "bool"
+                        }
+                    ],
+        "stateMutability":  "view"
+    },
+    {
+        "type":  "function",
+        "name":  "prestige",
+        "inputs":  [
+
+                   ],
+        "outputs":  [
+
+                    ],
+        "stateMutability":  "nonpayable"
+    },
+    {
+        "type":  "function",
+        "name":  "prestigeRank",
+        "inputs":  [
+                       {
+                           "name":  "",
+                           "type":  "address",
+                           "internalType":  "address"
+                       }
+                   ],
+        "outputs":  [
+                        {
+                            "name":  "",
+                            "type":  "uint8",
+                            "internalType":  "uint8"
+                        }
+                    ],
+        "stateMutability":  "view"
+    },
+    {
+        "type":  "function",
+        "name":  "rankCosts",
+        "inputs":  [
+                       {
+                           "name":  "",
+                           "type":  "uint256",
+                           "internalType":  "uint256"
+                       }
+                   ],
+        "outputs":  [
+                        {
+                            "name":  "",
+                            "type":  "uint256",
+                            "internalType":  "uint256"
+                        }
+                    ],
+        "stateMutability":  "view"
+    },
+    {
+        "type":  "function",
+        "name":  "renounceRole",
+        "inputs":  [
+                       {
+                           "name":  "role",
+                           "type":  "bytes32",
+                           "internalType":  "bytes32"
+                       },
+                       {
+                           "name":  "account",
+                           "type":  "address",
+                           "internalType":  "address"
+                       }
+                   ],
+        "outputs":  [
+
+                    ],
+        "stateMutability":  "nonpayable"
+    },
+    {
+        "type":  "function",
+        "name":  "revokeRole",
+        "inputs":  [
+                       {
+                           "name":  "role",
+                           "type":  "bytes32",
+                           "internalType":  "bytes32"
+                       },
+                       {
+                           "name":  "account",
+                           "type":  "address",
+                           "internalType":  "address"
+                       }
+                   ],
+        "outputs":  [
+
+                    ],
+        "stateMutability":  "nonpayable"
+    },
+    {
+        "type":  "function",
+        "name":  "setRankCost",
+        "inputs":  [
+                       {
+                           "name":  "rank",
+                           "type":  "uint8",
+                           "internalType":  "uint8"
+                       },
+                       {
+                           "name":  "cost",
+                           "type":  "uint256",
+                           "internalType":  "uint256"
+                       }
+                   ],
+        "outputs":  [
+
+                    ],
+        "stateMutability":  "nonpayable"
+    },
+    {
+        "type":  "function",
+        "name":  "supportsInterface",
+        "inputs":  [
+                       {
+                           "name":  "interfaceId",
+                           "type":  "bytes4",
+                           "internalType":  "bytes4"
+                       }
+                   ],
+        "outputs":  [
+                        {
+                            "name":  "",
+                            "type":  "bool",
+                            "internalType":  "bool"
+                        }
+                    ],
+        "stateMutability":  "view"
+    },
+    {
+        "type":  "event",
+        "name":  "CosmeticUnlocked",
+        "inputs":  [
+                       {
+                           "name":  "user",
+                           "type":  "address",
+                           "indexed":  true,
+                           "internalType":  "address"
+                       },
+                       {
+                           "name":  "rank",
+                           "type":  "uint8",
+                           "indexed":  true,
+                           "internalType":  "uint8"
+                       },
+                       {
+                           "name":  "cosmeticId",
+                           "type":  "string",
+                           "indexed":  false,
+                           "internalType":  "string"
+                       },
+                       {
+                           "name":  "timestamp",
+                           "type":  "uint256",
+                           "indexed":  false,
+                           "internalType":  "uint256"
+                       }
+                   ],
+        "anonymous":  false
+    },
+    {
+        "type":  "event",
+        "name":  "PrestigeRankAchieved",
+        "inputs":  [
+                       {
+                           "name":  "user",
+                           "type":  "address",
+                           "indexed":  true,
+                           "internalType":  "address"
+                       },
+                       {
+                           "name":  "rank",
+                           "type":  "uint8",
+                           "indexed":  true,
+                           "internalType":  "uint8"
+                       },
+                       {
+                           "name":  "seasonId",
+                           "type":  "uint256",
+                           "indexed":  true,
+                           "internalType":  "uint256"
+                       },
+                       {
+                           "name":  "voidBurned",
+                           "type":  "uint256",
+                           "indexed":  false,
+                           "internalType":  "uint256"
+                       },
+                       {
+                           "name":  "timestamp",
+                           "type":  "uint256",
+                           "indexed":  false,
+                           "internalType":  "uint256"
+                       }
+                   ],
+        "anonymous":  false
+    },
+    {
+        "type":  "event",
+        "name":  "RankCostUpdated",
+        "inputs":  [
+                       {
+                           "name":  "rank",
+                           "type":  "uint8",
+                           "indexed":  true,
+                           "internalType":  "uint8"
+                       },
+                       {
+                           "name":  "oldCost",
+                           "type":  "uint256",
+                           "indexed":  false,
+                           "internalType":  "uint256"
+                       },
+                       {
+                           "name":  "newCost",
+                           "type":  "uint256",
+                           "indexed":  false,
+                           "internalType":  "uint256"
+                       },
+                       {
+                           "name":  "timestamp",
+                           "type":  "uint256",
+                           "indexed":  false,
+                           "internalType":  "uint256"
+                       }
+                   ],
+        "anonymous":  false
+    },
+    {
+        "type":  "event",
+        "name":  "RoleAdminChanged",
+        "inputs":  [
+                       {
+                           "name":  "role",
+                           "type":  "bytes32",
+                           "indexed":  true,
+                           "internalType":  "bytes32"
+                       },
+                       {
+                           "name":  "previousAdminRole",
+                           "type":  "bytes32",
+                           "indexed":  true,
+                           "internalType":  "bytes32"
+                       },
+                       {
+                           "name":  "newAdminRole",
+                           "type":  "bytes32",
+                           "indexed":  true,
+                           "internalType":  "bytes32"
+                       }
+                   ],
+        "anonymous":  false
+    },
+    {
+        "type":  "event",
+        "name":  "RoleGranted",
+        "inputs":  [
+                       {
+                           "name":  "role",
+                           "type":  "bytes32",
+                           "indexed":  true,
+                           "internalType":  "bytes32"
+                       },
+                       {
+                           "name":  "account",
+                           "type":  "address",
+                           "indexed":  true,
+                           "internalType":  "address"
+                       },
+                       {
+                           "name":  "sender",
+                           "type":  "address",
+                           "indexed":  true,
+                           "internalType":  "address"
+                       }
+                   ],
+        "anonymous":  false
+    },
+    {
+        "type":  "event",
+        "name":  "RoleRevoked",
+        "inputs":  [
+                       {
+                           "name":  "role",
+                           "type":  "bytes32",
+                           "indexed":  true,
+                           "internalType":  "bytes32"
+                       },
+                       {
+                           "name":  "account",
+                           "type":  "address",
+                           "indexed":  true,
+                           "internalType":  "address"
+                       },
+                       {
+                           "name":  "sender",
+                           "type":  "address",
+                           "indexed":  true,
+                           "internalType":  "address"
+                       }
+                   ],
+        "anonymous":  false
+    }
+]

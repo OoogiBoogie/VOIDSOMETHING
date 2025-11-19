@@ -13,10 +13,10 @@
 
 import React, { useState, useEffect } from 'react'
 import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
-import { usePrivy } from '@privy-io/react-auth'
 import { formatUnits, parseUnits, maxUint256 } from 'viem'
 import { toast } from 'sonner'
 import deployments from '@/deployments/baseSepolia.json'
+import { ConnectButton } from '@rainbow-me/rainbowkit';
 
 // Contract addresses from deployment
 const VOID_ADDRESS = deployments.VOID as `0x${string}`
@@ -111,7 +111,6 @@ const XP_ORACLE_ABI = [
 
 export function StakingPanel() {
   const { address, isConnected } = useAccount()
-  const { authenticated, login } = usePrivy()
   const [stakeAmount, setStakeAmount] = useState('')
   const [unstakeAmount, setUnstakeAmount] = useState('')
   const [activeAction, setActiveAction] = useState<'approve' | 'stake' | 'unstake' | 'claim' | null>(null)
@@ -298,7 +297,7 @@ export function StakingPanel() {
   }
 
   // Not connected state
-  if (!authenticated || !isConnected) {
+  if (!isConnected) {
     return (
       <div className="flex flex-col items-center justify-center h-full p-8 space-y-4">
         <div className="text-center space-y-2">
@@ -306,15 +305,10 @@ export function StakingPanel() {
             💎 VOID STAKING
           </h3>
           <p className="text-sm text-gray-400">
-            Connect wallet with Privy to start staking
+            Connect wallet to start staking
           </p>
         </div>
-        <button
-          onClick={() => login()}
-          className="px-6 py-3 bg-gradient-to-r from-[var(--void-neon-purple)] to-purple-600 rounded-lg font-bold hover:scale-105 transition-transform"
-        >
-          Connect Wallet
-        </button>
+        <ConnectButton />
       </div>
     )
   }
@@ -470,7 +464,7 @@ export function StakingPanel() {
       <div className="space-y-3">
         <button
           onClick={handleClaim}
-          disabled={isPending || !claimable || claimable === 0n}
+          disabled={isPending || !claimable || claimable === BigInt(0)}
           className="w-full px-6 py-3 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-lg font-bold hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
         >
           {activeAction === 'claim' && isPending ? 'Claiming...' : 'Claim Rewards'}

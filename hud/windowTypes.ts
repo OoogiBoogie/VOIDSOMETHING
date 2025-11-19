@@ -35,7 +35,18 @@ export type WindowType =
   | "PLAYER_PROFILE"
   | "LEADERBOARDS"
   | "AI_CONSOLE"
-  | "MULTI_TAB";
+  | "MULTI_TAB"
+  | "MINIAPP_LAUNCHER"
+  | "REAL_ESTATE"
+  | "REAL_ESTATE_MARKET"
+  | "REAL_ESTATE_LEADERBOARD"
+  | "DISTRICT_UNLOCK"
+  | "CREATOR_TOOLS"
+  | "PRESTIGE_SYSTEM"
+  | "MINIAPP_ACCESS"
+  | "SEASON_DASHBOARD"
+  | "SEASONAL_XP"
+  | "SEASONAL_ACTIONS";
 
 export interface ActiveWindow {
   type: WindowType;
@@ -108,6 +119,28 @@ export function getWindowLabel(type: WindowType): string {
       return "AI OPS · CONSOLE";
     case "MULTI_TAB":
       return "PSX VOID · MULTI-TAB INTERFACE";
+    case "MINIAPP_LAUNCHER":
+      return "APPS · LAUNCHER";
+    case "REAL_ESTATE":
+      return "REAL ESTATE · PORTFOLIO";
+    case "REAL_ESTATE_MARKET":
+      return "VOID MARKET · REAL ESTATE";
+    case "REAL_ESTATE_LEADERBOARD":
+      return "LEADERBOARD · LANDOWNERS";
+    case "DISTRICT_UNLOCK":
+      return "BURN · DISTRICT ACCESS";
+    case "CREATOR_TOOLS":
+      return "BURN · CREATOR TOOLS";
+    case "PRESTIGE_SYSTEM":
+      return "BURN · PRESTIGE";
+    case "MINIAPP_ACCESS":
+      return "BURN · MINIAPP FEATURES";
+    case "SEASON_DASHBOARD":
+      return "SEASONAL · OVERVIEW";
+    case "SEASONAL_XP":
+      return "SEASONAL · XP & REWARDS";
+    case "SEASONAL_ACTIONS":
+      return "SEASONAL · BURN ACTIONS";
     default:
       return "WINDOW";
   }

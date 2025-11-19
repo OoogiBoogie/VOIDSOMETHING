@@ -2,27 +2,29 @@
  * VOID WORLD - Building Bindings
  * 
  * Connects BUILDINGS from city-assets to parcels and districts
+ * Uses CITY_BOUNDS coordinate system for all transforms
  */
 
 import { BUILDINGS, type Building } from "../lib/city-assets";
 import {
-  worldToParcel,
+  cityWorldToParcel,
   coordsToParcelId,
   getDistrict,
   parcelIdToCoords,
   type ParcelCoords,
-  type District,
 } from "./WorldCoords";
+import type { DistrictId } from "./map/districts";
 
 export interface BuildingBinding {
   building: Building;
   parcelId: number;
   parcelCoords: ParcelCoords;
-  district: District;
+  district: DistrictId;
 }
 
 /**
  * Bind a building to its parcel location
+ * Uses CITY_BOUNDS coordinate system (building.x/z are in CITY_BOUNDS range)
  */
 export function bindBuildingToParcel(building: Building): BuildingBinding {
   // If building already has explicit parcelId, use it
@@ -37,11 +39,12 @@ export function bindBuildingToParcel(building: Building): BuildingBinding {
     };
   }
 
-  // Otherwise derive from world position (x, z are already on Building)
+  // Building coordinates from city-assets are in CITY_BOUNDS range
+  // Use cityWorldToParcel to map to parcel grid
   const worldX = building.x;
   const worldZ = building.z;
   
-  const coords = worldToParcel({ x: worldX, z: worldZ });
+  const coords = cityWorldToParcel({ x: worldX, z: worldZ });
   const parcelId = coordsToParcelId(coords);
   const district = getDistrict(coords);
 
@@ -63,7 +66,7 @@ export function getBuildingsOnParcel(parcelId: number): BuildingBinding[] {
 /**
  * Helper: all buildings in a given district
  */
-export function getBuildingsInDistrict(district: District): BuildingBinding[] {
+export function getBuildingsInDistrict(district: DistrictId): BuildingBinding[] {
   return BOUND_BUILDINGS.filter((b) => b.district === district);
 }
 

@@ -8,7 +8,7 @@
 
 import React, { useState } from 'react';
 import { useAccount, useReadContract } from 'wagmi';
-import { usePrivy } from '@privy-io/react-auth';
+
 import { formatUnits } from 'viem';
 import { XVOID_VAULT_ABI } from '@/lib/contracts/abis';
 
@@ -32,7 +32,7 @@ const CONTRACTS = {
 };
 
 export default function DAOTab({ onClose }: DAOTabProps) {
-  const { authenticated } = usePrivy();
+  
   const { address } = useAccount();
   const [selectedProposal, setSelectedProposal] = useState<number | null>(null);
 
@@ -112,7 +112,7 @@ export default function DAOTab({ onClose }: DAOTabProps) {
     return total > 0 ? ((votes / total) * 100).toFixed(1) : '0.0';
   };
 
-  if (!authenticated) {
+  if (!isConnected) {
     return (
       <div className="p-6 flex flex-col items-center justify-center h-full text-center space-y-4">
         <div className="text-4xl mb-2">🏛</div>

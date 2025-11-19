@@ -8,7 +8,7 @@
 
 import React, { useState } from 'react';
 import { useAccount } from 'wagmi';
-import { usePrivy } from '@privy-io/react-auth';
+
 
 interface LandParcel {
   id: number;
@@ -40,7 +40,7 @@ interface InventoryTabProps {
 }
 
 export default function InventoryTab({ onClose }: InventoryTabProps) {
-  const { authenticated } = usePrivy();
+  
   const { address } = useAccount();
   const [activeSection, setActiveSection] = useState<'land' | 'artifacts' | 'cosmetics'>('land');
 
@@ -125,7 +125,7 @@ export default function InventoryTab({ onClose }: InventoryTabProps) {
     }
   };
 
-  if (!authenticated) {
+  if (!isConnected) {
     return (
       <div className="p-6 flex flex-col items-center justify-center h-full text-center space-y-4">
         <div className="text-4xl mb-2">🎒</div>

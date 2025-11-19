@@ -76,7 +76,7 @@ export default function SocialHubApp() {
         
         {view === 'dms' && (
           <div className="h-full p-4">
-            <PhoneWindow />
+            <PhoneWindow onClose={() => setView('global-chat')} />
           </div>
         )}
         

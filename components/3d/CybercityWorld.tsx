@@ -9,15 +9,38 @@ import { landRegistryAPI } from "@/lib/land/registry-api"
 import { isFounderPlot } from "@/lib/land/tier-calculator"
 import { Text } from "@react-three/drei"
 import { BuildingDetailPanel } from "@/components/land/building-detail-panel"
+import { useSelectionState } from "@/state/selection/useSelectionState"
+import { getDistrictFromWorld } from "@/world/map/mapUtils"
+import { parcelToCityWorld } from "@/lib/city-assets"
 
 const PARCEL_SIZE = 40; // 40 world units per parcel
 const PARCEL_SPACING = 16; // 16 unit spacing between parcels
 
 export function CybercityWorld({ selectedParcelId }: { selectedParcelId?: string }) {
   const [clickedParcel, setClickedParcel] = useState<Parcel | null>(null)
+  const setActiveBuilding = useSelectionState((s) => s.setActiveBuilding)
   
   // Load parcels from new land system (500 at a time)
   const { parcels, isLoading } = useParcelsPage(1, 500);
+
+  const handleParcelClick = (parcel: Parcel) => {
+    // Keep existing behavior
+    setClickedParcel(parcel)
+    
+    // Wire to selection store
+    const worldPos = landRegistryAPI.getWorldPosition(parcel.parcelId);
+    const districtDef = getDistrictFromWorld(worldPos.x, worldPos.z);
+    const districtId = districtDef?.id ?? null;
+    
+    // Set active building (using parcel ID as building ID for now)
+    setActiveBuilding(
+      `parcel-${parcel.parcelId}`,
+      parcel.parcelId,
+      districtId
+    );
+    
+    console.log(`[CybercityWorld] Selected parcel ${parcel.parcelId} in district ${districtId}`);
+  };
 
   if (isLoading) {
     return (
@@ -43,7 +66,7 @@ export function CybercityWorld({ selectedParcelId }: { selectedParcelId?: string
               key={parcel.parcelId} 
               parcel={parcel} 
               isSelected={isSelected} 
-              onClick={() => setClickedParcel(parcel)}
+              onClick={() => handleParcelClick(parcel)}
             />
           )
         })}

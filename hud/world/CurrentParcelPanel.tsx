@@ -13,7 +13,8 @@
 import React, { useState, useEffect } from 'react'
 import { useAccount, useReadContract } from 'wagmi'
 import { useWorldEvent, PLAYER_MOVED, PARCEL_ENTERED } from '@/services/events/worldEvents'
-import { worldToParcel, getDistrict, District } from '@/world/WorldCoords'
+import { cityWorldToParcel, getDistrict } from '@/world/WorldCoords'
+import type { DistrictId } from '@/world/map/districts'
 import { voidTheme } from '@/ui/theme/voidTheme'
 
 const WORLD_LAND = "0xC4559144b784A8991924b1389a726d68C910A206" as const;
@@ -22,7 +23,7 @@ interface CurrentParcelData {
   x: number
   z: number
   parcelId: number
-  district: District
+  district: DistrictId
 }
 
 export function CurrentParcelPanel() {
@@ -49,7 +50,7 @@ export function CurrentParcelPanel() {
 
   // Listen to player movement events
   useWorldEvent(PLAYER_MOVED, (data) => {
-    const parcelCoords = worldToParcel(data.position)
+    const parcelCoords = cityWorldToParcel(data.position)
     const parcelId = data.parcelId
     const district = getDistrict(parcelCoords)
 
@@ -91,26 +92,34 @@ export function CurrentParcelPanel() {
     )
   }
 
-  const getDistrictColor = (district: District): string => {
-    const colors = {
-      defi: voidTheme.colors.neonPurple,
-      creator: voidTheme.colors.neonTeal,
-      dao: voidTheme.colors.neonPink,
-      ai: voidTheme.colors.neonBlue,
-      neutral: voidTheme.colors.textTertiary,
+  const getDistrictColor = (district: DistrictId): string => {
+    const colors: Record<DistrictId, string> = {
+      HQ: voidTheme.colors.textTertiary,
+      DEFI: voidTheme.colors.neonPurple,
+      CREATOR: voidTheme.colors.neonTeal,
+      DAO: voidTheme.colors.neonPink,
+      AI: voidTheme.colors.neonBlue,
+      SOCIAL: '#ff9d00',  // Orange
+      IDENTITY: '#00ff88',  // Green
+      CENTRAL_EAST: voidTheme.colors.textMuted,
+      CENTRAL_SOUTH: voidTheme.colors.textMuted,
     }
-    return colors[district] || colors.neutral
+    return colors[district] || voidTheme.colors.textTertiary
   }
 
-  const getDistrictName = (district: District): string => {
-    const names = {
-      defi: 'DeFi District',
-      creator: 'Creator Quarter',
-      dao: 'DAO Plaza',
-      ai: 'AI Nexus',
-      neutral: 'Neutral Zone',
+  const getDistrictName = (district: DistrictId): string => {
+    const names: Record<DistrictId, string> = {
+      HQ: 'PSX HQ',
+      DEFI: 'DeFi District',
+      CREATOR: 'Creator Quarter',
+      DAO: 'DAO Plaza',
+      AI: 'AI Nexus',
+      SOCIAL: 'Social District',
+      IDENTITY: 'Identity District',
+      CENTRAL_EAST: 'Central East',
+      CENTRAL_SOUTH: 'Central South',
     }
-    return names[district] || names.neutral
+    return names[district] || 'Unknown Zone'
   }
 
   const getOwnershipStatus = (): { text: string; color: string } => {

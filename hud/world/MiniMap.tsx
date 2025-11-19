@@ -2,13 +2,10 @@
 
 import React from 'react';
 import { MapPin, Users, Maximize2, Vault, Vote, Palette, Briefcase, Brain } from 'lucide-react';
+import { worldPosToPercent, type District as WorldDistrict } from '@/world/WorldCoords';
+import type { WorldState } from '@/hud/types/economySnapshot';
 
-interface District {
-  id: string;
-  name: string;
-  color: string;
-  bounds: { x: [number, number]; z: [number, number] };
-}
+type District = WorldState['districts'][number];
 
 // Hub-tagged POIs (Points of Interest)
 interface POI {
@@ -35,6 +32,36 @@ interface MiniMapProps {
   onMapClick: () => void;
 }
 
+const DISTRICT_FALLBACK_ORDER: WorldDistrict[] = ['dao', 'ai', 'defi', 'creator'];
+
+const DISTRICT_FALLBACK_PERCENTS: Record<WorldDistrict, { xPct: number; zPct: number }> = {
+  dao: { xPct: 25, zPct: 25 },
+  ai: { xPct: 75, zPct: 25 },
+  defi: { xPct: 25, zPct: 75 },
+  creator: { xPct: 75, zPct: 75 },
+  neutral: { xPct: 50, zPct: 50 },
+};
+
+const normalizeDistrictId = (id?: string | number, fallbackIndex = 0): WorldDistrict => {
+  const value = typeof id === 'string' ? id.toLowerCase() : `${id}`;
+  if (value.includes('defi')) return 'defi';
+  if (value.includes('creator') || value.includes('creative')) return 'creator';
+  if (value.includes('dao')) return 'dao';
+  if (value.includes('ai')) return 'ai';
+  return DISTRICT_FALLBACK_ORDER[fallbackIndex % DISTRICT_FALLBACK_ORDER.length] || 'neutral';
+};
+
+const getDistrictPercent = (district: District, index: number) => {
+  if (district.bounds) {
+    return worldPosToPercent({
+      x: (district.bounds.x[0] + district.bounds.x[1]) / 2,
+      z: (district.bounds.z[0] + district.bounds.z[1]) / 2,
+    });
+  }
+  const normalized = normalizeDistrictId(district.id, index);
+  return DISTRICT_FALLBACK_PERCENTS[normalized];
+};
+
 export default function MiniMap({
   playerPosition,
   districts,
@@ -44,15 +71,7 @@ export default function MiniMap({
   onMapClick,
 }: MiniMapProps) {
   // Convert world coordinates to minimap coordinates (0-100 scale)
-  const worldToMinimap = (worldX: number, worldZ: number) => {
-    const mapSize = 1000; // Assume 1000x1000 world
-    return {
-      x: ((worldX + mapSize / 2) / mapSize) * 100,
-      y: ((worldZ + mapSize / 2) / mapSize) * 100,
-    };
-  };
-
-  const playerMapPos = worldToMinimap(playerPosition.x, playerPosition.z);
+  const playerMapPos = worldPosToPercent(playerPosition);
   
   // Hub icon/color mapping
   const getHubIcon = (hub: string) => {
@@ -95,18 +114,15 @@ export default function MiniMap({
           />
 
           {/* Districts (simplified) */}
-          {districts.slice(0, 4).map((district) => {
-            const bounds = worldToMinimap(
-              (district.bounds.x[0] + district.bounds.x[1]) / 2,
-              (district.bounds.z[0] + district.bounds.z[1]) / 2
-            );
+          {districts.slice(0, 4).map((district, idx) => {
+            const bounds = getDistrictPercent(district, idx);
             return (
               <div
                 key={district.id}
                 className="absolute w-16 h-16 rounded border opacity-20"
                 style={{
-                  left: `${bounds.x}%`,
-                  top: `${bounds.y}%`,
+                  left: `${bounds.xPct}%`,
+                  top: `${bounds.zPct}%`,
                   borderColor: district.color,
                   transform: 'translate(-50%, -50%)',
                 }}
@@ -116,14 +132,14 @@ export default function MiniMap({
 
           {/* AI OPS - Hotspots */}
           {aiHotspots.map((hotspot, idx) => {
-            const pos = worldToMinimap(hotspot.x, hotspot.z);
+            const pos = worldPosToPercent({ x: hotspot.x, z: hotspot.z });
             return (
               <div
                 key={`hotspot-${idx}`}
                 className="absolute w-8 h-8 rounded-full bg-signal-green/20 border-2 border-signal-green animate-pulse"
                 style={{
-                  left: `${pos.x}%`,
-                  top: `${pos.y}%`,
+                  left: `${pos.xPct}%`,
+                  top: `${pos.zPct}%`,
                   transform: 'translate(-50%, -50%)',
                 }}
                 title={hotspot.reason}
@@ -133,15 +149,15 @@ export default function MiniMap({
 
           {/* Hub POIs - Creator/DeFi/DAO/Agency markers */}
           {pois.filter(poi => poi.active).slice(0, 10).map((poi) => {
-            const pos = worldToMinimap(poi.position.x, poi.position.z);
+            const pos = worldPosToPercent(poi.position);
             const { Icon, color } = getHubIcon(poi.hub);
             return (
               <div
                 key={poi.id}
                 className={`absolute ${color}`}
                 style={{
-                  left: `${pos.x}%`,
-                  top: `${pos.y}%`,
+                  left: `${pos.xPct}%`,
+                  top: `${pos.zPct}%`,
                   transform: 'translate(-50%, -50%)',
                 }}
                 title={`${poi.hub}: ${poi.label}`}
@@ -153,14 +169,14 @@ export default function MiniMap({
 
           {/* Nearby players */}
           {nearbyPlayers.map((player, idx) => {
-            const pos = worldToMinimap(player.x, player.z);
+            const pos = worldPosToPercent(player);
             return (
               <div
                 key={idx}
                 className="absolute w-2 h-2 rounded-full bg-psx-blue shadow-[0_0_8px_rgba(0,212,255,0.8)]"
                 style={{
-                  left: `${pos.x}%`,
-                  top: `${pos.y}%`,
+                  left: `${pos.xPct}%`,
+                  top: `${pos.zPct}%`,
                   transform: 'translate(-50%, -50%)',
                 }}
                 title={player.username}
@@ -172,8 +188,8 @@ export default function MiniMap({
           <div
             className="absolute w-3 h-3 rounded-full bg-signal-green shadow-[0_0_12px_rgba(0,255,157,1)] z-10"
             style={{
-              left: `${playerMapPos.x}%`,
-              top: `${playerMapPos.y}%`,
+              left: `${playerMapPos.xPct}%`,
+              top: `${playerMapPos.zPct}%`,
               transform: 'translate(-50%, -50%)',
             }}
           >
@@ -184,8 +200,8 @@ export default function MiniMap({
           <div
             className="absolute w-6 h-6 border-t-2 border-r-2 border-signal-green opacity-60"
             style={{
-              left: `${playerMapPos.x}%`,
-              top: `${playerMapPos.y}%`,
+              left: `${playerMapPos.xPct}%`,
+              top: `${playerMapPos.zPct}%`,
               transform: 'translate(-50%, -50%) rotate(45deg)',
             }}
           />

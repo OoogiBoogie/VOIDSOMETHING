@@ -16,7 +16,7 @@ export const CORE_WORLD_FEATURES: WorldFeature[] = [
     label: "PSX HQ",
     type: "landmark",
     hub: "DAO",           // DAO governance headquarters
-    district: "dao",      // Near center edge in DAO quadrant
+    district: "DAO",      // Near center edge in DAO quadrant
     parcel: { x: 19, z: 19 },
     worldPos: parcelToWorld({ x: 19, z: 19 }),
     accessibleFrom: ["world", "dao"],
@@ -29,7 +29,7 @@ export const CORE_WORLD_FEATURES: WorldFeature[] = [
     label: "DeFi Tower",
     type: "hub",
     hub: "DEFI",          // DeFi economic vertical
-    district: "defi",     // DeFi spatial quadrant
+    district: "DEFI",     // DeFi spatial quadrant
     parcel: { x: 8, z: 30 },
     worldPos: parcelToWorld({ x: 8, z: 30 }),
     accessibleFrom: ["world", "defi"],
@@ -42,7 +42,7 @@ export const CORE_WORLD_FEATURES: WorldFeature[] = [
     label: "Creator Arena",
     type: "hub",
     hub: "CREATOR",       // Creator economic vertical
-    district: "creator",  // Creator spatial quadrant
+    district: "CREATOR",  // Creator spatial quadrant
     parcel: { x: 30, z: 30 },
     worldPos: parcelToWorld({ x: 30, z: 30 }),
     accessibleFrom: ["world", "creator"],
@@ -55,7 +55,7 @@ export const CORE_WORLD_FEATURES: WorldFeature[] = [
     label: "AI Nexus",
     type: "hub",
     hub: "AI_OPS",        // AI operations vertical
-    district: "ai",       // AI spatial quadrant
+    district: "AI",       // AI spatial quadrant
     parcel: { x: 30, z: 8 },
     worldPos: parcelToWorld({ x: 30, z: 8 }),
     accessibleFrom: ["world", "ai"],
@@ -68,7 +68,7 @@ export const CORE_WORLD_FEATURES: WorldFeature[] = [
     label: "DAO Hall",
     type: "hub",
     hub: "DAO",           // DAO governance vertical
-    district: "dao",      // DAO spatial quadrant
+    district: "DAO",      // DAO spatial quadrant
     parcel: { x: 10, z: 10 },
     worldPos: parcelToWorld({ x: 10, z: 10 }),
     accessibleFrom: ["world", "dao"],
@@ -81,7 +81,7 @@ export const CORE_WORLD_FEATURES: WorldFeature[] = [
     label: "Agency Plaza",
     type: "hub",
     hub: "AGENCY",        // Agency/gig economy vertical
-    district: "creator",  // Located in creator district spatially
+    district: "CREATOR",  // Located in creator district spatially
     parcel: { x: 25, z: 35 },
     worldPos: parcelToWorld({ x: 25, z: 35 }),
     accessibleFrom: ["world", "agency"],
@@ -94,7 +94,7 @@ export const CORE_WORLD_FEATURES: WorldFeature[] = [
     label: "Spawn Point",
     type: "spawn",
     hub: "WORLD",         // Global system spawn
-    district: "neutral",  // Center of map
+    district: "HQ",       // Center of map
     parcel: { x: 20, z: 20 },
     worldPos: parcelToWorld({ x: 20, z: 20 }),
     accessibleFrom: ["world"],
@@ -107,7 +107,7 @@ export const CORE_WORLD_FEATURES: WorldFeature[] = [
     label: "Central Marketplace",
     type: "shop",
     hub: "WORLD",         // Global marketplace
-    district: "neutral",  // Center area
+    district: "HQ",       // Center area
     parcel: { x: 20, z: 21 },
     worldPos: parcelToWorld({ x: 20, z: 21 }),
     accessibleFrom: ["world"],
@@ -120,7 +120,7 @@ export const CORE_WORLD_FEATURES: WorldFeature[] = [
     label: "Quest Board",
     type: "quest",
     hub: "DAO",           // Missions managed by DAO
-    district: "neutral",  // Accessible to all
+    district: "HQ",       // Accessible to all
     parcel: { x: 19, z: 21 },
     worldPos: parcelToWorld({ x: 19, z: 21 }),
     accessibleFrom: ["world"],
@@ -133,7 +133,7 @@ export const CORE_WORLD_FEATURES: WorldFeature[] = [
     label: "DeFi Portal",
     type: "portal",
     hub: "DEFI",          // Fast travel for DeFi
-    district: "defi",     // In DeFi district
+    district: "DEFI",     // In DeFi district
     parcel: { x: 5, z: 35 },
     worldPos: parcelToWorld({ x: 5, z: 35 }),
     accessibleFrom: ["world", "defi"],
@@ -146,7 +146,7 @@ export const CORE_WORLD_FEATURES: WorldFeature[] = [
     label: "Creator Portal",
     type: "portal",
     hub: "CREATOR",       // Fast travel for Creator
-    district: "creator",  // In Creator district
+    district: "CREATOR",  // In Creator district
     parcel: { x: 35, z: 35 },
     worldPos: parcelToWorld({ x: 35, z: 35 }),
     accessibleFrom: ["world", "creator"],
@@ -159,7 +159,7 @@ export const CORE_WORLD_FEATURES: WorldFeature[] = [
     label: "DAO Portal",
     type: "portal",
     hub: "DAO",           // Fast travel for DAO
-    district: "dao",      // In DAO district
+    district: "DAO",      // In DAO district
     parcel: { x: 5, z: 5 },
     worldPos: parcelToWorld({ x: 5, z: 5 }),
     accessibleFrom: ["world", "dao"],
@@ -172,7 +172,7 @@ export const CORE_WORLD_FEATURES: WorldFeature[] = [
     label: "AI Portal",
     type: "portal",
     hub: "AI_OPS",        // Fast travel for AI
-    district: "ai",       // In AI district
+    district: "AI",       // In AI district
     parcel: { x: 35, z: 5 },
     worldPos: parcelToWorld({ x: 35, z: 5 }),
     accessibleFrom: ["world", "ai"],

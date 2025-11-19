@@ -154,7 +154,7 @@ class NetProtocolClient {
           posZ: 5,
           sceneId: 0, // 0 = main hub
           level: 1,
-          xp: 0n,
+          xp: BigInt(0),
         };
       }
       
@@ -230,7 +230,7 @@ class NetProtocolClient {
             posZ: 5,
             sceneId: 0,
             level: 1,
-            xp: 0n,
+            xp: BigInt(0),
           };
         }
         
@@ -304,6 +304,6 @@ export function createDefaultProfile(wallet: `0x${string}`): NetProfileCore {
     posZ: 5,
     sceneId: 0, // Main hub
     level: 1,
-    xp: 0n,
+    xp: BigInt(0),
   };
 }

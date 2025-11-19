@@ -24,7 +24,8 @@
 import React from 'react';
 import { useVoidRuntime } from '@/src/runtime/VoidRuntimeProvider';
 import type { EconomySnapshot, PlayerState } from '@/hud/types/economySnapshot';
-import { worldPosToPercent, getDistrict, worldToParcel, coordsToParcelId, DISTRICT_NAMES } from '@/world/WorldCoords';
+import { worldPosToPercent, getDistrict, cityWorldToParcel, coordsToParcelId } from '@/world/WorldCoords';
+import type { DistrictId } from '@/world/map/districts';
 import { useParcelProperties } from '@/services/world/useRealEstate';
 
 interface MobileLiteHUDProps {
@@ -76,6 +77,22 @@ export default function MobileLiteHUD({
   const hasNearby =
     (world.nearbyPlayers?.length ?? 0) > 0 ||
     (agency.openGigs?.length ?? 0) > 0;
+
+  // Helper to get district display name
+  const getDistrictDisplayName = (district: DistrictId): string => {
+    const names: Record<DistrictId, string> = {
+      HQ: 'PSX HQ',
+      DEFI: 'DeFi District',
+      CREATOR: 'Creator Quarter',
+      DAO: 'DAO Plaza',
+      AI: 'AI Nexus',
+      SOCIAL: 'Social District',
+      IDENTITY: 'Identity District',
+      CENTRAL_EAST: 'Central East',
+      CENTRAL_SOUTH: 'Central South',
+    };
+    return names[district] || 'Unknown Zone';
+  };
 
   return (
     <div className="relative w-full h-full bg-void-gradient text-bio-silver overflow-hidden">
@@ -334,7 +351,7 @@ function StatsGrid2x2Mobile({
   // World coordinate system
   const playerWorldPos = { x: posX, z: posZ };
   const { xPct, zPct } = worldPosToPercent(playerWorldPos);
-  const parcelCoords = worldToParcel(playerWorldPos);
+  const parcelCoords = cityWorldToParcel(playerWorldPos);
   const district = getDistrict(parcelCoords);
   const parcelId = coordsToParcelId(parcelCoords);
   
@@ -414,7 +431,7 @@ function StatsGrid2x2Mobile({
         
         <div className="relative z-10 w-full">
           <div className="text-[0.6rem] uppercase tracking-[0.22em] text-bio-silver/60">
-            {DISTRICT_NAMES[district]} Zone
+            {getDistrictDisplayName(district)} Zone
           </div>
           <div className="mt-1 text-sm font-mono text-cyber-cyan">
             ({Math.floor(posX)}, {Math.floor(posZ)})

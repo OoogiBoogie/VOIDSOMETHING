@@ -90,24 +90,53 @@ export function MiniAppContainer() {
  * Dynamically loads and renders React component
  */
 function InternalMiniAppRenderer({ app }: { app: any }) {
-  const [Component, setComponent] = useState<React.ComponentType<any> | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [componentState, setComponentState] = useState<{ appId: string | null; component: React.ComponentType<any> | null }>({
+    appId: null,
+    component: null,
+  });
+  const [errorState, setErrorState] = useState<{ appId: string | null; message: string | null }>({
+    appId: null,
+    message: null,
+  });
+  const loaderMissing = !app.loader;
   
   useEffect(() => {
-    if (!app.loader) {
-      setError('No loader function provided');
+    if (loaderMissing) {
       return;
     }
-    
+
+    let isCancelled = false;
+
     app.loader()
       .then((module: any) => {
-        setComponent(() => module.default);
+        if (isCancelled) return;
+        setComponentState({ appId: app.id, component: module.default });
+        setErrorState({ appId: app.id, message: null });
       })
       .catch((err: Error) => {
+        if (isCancelled) return;
         console.error(`[MiniApp] Failed to load ${app.id}:`, err);
-        setError(err.message);
+        setErrorState({ appId: app.id, message: err.message });
       });
-  }, [app]);
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [app, loaderMissing]);
+
+  const LoadedComponent = componentState.appId === app.id ? componentState.component : null;
+  const error = errorState.appId === app.id ? errorState.message : null;
+
+  if (loaderMissing) {
+    return (
+      <div className="h-full flex items-center justify-center bg-black/90">
+        <div className="text-center">
+          <div className="text-4xl mb-4">⚠️</div>
+          <p className="text-yellow-400 font-mono">Miniapp loader not configured</p>
+        </div>
+      </div>
+    );
+  }
   
   if (error) {
     return (
@@ -121,7 +150,7 @@ function InternalMiniAppRenderer({ app }: { app: any }) {
     );
   }
   
-  if (!Component) {
+  if (!LoadedComponent) {
     return (
       <div className="h-full flex items-center justify-center bg-black/90">
         <div className="text-cyan-400 font-mono">Loading miniapp...</div>
@@ -135,7 +164,7 @@ function InternalMiniAppRenderer({ app }: { app: any }) {
         <div className="text-cyan-400 font-mono">Loading...</div>
       </div>
     }>
-      <Component />
+      <LoadedComponent />
     </Suspense>
   );
 }
