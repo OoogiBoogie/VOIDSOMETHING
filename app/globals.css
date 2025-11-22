@@ -5,6 +5,9 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
+  /* Font fallbacks for system fonts */
+  --font-audiowide: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --font-rajdhani: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
   /* VOID Theme - Neon Cyberpunk Engagement HUD */
   --void-black: #040508;
   --void-deep: #060914;
