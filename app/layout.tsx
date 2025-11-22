@@ -1,22 +1,16 @@
 import type React from "react"
 import type { Metadata } from "next"
-import { Audiowide, Rajdhani } from "next/font/google"
 import "./globals.css"
 import RootProviders from "@/components/providers/root-providers"
 
-const audiowide = Audiowide({
-  weight: "400",
-  subsets: ["latin"],
+// Using system font fallbacks instead of Google Fonts to avoid network dependency
+const audiowide = {
   variable: "--font-audiowide",
-  display: "swap",
-})
+}
 
-const rajdhani = Rajdhani({
-  weight: ["400", "600", "700"],
-  subsets: ["latin"],
+const rajdhani = {
   variable: "--font-rajdhani",
-  display: "swap",
-})
+}
 
 export const metadata: Metadata = {
   title: "VOID Metaverse | PSX Agency Protocol",
