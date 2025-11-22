@@ -337,6 +337,14 @@ export function TerminalIntro({ onComplete }: TerminalIntroProps) {
                   <div className="text-emerald-400 text-2xl font-bold mb-4">
                     ✓ ACCESS GRANTED
                   </div>
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 }}
+                    className="text-purple-400 text-xl font-semibold mb-3"
+                  >
+                    Hello, Welcome to the VOID! 👋
+                  </motion.div>
                   <div className="text-cyan-400">
                     INITIALIZING WORLD INTERFACE...
                   </div>
