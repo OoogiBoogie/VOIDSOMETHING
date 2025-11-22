@@ -2,19 +2,34 @@
 
 import { useEffect, useState } from "react"
 
+interface StatusResponse {
+  status: string
+  message: string
+  timestamp: string
+  version: string
+  services: Record<string, string>
+}
+
 export default function StatusPage() {
-  const [status, setStatus] = useState<any>(null)
+  const [status, setStatus] = useState<StatusResponse | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
 
   useEffect(() => {
     fetch("/api/status")
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`)
+        }
+        return res.json()
+      })
       .then((data) => {
         setStatus(data)
         setLoading(false)
       })
       .catch((error) => {
         console.error("Error fetching status:", error)
+        setError(true)
         setLoading(false)
       })
   }, [])
@@ -79,7 +94,11 @@ export default function StatusPage() {
             </div>
 
             <div className="text-center pt-4">
-              <div className="inline-flex items-center space-x-2 text-green-400">
+              <div
+                className={`inline-flex items-center space-x-2 ${
+                  status.status === "operational" ? "text-green-400" : "text-yellow-400"
+                }`}
+              >
                 <svg
                   className="w-5 h-5"
                   fill="none"
@@ -93,13 +112,37 @@ export default function StatusPage() {
                     d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
                   />
                 </svg>
-                <span className="font-semibold">All Systems Operational</span>
+                <span className="font-semibold">
+                  {status.status === "operational"
+                    ? "All Systems Operational"
+                    : status.message}
+                </span>
               </div>
+            </div>
+          </div>
+        ) : error ? (
+          <div className="text-center">
+            <div className="text-red-400 mb-2">
+              <svg
+                className="w-12 h-12 mx-auto mb-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                />
+              </svg>
+              <p className="text-lg font-semibold">Failed to load status information</p>
+              <p className="text-sm text-gray-400 mt-2">Unable to connect to the status API</p>
             </div>
           </div>
         ) : (
           <div className="text-center text-red-400">
-            <p>Failed to load status information</p>
+            <p>No status data available</p>
           </div>
         )}
       </div>
